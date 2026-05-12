@@ -1,17 +1,16 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 
-// https://vite.dev/config/
 export default defineConfig({
   plugins: [react()],
   server: {
     proxy: {
       '/api': {
-        target: 'http://localhost:3000',
+        target: 'https://crm-backend-l7jq.onrender.com',
         changeOrigin: true,
       },
       '/file': {
-        target: 'http://localhost:3000',
+        target: 'https://crm-backend-l7jq.onrender.com',
         changeOrigin: true,
       }
     }

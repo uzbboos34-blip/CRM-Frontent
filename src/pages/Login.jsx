@@ -83,7 +83,7 @@ export default function Login() {
     setSuccess(false);
 
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/v1/auth/user/login`, {
+      const response = await fetch("https://crm-backend-l7jq.onrender.com/api/v1/auth/user/login", {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

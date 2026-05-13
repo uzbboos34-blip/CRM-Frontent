@@ -38,7 +38,9 @@ export default function Attendance() {
   const [lessonType,  setLessonType] = useState('other');
   const [attendance,  setAttendance] = useState({});
   const [saving,      setSaving]     = useState(false);
-  const [snackbar, setSnackbar] = useState({ open: false, message: '' });
+  const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'warning' });
+  const [existingLesson, setExistingLesson] = useState(null);
+  const [alreadyTaken, setAlreadyTaken] = useState(false);
 
   const today = new Date();
 
@@ -56,29 +58,7 @@ export default function Attendance() {
   useEffect(() => {
     if (!token()) { navigate('/login'); return; }
     Promise.all([fetchGroup(), fetchSchedule(), fetchExistingAttendance()]);
-  }, [id, date]);
-
-  async function fetchExistingAttendance() {
-    try {
-      const res = await api.get(`/api/v1/attendances/by-date?group_id=${id}&date=${date}`);
-      if (res.data) {
-        setLessonTopic(res.data.topic || '');
-        setLessonType(res.data.description === 'plan' ? 'plan' : 'other'); // description ni status sifatida ishlatsak bo'ladi yoki boshqa
-        
-        // Mavjud davomatlarni belgilash
-        const existing = {};
-        // Barcha studentlarni default "false" (yo'q) qilish
-        (group?.studentGroups || []).forEach(sg => { existing[sg.students.id] = false; });
-        // Kelganlarni "true" qilish
-        (res.data.attendances || []).forEach(att => {
-          existing[att.student_id] = true;
-        });
-        if (res.data.attendances?.length > 0) {
-           setAttendance(existing);
-        }
-      }
-    } catch (e) { console.error('Error fetching existing attendance:', e); }
-  }
+  }, [id]);
 
   async function fetchGroup() {
     setLoading(true);
@@ -103,6 +83,19 @@ export default function Attendance() {
     } catch (_) {}
   }
 
+  async function fetchExistingAttendance() {
+    try {
+      const res = await api.get(`/api/v1/attendances/by-date?group_id=${id}&date=${date}`);
+      const data = res.data;
+      if (data?.lesson) {
+        setExistingLesson(data.lesson);
+        setAlreadyTaken(true);
+        setLessonTopic(data.lesson.topic || '');
+        setLessonType(data.lesson.type || 'plan');
+      }
+    } catch (_) {}
+  }
+
   /* month groups for calendar */
   const monthGroups = useMemo(() =>
     schedule.map(m => ({
@@ -123,29 +116,25 @@ export default function Attendance() {
 
   async function handleSave() {
     if (!lessonTopic.trim()) {
-      alert("Iltimos, dars mavzusini kiriting!");
+      setSnackbar({ open: true, message: 'Mavzu kiriting!', severity: 'warning' });
       return;
     }
     setSaving(true);
     try {
-      // Yangi formatdagi payload
-      const payload = {
+      await api.post('/api/v1/attendances', {
         group_id: Number(id),
-        date: date,
+        date,
         topic: lessonTopic,
-        description: lessonType, // plan yoki other
+        type: lessonType,
         records: Object.entries(attendance).map(([sid, present]) => ({
-          student_id: Number(sid),
-          isPresent: present
-        }))
-      };
-
-      await api.post('/api/v1/attendances', payload);
-      alert("Davomat muvaffaqiyatli saqlandi!");
-      navigate(`/group/${id}`);
-    } catch (e) { 
-      console.error(e);
-      alert("Xatolik yuz berdi: " + (e.response?.data?.message || e.message));
+          student_id: Number(sid), present
+        })),
+      });
+      setSnackbar({ open: true, message: 'Davomat muvaffaqiyatli saqlandi!', severity: 'success' });
+      setTimeout(() => navigate(`/group/${id}`), 1200);
+    } catch (e) {
+      const msg = e.response?.data?.message || 'Xatolik yuz berdi';
+      setSnackbar({ open: true, message: msg, severity: 'error' });
     }
     finally { setSaving(false); }
   }
@@ -431,18 +420,27 @@ export default function Attendance() {
       </Box>
 
       {/* ── Saqlash ── */}
-      <Box sx={{ mt:4, display:'flex', justifyContent:'flex-end', gap:2 }}>
-        <Button variant="outlined" onClick={() => navigate(`/group/${id}`)}
-          sx={{ borderRadius:'12px', px:4, textTransform:'none', fontWeight:600,
-            borderColor:'#e5e7eb', color:'#374151' }}>
-          Bekor qilish
-        </Button>
-        <Button variant="contained" disabled={!lessonTopic.trim() || saving} onClick={handleSave}
-          sx={{ borderRadius:'12px', px:8, py:1.2, textTransform:'none', fontWeight:800,
-            backgroundColor:'#10b981', '&:hover':{ backgroundColor:'#059669' }, boxShadow:'none' }}>
-          {saving ? 'Saqlanmoqda...' : 'Saqlash'}
-        </Button>
-      </Box>
+      {alreadyTaken ? (
+        <Box sx={{ mt:4, p:2.5, borderRadius:'12px', backgroundColor:'#f0fdf4',
+          border:'1.5px solid #10b981', display:'flex', alignItems:'center', gap:1.5 }}>
+          <Typography sx={{ fontSize:'0.93rem', fontWeight:700, color:'#059669' }}>
+            ✓ Bu kun uchun davomat allaqachon olingan
+          </Typography>
+        </Box>
+      ) : (
+        <Box sx={{ mt:4, display:'flex', justifyContent:'flex-end', gap:2 }}>
+          <Button variant="outlined" onClick={() => navigate(`/group/${id}`)}
+            sx={{ borderRadius:'12px', px:4, textTransform:'none', fontWeight:600,
+              borderColor:'#e5e7eb', color:'#374151' }}>
+            Bekor qilish
+          </Button>
+          <Button variant="contained" disabled={!lessonTopic.trim() || saving} onClick={handleSave}
+            sx={{ borderRadius:'12px', px:8, py:1.2, textTransform:'none', fontWeight:800,
+              backgroundColor:'#10b981', '&:hover':{ backgroundColor:'#059669' }, boxShadow:'none' }}>
+            {saving ? 'Saqlanmoqda...' : 'Saqlash'}
+          </Button>
+        </Box>
+      )}
       {/* Notification */}
       <Snackbar 
         open={snackbar.open} 
@@ -450,7 +448,7 @@ export default function Attendance() {
         onClose={() => setSnackbar({ ...snackbar, open: false })}
         anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
       >
-        <Alert onClose={() => setSnackbar({ ...snackbar, open: false })} severity="warning" variant="filled" sx={{ width: '100%' }}>
+        <Alert onClose={() => setSnackbar({ ...snackbar, open: false })} severity={snackbar.severity || 'warning'} variant="filled" sx={{ width: '100%' }}>
           {snackbar.message}
         </Alert>
       </Snackbar>

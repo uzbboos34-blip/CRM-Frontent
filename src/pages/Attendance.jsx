@@ -145,7 +145,6 @@ export default function Attendance() {
   const endTime   = `${String(sh + 2).padStart(2,'0')}:${String(sm).padStart(2,'0')}`;
 
   const selDate   = new Date(date);
-  const today     = new Date();
   const calDates  = calMonthIdx !== null ? (monthGroups[calMonthIdx]?.dates || []) : [];
   const students  = group.studentGroups || [];
 

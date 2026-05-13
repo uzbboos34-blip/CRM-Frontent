@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import api from '../api/axios';
 import {
   Box, Typography, Button, IconButton, Paper, TextField,
   Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
@@ -22,8 +22,6 @@ import GroupIcon from '@mui/icons-material/Group';
 import EditIcon from '@mui/icons-material/Edit';
 
 // ── helpers ──────────────────────────────────────────────────────────────────
-const token = () => localStorage.getItem('token');
-const authHeader = () => ({ headers: { Authorization: `Bearer ${token()}` } });
 
 const WEEK_DAYS = [
   { label: 'Dushanba', value: 'Monday' },
@@ -88,25 +86,25 @@ export default function Groups() {
 
   async function fetchGroups() {
     try {
-      const res = await axios.get('/api/v1/groups', authHeader());
+      const res = await api.get('/api/v1/groups');
       setGroups(Array.isArray(res.data) ? res.data : (res.data?.data || []));
     } catch (e) { if (e.response?.status === 401) { localStorage.removeItem('token'); window.location.href = '/login'; } }
   }
 
   async function fetchCourses() {
-    try { const res = await axios.get('/api/v1/courses/all', authHeader()); setCourses(res.data?.data || res.data || []); } catch { }
+    try { const res = await api.get('/api/v1/courses/all'); setCourses(res.data?.data || res.data || []); } catch { }
   }
 
   async function fetchRooms() {
-    try { const res = await axios.get('/api/v1/rooms?status=active', authHeader()); setRooms(res.data?.data || res.data || []); } catch { }
+    try { const res = await api.get('/api/v1/rooms?status=active'); setRooms(res.data?.data || res.data || []); } catch { }
   }
 
   async function fetchTeachers() {
-    try { const res = await axios.get('/api/v1/teachers', authHeader()); setTeachers(res.data?.data || res.data || []); } catch { }
+    try { const res = await api.get('/api/v1/teachers'); setTeachers(res.data?.data || res.data || []); } catch { }
   }
 
   async function fetchStudents() {
-    try { const res = await axios.get('/api/v1/students/all', authHeader()); setStudents(res.data?.data || res.data || []); } catch { }
+    try { const res = await api.get('/api/v1/students/all'); setStudents(res.data?.data || res.data || []); } catch { }
   }
 
   useEffect(() => {
@@ -131,7 +129,7 @@ export default function Groups() {
     }
     setSaving(true);
     try {
-      await axios.post('/api/v1/groups', {
+      await api.post('/api/v1/groups', {
         name: form.name,
         description: form.description || form.name,
         course_id: Number(form.course_id),
@@ -159,7 +157,7 @@ export default function Groups() {
     }
     setSaving(true);
     try {
-      await axios.put(`/api/v1/groups/${editingId}`, {
+      await api.put(`/api/v1/groups/${editingId}`, {
         name: form.name,
         description: form.description || form.name,
         course_id: Number(form.course_id),
@@ -208,7 +206,7 @@ export default function Groups() {
 
   async function deleteGroup(id) {
     if (!window.confirm('Guruhni o\'chirmoqchimisiz?')) return;
-    try { await axios.delete(`/api/v1/groups/${id}`, authHeader()); fetchGroups(); }
+    try { await api.delete(`/api/v1/groups/${id}`); fetchGroups(); }
     catch (e) { alert('Xatolik: ' + (e.response?.data?.message || 'O\'chirib bo\'lmadi')); }
   }
 

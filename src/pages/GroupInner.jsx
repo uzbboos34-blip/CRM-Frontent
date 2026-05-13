@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import api from '../api/axios';
 import {
   Box, Typography, Button, IconButton, Paper, Chip, Avatar,
   Tab, Tabs, Divider, CircularProgress, Collapse
@@ -15,7 +15,6 @@ import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import CheckIcon from '@mui/icons-material/Check';
 
 const token = () => localStorage.getItem('token');
-const authHeader = () => ({ headers: { Authorization: `Bearer ${token()}` } });
 
 const avatarColors = ['#7b61ff', '#f59e0b', '#10b981', '#ef4444', '#3b82f6', '#ec4899'];
 const avatarColor = (i) => avatarColors[i % avatarColors.length];
@@ -109,7 +108,7 @@ export default function GroupInner() {
   async function fetchGroup() {
     setLoading(true);
     try {
-      const res = await axios.get(`/api/v1/groups/${id}`, authHeader());
+      const res = await api.get(`/api/v1/groups/${id}`);
       const data = res.data?.data || res.data;
       setGroup(data);
     } catch (e) {
@@ -121,7 +120,7 @@ export default function GroupInner() {
 
   async function fetchSchedule() {
     try {
-      const res = await axios.get(`/api/v1/groups/${id}/schedule`, authHeader());
+      const res = await api.get(`/api/v1/groups/${id}/schedule`);
       setSchedule(res.data || []);
     } catch (e) {
       console.error('Error fetching schedule:', e);

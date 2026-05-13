@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../api/axios';
 import {
   Box, Typography, Button, IconButton, Paper,
   Drawer, TextField, Stack
@@ -17,10 +17,7 @@ export default function Rooms() {
   const [editingId, setEditingId] = useState(null);
 
   async function getRooms() {
-    const token = localStorage.getItem("token");
-    const res = await axios.get("http://localhost:3000/api/v1/rooms?status=active",
-      { headers: { Authorization: `Bearer ${token}` } }
-    )
+    const res = await api.get("/api/v1/rooms?status=active")
     setRooms(res.data)
   }
 
@@ -49,13 +46,10 @@ export default function Rooms() {
   }
 
   async function createRoom() {
-    const token = localStorage.getItem("token");
-    await axios.post("http://localhost:3000/api/v1/rooms", {
+    await api.post("/api/v1/rooms", {
       name: form.name,
       capacity: Number(form.capacity)
-    },
-      { headers: { Authorization: `Bearer ${token}` } }
-    )
+    })
     setIsDrawerOpen(false)
     setForm({ name: '', capacity: '' })
     getRooms()
@@ -63,10 +57,7 @@ export default function Rooms() {
 
   async function deleteRoom(id) {
     try {
-      const token = localStorage.getItem("token");
-      await axios.delete(`http://localhost:3000/api/v1/rooms/${id}`,
-        { headers: { Authorization: `Bearer ${token}` } }
-      )
+      await api.delete(`/api/v1/rooms/${id}`)
       getRooms()
     } catch (error) {
       console.error("Xonani o'chirishda xatolik:", error);
@@ -75,13 +66,10 @@ export default function Rooms() {
   }
 
   async function updateRoom(id) {
-    const token = localStorage.getItem("token");
-    await axios.put(`http://localhost:3000/api/v1/rooms/${id}`, {
+    await api.put(`/api/v1/rooms/${id}`, {
       name: form.name,
       capacity: Number(form.capacity)
-    },
-      { headers: { Authorization: `Bearer ${token}` } }
-    )
+    })
     setIsDrawerOpen(false)
     setForm({ name: '', capacity: '' })
     setEditingId(null);

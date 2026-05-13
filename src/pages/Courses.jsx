@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../api/axios';
 import {
   Box, Typography, Button, IconButton, Paper, Grid, Chip,
   Drawer, TextField, Stack, FormControlLabel, Checkbox,
@@ -35,10 +35,7 @@ export default function Courses() {
   const [courses, setCourses] = useState([])
 
   async function getCourses() {
-    const token = localStorage.getItem("token");
-    const res = await axios.get("/api/v1/courses/all?status=active",
-      { headers: { Authorization: `Bearer ${token}` } }
-    )
+    const res = await api.get("/api/v1/courses/all?status=active")
     setCourses(res.data)
   }
 
@@ -90,9 +87,7 @@ export default function Courses() {
         duration_month: parseInt(form.courseDuration) || 0,
       };
 
-      await axios.post("/api/v1/courses/courses", payload, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      await api.post("/api/v1/courses/courses", payload);
       
       getCourses();
       setIsDrawerOpen(false);
@@ -108,9 +103,7 @@ export default function Courses() {
         duration_month: parseInt(form.courseDuration) || 0,
       };
 
-      await axios.put(`/api/v1/courses/${editingId}`, payload, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      await api.put(`/api/v1/courses/${editingId}`, payload);
       getCourses();
       setIsDrawerOpen(false);
       setEditingId(null);
@@ -118,9 +111,7 @@ export default function Courses() {
 
   async function deleteCourse(id) {
       const token = localStorage.getItem("token");
-      await axios.delete(`/api/v1/courses/${id}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      await api.delete(`/api/v1/courses/${id}`);
       getCourses();
   }
 

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../api/axios';
 import {
   Box, Typography, Button, IconButton, Paper, TextField,
   Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
@@ -76,12 +76,11 @@ export default function Students() {
   });
 
   const token = () => localStorage.getItem('token');
-  const authHeader = () => ({ headers: { Authorization: `Bearer ${token()}` } });
 
   async function getStudents(q = '') {
     try {
       const url = q ? `/api/v1/students/all?full_name=${q}` : '/api/v1/students/all';
-      const res = await axios.get(url, authHeader());
+      const res = await api.get(url);
       setStudents(res.data.data || []);
     } catch (err) {
       if (err.response?.status === 401) {
@@ -93,7 +92,7 @@ export default function Students() {
 
   async function getAllGroups() {
     try {
-      const res = await axios.get('/api/v1/groups', authHeader());
+      const res = await api.get('/api/v1/groups');
       setAllGroups(res.data?.data || res.data || []);
     } catch { /* silent */ }
   }
@@ -147,7 +146,7 @@ export default function Students() {
         formData.append('groups', id);
       });
 
-      const res = await axios.post('/api/v1/students', formData, authHeader());
+      const res = await api.post('/api/v1/students', formData);
       if (res.data) {
         getStudents();
         setIsDrawerOpen(false);
@@ -175,7 +174,7 @@ export default function Students() {
         formData.append('groups', id);
       });
 
-      const res = await axios.put(`/api/v1/students/${editingId}`, formData, authHeader());
+      const res = await api.put(`/api/v1/students/${editingId}`, formData);
       if (res.data) {
         getStudents();
         setIsDrawerOpen(false);
@@ -191,7 +190,7 @@ export default function Students() {
   async function deleteStudent(id) {
     if (!window.confirm('O\'chirmoqchimisiz?')) return;
     try {
-      await axios.delete(`/api/v1/students/${id}`, authHeader());
+      await api.delete(`/api/v1/students/${id}`);
       getStudents();
     } catch (err) {
       alert('Xatolik: ' + (err.response?.data?.message || 'O\'chirib bo\'lmadi'));

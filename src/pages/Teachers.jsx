@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../api/axios';
 import {
   Box, Typography, Button, IconButton, Paper, TextField,
   Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
@@ -55,12 +55,11 @@ export default function Teachers() {
   const [editingId, setEditingId] = useState(null);
 
   const token = () => localStorage.getItem('token');
-  const authHeader = () => ({ headers: { Authorization: `Bearer ${token()}` } });
 
   async function getTeachers(search = '') {
     try {
       const url = search ? `/api/v1/teachers?full_name=${search}` : '/api/v1/teachers';
-      const res = await axios.get(url, authHeader());
+      const res = await api.get(url);
       setTeachers(res.data.data || []);
     } catch (err) {
       if (err.response?.status === 401) {
@@ -71,7 +70,7 @@ export default function Teachers() {
   }
 
   async function getAllGroups() {
-    const res = await axios.get('/api/v1/groups', authHeader());
+    const res = await api.get('/api/v1/groups');
     setAllGroups(res.data || []);
   }
 
@@ -119,7 +118,7 @@ export default function Teachers() {
       if (form.photo) formData.append('photo', form.photo);
       form.groups.forEach((id) => formData.append('groups', id));
 
-      const res = await axios.post('/api/v1/teachers', formData, authHeader());
+      const res = await api.post('/api/v1/teachers', formData);
       if (res.data.success) {
         getTeachers(searchQuery);
         setIsDrawerOpen(false);
@@ -142,7 +141,7 @@ export default function Teachers() {
       if (form.photo) formData.append('photo', form.photo);
       form.groups.forEach((id) => formData.append('groups', id));
 
-      const res = await axios.put(`/api/v1/teachers/${editingId}`, formData, authHeader());
+      const res = await api.put(`/api/v1/teachers/${editingId}`, formData);
       if (res.data.success) {
         getTeachers(searchQuery);
         setIsDrawerOpen(false);
@@ -158,7 +157,7 @@ export default function Teachers() {
   async function deleteTeacher(id) {
     if (!window.confirm('O\'chirmoqchimisiz?')) return;
     try {
-      await axios.delete(`/api/v1/teachers/${id}`, authHeader());
+      await api.delete(`/api/v1/teachers/${id}`);
       getTeachers(searchQuery);
     } catch (err) {
       alert('Xatolik: ' + (err.response?.data?.message || 'O\'chirib bo\'lmadi'));

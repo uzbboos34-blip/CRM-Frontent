@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import api from '../api/axios';
 import {
   Box, Typography, Button, IconButton, Paper, Avatar,
   Switch, TextField, Radio, RadioGroup,
@@ -11,7 +11,6 @@ import ChevronLeftIcon  from '@mui/icons-material/ChevronLeft';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 
 const token      = () => localStorage.getItem('token');
-const authHeader = () => ({ headers: { Authorization: `Bearer ${token()}` } });
 
 const SHORT_MON = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 const MONTH_UZ  = ['Yanvar','Fevral','Mart','Aprel','May','Iyun','Iyul','Avgust','Sentabr','Oktabr','Noyabr','Dekabr'];
@@ -48,7 +47,7 @@ export default function Attendance() {
   async function fetchGroup() {
     setLoading(true);
     try {
-      const res  = await axios.get(`/api/v1/groups/${id}`, authHeader());
+      const res  = await api.get(`/api/v1/groups/${id}`);
       const data = res.data?.data || res.data;
       setGroup(data);
       const init = {};
@@ -63,7 +62,7 @@ export default function Attendance() {
 
   async function fetchSchedule() {
     try {
-      const res = await axios.get(`/api/v1/groups/${id}/schedule`, authHeader());
+      const res = await api.get(`/api/v1/groups/${id}/schedule`);
       setSchedule(res.data || []);
     } catch (_) {}
   }
@@ -90,12 +89,12 @@ export default function Attendance() {
     if (!lessonTopic.trim()) return;
     setSaving(true);
     try {
-      await axios.post('/api/v1/attendance', {
+      await api.post('/api/v1/attendance', {
         group_id: Number(id), date, topic: lessonTopic, type: lessonType,
         records: Object.entries(attendance).map(([sid, present]) => ({
           student_id: Number(sid), present
         })),
-      }, authHeader());
+      });
       navigate(`/group/${id}`);
     } catch (e) { console.error(e); }
     finally { setSaving(false); }

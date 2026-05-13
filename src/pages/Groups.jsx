@@ -22,6 +22,7 @@ import GroupIcon from '@mui/icons-material/Group';
 import EditIcon from '@mui/icons-material/Edit';
 
 // ── helpers ──────────────────────────────────────────────────────────────────
+const token = () => localStorage.getItem('token');
 
 const WEEK_DAYS = [
   { label: 'Dushanba', value: 'Monday' },

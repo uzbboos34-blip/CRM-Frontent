@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import api from '../api/axios';
 import {
   Box, Typography, Button, IconButton, Paper, Chip, Avatar,
-  Tab, Tabs, Divider, CircularProgress, Collapse
+  Tab, Tabs, Divider, CircularProgress, Collapse, Snackbar, Alert
 } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import CloseIcon from '@mui/icons-material/Close';
@@ -93,6 +93,18 @@ export default function GroupInner() {
   const [paramsOpen, setParamsOpen] = useState(true);
   const [showAllSchedule, setShowAllSchedule] = useState(false);
   const [showAllDates, setShowAllDates] = useState(false);
+  const [snackbar, setSnackbar] = useState({ open: false, message: '' });
+
+  const handleDateClick = (d, isToday, isPast) => {
+    const dDate = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+    const tDate = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+
+    if (isToday) {
+      navigate(`/group/${id}/attendance/${d.toISOString().slice(0, 10)}`);
+    } else if (dDate > tDate) {
+      setSnackbar({ open: true, message: 'Hali dars boshlanish vaqti kelmagan!' });
+    }
+  };
 
   // Calendar state
   const [calendarMonthIdx, setCalendarMonthIdx] = useState(null); // index into monthGroups
@@ -488,7 +500,7 @@ export default function GroupInner() {
                                 return (
                                   <Box key={dIdx} sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', minWidth: 44 }}>
                                     <Box
-                                      onClick={() => navigate(`/group/${id}/attendance/${d.toISOString().slice(0,10)}`)}
+                                      onClick={() => handleDateClick(d, isToday, isPast)}
                                       sx={{
                                         width: 44, height: 54, borderRadius: '10px', display: 'flex',
                                         flexDirection: 'column',
@@ -496,18 +508,12 @@ export default function GroupInner() {
                                         border: isToday ? '2px solid #7b61ff' : '1.5px solid #e5e7eb',
                                         backgroundColor: isToday ? '#f0eeff' : isPast ? '#f3f4f6' : '#fff',
                                         position: 'relative',
-                                        cursor: 'pointer',
+                                        cursor: (isToday || (new Date(d.getFullYear(), d.getMonth(), d.getDate()) > new Date(today.getFullYear(), today.getMonth(), today.getDate()))) ? 'pointer' : 'not-allowed',
                                         gap: 0.2,
-                                        '&:hover': { borderColor: '#7b61ff', backgroundColor: '#f0eeff' },
-                                        transition: 'all 0.15s'
+                                        '&:hover': isToday ? { borderColor: '#7b61ff', backgroundColor: '#f0eeff' } : (new Date(d.getFullYear(), d.getMonth(), d.getDate()) > new Date(today.getFullYear(), today.getMonth(), today.getDate())) ? { borderColor: '#f97316' } : {},
+                                        transition: 'all 0.15s',
+                                        opacity: isPast && !isToday ? 0.5 : 1,
                                       }}>
-                                      {isPast && !isToday && (
-                                        <Box sx={{
-                                          position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
-                                          backgroundColor: 'rgba(0,0,0,0.07)', borderRadius: '10px',
-                                          pointerEvents: 'none'
-                                        }} />
-                                      )}
                                       <Typography sx={{ fontSize: '0.62rem', color: isToday ? '#7b61ff' : '#9ca3af', fontWeight: 700, textTransform: 'uppercase', lineHeight: 1 }}>
                                         {shortMonths[d.getMonth()]}
                                       </Typography>
@@ -547,7 +553,7 @@ export default function GroupInner() {
                           return (
                             <Box key={idx} sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', minWidth: 48 }}>
                               <Box
-                                onClick={() => navigate(`/group/${id}/attendance/${d.toISOString().slice(0,10)}`)}
+                                onClick={() => handleDateClick(d, isToday, isPast)}
                                 sx={{
                                   width: 44, height: 54, borderRadius: '10px', display: 'flex',
                                   flexDirection: 'column',
@@ -555,18 +561,12 @@ export default function GroupInner() {
                                   border: isToday ? '2px solid #7b61ff' : '1.5px solid #e5e7eb',
                                   backgroundColor: isToday ? '#f0eeff' : isPast ? '#f3f4f6' : '#fff',
                                   position: 'relative',
-                                  cursor: 'pointer',
+                                  cursor: (isToday || (new Date(d.getFullYear(), d.getMonth(), d.getDate()) > new Date(today.getFullYear(), today.getMonth(), today.getDate()))) ? 'pointer' : 'not-allowed',
                                   gap: 0.2,
-                                  '&:hover': { borderColor: '#7b61ff', backgroundColor: '#f0eeff' },
-                                  transition: 'all 0.15s'
+                                  '&:hover': isToday ? { borderColor: '#7b61ff', backgroundColor: '#f0eeff' } : (new Date(d.getFullYear(), d.getMonth(), d.getDate()) > new Date(today.getFullYear(), today.getMonth(), today.getDate())) ? { borderColor: '#f97316' } : {},
+                                  transition: 'all 0.15s',
+                                  opacity: isPast && !isToday ? 0.5 : 1,
                                 }}>
-                                {isPast && !isToday && (
-                                  <Box sx={{
-                                    position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
-                                    backgroundColor: 'rgba(0,0,0,0.07)', borderRadius: '10px',
-                                    pointerEvents: 'none'
-                                  }} />
-                                )}
                                 <Typography sx={{ fontSize: '0.62rem', color: isToday ? '#7b61ff' : '#9ca3af', fontWeight: 700, textTransform: 'uppercase', lineHeight: 1 }}>
                                   {shortMonths[d.getMonth()]}
                                 </Typography>
@@ -617,6 +617,17 @@ export default function GroupInner() {
           </Typography>
         </Paper>
       )}
+      {/* Notification */}
+      <Snackbar 
+        open={snackbar.open} 
+        autoHideDuration={3000} 
+        onClose={() => setSnackbar({ ...snackbar, open: false })}
+        anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+      >
+        <Alert onClose={() => setSnackbar({ ...snackbar, open: false })} severity="warning" variant="filled" sx={{ width: '100%' }}>
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 }

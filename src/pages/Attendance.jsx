@@ -4,7 +4,7 @@ import api from '../api/axios';
 import {
   Box, Typography, Button, IconButton, Paper, Avatar,
   Switch, TextField, Radio, RadioGroup,
-  FormControlLabel, FormControl, CircularProgress, Tab, Tabs
+  FormControlLabel, CircularProgress, Snackbar, Alert, Tab, Tabs
 } from '@mui/material';
 import ArrowBackIcon   from '@mui/icons-material/ArrowBack';
 import ChevronLeftIcon  from '@mui/icons-material/ChevronLeft';
@@ -38,6 +38,20 @@ export default function Attendance() {
   const [lessonType,  setLessonType] = useState('other');
   const [attendance,  setAttendance] = useState({});
   const [saving,      setSaving]     = useState(false);
+  const [snackbar, setSnackbar] = useState({ open: false, message: '' });
+
+  const today = new Date();
+
+  const handleDateClick = (d, isToday) => {
+    const dDate = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+    const tDate = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+
+    if (isToday) {
+      navigate(`/group/${id}/attendance/${d.toISOString().slice(0, 10)}`);
+    } else if (dDate > tDate) {
+      setSnackbar({ open: true, message: 'Hali dars boshlanish vaqti kelmagan!' });
+    }
+  };
 
   useEffect(() => {
     if (!token()) { navigate('/login'); return; }
@@ -173,7 +187,7 @@ export default function Attendance() {
                 const isPast     = d < today && !isToday;
                 return (
                   <Box key={i}
-                    onClick={() => navigate(`/group/${id}/attendance/${d.toISOString().slice(0,10)}`)}
+                    onClick={() => handleDateClick(d, isToday)}
                     sx={{
                       minWidth:44, height:54, borderRadius:'10px',
                       display:'flex', flexDirection:'column',
@@ -188,9 +202,11 @@ export default function Attendance() {
                         : isToday
                           ? '#f0eeff'
                           : isPast ? '#f3f4f6' : '#fff',
-                      cursor:'pointer', gap:0.2,
+                      cursor: (isToday || (new Date(d.getFullYear(), d.getMonth(), d.getDate()) > new Date(today.getFullYear(), today.getMonth(), today.getDate()))) ? 'pointer' : 'not-allowed',
+                      gap:0.2,
                       transition:'all 0.15s',
-                      '&:hover':{ borderColor:'#7b61ff', backgroundColor:'#f0eeff' }
+                      opacity: isPast ? 0.5 : 1,
+                      '&:hover': isToday ? { borderColor:'#7b61ff', backgroundColor:'#f0eeff' } : (new Date(d.getFullYear(), d.getMonth(), d.getDate()) > new Date(today.getFullYear(), today.getMonth(), today.getDate())) ? { borderColor: '#f97316' } : {}
                     }}>
                     <Typography sx={{ fontSize:'0.6rem', fontWeight:700, textTransform:'uppercase', lineHeight:1,
                       color: isSelected ? '#10b981' : isToday ? '#7b61ff' : '#9ca3af' }}>
@@ -392,6 +408,17 @@ export default function Attendance() {
           {saving ? 'Saqlanmoqda...' : 'Saqlash'}
         </Button>
       </Box>
+      {/* Notification */}
+      <Snackbar 
+        open={snackbar.open} 
+        autoHideDuration={3000} 
+        onClose={() => setSnackbar({ ...snackbar, open: false })}
+        anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+      >
+        <Alert onClose={() => setSnackbar({ ...snackbar, open: false })} severity="warning" variant="filled" sx={{ width: '100%' }}>
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 }

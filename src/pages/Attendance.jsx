@@ -4,7 +4,7 @@ import api from '../api/axios';
 import {
   Box, Typography, Button, IconButton, Paper, Avatar,
   Switch, TextField, Radio, RadioGroup,
-  FormControlLabel, CircularProgress, Snackbar, Alert, Tab, Tabs
+  FormControl, FormControlLabel, CircularProgress, Snackbar, Alert, Tab, Tabs
 } from '@mui/material';
 import ArrowBackIcon   from '@mui/icons-material/ArrowBack';
 import ChevronLeftIcon  from '@mui/icons-material/ChevronLeft';
@@ -55,8 +55,30 @@ export default function Attendance() {
 
   useEffect(() => {
     if (!token()) { navigate('/login'); return; }
-    Promise.all([fetchGroup(), fetchSchedule()]);
-  }, [id]);
+    Promise.all([fetchGroup(), fetchSchedule(), fetchExistingAttendance()]);
+  }, [id, date]);
+
+  async function fetchExistingAttendance() {
+    try {
+      const res = await api.get(`/api/v1/attendances/by-date?group_id=${id}&date=${date}`);
+      if (res.data) {
+        setLessonTopic(res.data.topic || '');
+        setLessonType(res.data.description === 'plan' ? 'plan' : 'other'); // description ni status sifatida ishlatsak bo'ladi yoki boshqa
+        
+        // Mavjud davomatlarni belgilash
+        const existing = {};
+        // Barcha studentlarni default "false" (yo'q) qilish
+        (group?.studentGroups || []).forEach(sg => { existing[sg.students.id] = false; });
+        // Kelganlarni "true" qilish
+        (res.data.attendances || []).forEach(att => {
+          existing[att.student_id] = true;
+        });
+        if (res.data.attendances?.length > 0) {
+           setAttendance(existing);
+        }
+      }
+    } catch (e) { console.error('Error fetching existing attendance:', e); }
+  }
 
   async function fetchGroup() {
     setLoading(true);
@@ -100,17 +122,31 @@ export default function Attendance() {
   }, [monthGroups]);
 
   async function handleSave() {
-    if (!lessonTopic.trim()) return;
+    if (!lessonTopic.trim()) {
+      alert("Iltimos, dars mavzusini kiriting!");
+      return;
+    }
     setSaving(true);
     try {
-      await api.post('/api/v1/attendance', {
-        group_id: Number(id), date, topic: lessonTopic, type: lessonType,
+      // Yangi formatdagi payload
+      const payload = {
+        group_id: Number(id),
+        date: date,
+        topic: lessonTopic,
+        description: lessonType, // plan yoki other
         records: Object.entries(attendance).map(([sid, present]) => ({
-          student_id: Number(sid), present
-        })),
-      });
+          student_id: Number(sid),
+          isPresent: present
+        }))
+      };
+
+      await api.post('/api/v1/attendances', payload);
+      alert("Davomat muvaffaqiyatli saqlandi!");
       navigate(`/group/${id}`);
-    } catch (e) { console.error(e); }
+    } catch (e) { 
+      console.error(e);
+      alert("Xatolik yuz berdi: " + (e.response?.data?.message || e.message));
+    }
     finally { setSaving(false); }
   }
 

@@ -266,7 +266,7 @@ export default function Students() {
           size="small" placeholder="Search" value={searchQuery}
           onChange={(e) => { setSearchQuery(e.target.value); setPage(1); }}
           sx={{ width: 260, '& .MuiOutlinedInput-root': { borderRadius: '10px', backgroundColor: '#fff' } }}
-          slotProps={{ input: { startAdornment: ( <InputAdornment position="start"><SearchIcon sx={{ fontSize: 20, color: '#9ca3af' }} /></InputAdornment> ) } }}
+          slotProps={{ input: { startAdornment: (<InputAdornment position="start"><SearchIcon sx={{ fontSize: 20, color: '#9ca3af' }} /></InputAdornment>) } }}
         />
       </Box>
 
@@ -294,7 +294,7 @@ export default function Students() {
                     <TableCell padding="checkbox"><Checkbox size="small" checked={selectedIds.includes(student.id)} onChange={() => handleToggleOne(student.id)} /></TableCell>
                     <TableCell>
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                        <Avatar src={student.photo ? `/file/${student.photo}` : undefined} sx={{ width: 32, height: 32, backgroundColor: getColor(student.id), fontSize: '0.75rem', fontWeight: 700 }}>{getInitials(student.full_name)}</Avatar>
+                        <Avatar src={student.photo ? `https://crm-backend-l7jq.onrender.com/file/${student.photo}` : undefined} sx={{ width: 32, height: 32, backgroundColor: getColor(student.id), fontSize: '0.75rem', fontWeight: 700 }}>{getInitials(student.full_name)}</Avatar>
                         <Typography sx={{ fontWeight: 600, fontSize: '0.85rem' }}>{student.full_name}</Typography>
                       </Box>
                     </TableCell>

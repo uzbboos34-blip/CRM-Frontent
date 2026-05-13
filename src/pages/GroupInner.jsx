@@ -205,7 +205,7 @@ export default function GroupInner() {
   const resolvePhoto = (photo) => {
     if (!photo) return undefined;
     if (photo.startsWith('http') || photo.startsWith('/')) return photo;
-    return `/file/${photo}`;
+    return `https://crm-backend-l7jq.onrender.com/file/${photo}`;
   };
 
   const params = [
@@ -286,7 +286,7 @@ export default function GroupInner() {
                     ) : teachers.map((t, i) => (
                       <Box key={t.id} sx={{ textAlign: 'center', minWidth: 80 }}>
                         <Box sx={{ position: 'relative', display: 'inline-block', mb: 1 }}>
-                          <Avatar 
+                          <Avatar
                             src={resolvePhoto(t.photo)}
                             sx={{
                               width: 64, height: 64, fontSize: '1.2rem', fontWeight: 700,
@@ -618,9 +618,9 @@ export default function GroupInner() {
         </Paper>
       )}
       {/* Notification */}
-      <Snackbar 
-        open={snackbar.open} 
-        autoHideDuration={3000} 
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={3000}
         onClose={() => setSnackbar({ ...snackbar, open: false })}
         anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
       >

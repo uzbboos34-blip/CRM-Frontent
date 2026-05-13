@@ -216,18 +216,18 @@ export default function Teachers() {
             Har bir o'qituvchining ismi, fanlari va aloqa ma'lumotlari keltirilgan.
           </Typography>
         </Box>
-          <Button
-            variant="contained"
-            startIcon={<AddIcon />}
-            onClick={openCreateDrawer}
-            sx={{
-              backgroundColor: '#7b61ff', textTransform: 'none',
-              borderRadius: '10px', px: 2.5, fontWeight: 700, whiteSpace: 'nowrap',
-              '&:hover': { backgroundColor: '#6a50e8' }
-            }}
-          >
-            O'qituvchi qo'shish
-          </Button>
+        <Button
+          variant="contained"
+          startIcon={<AddIcon />}
+          onClick={openCreateDrawer}
+          sx={{
+            backgroundColor: '#7b61ff', textTransform: 'none',
+            borderRadius: '10px', px: 2.5, fontWeight: 700, whiteSpace: 'nowrap',
+            '&:hover': { backgroundColor: '#6a50e8' }
+          }}
+        >
+          O'qituvchi qo'shish
+        </Button>
       </Box>
 
       {/* ─── Tabs & Search ─── */}
@@ -313,7 +313,7 @@ export default function Teachers() {
                     <TableCell>
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
                         <Avatar
-                          src={teacher.photo ? `/file/${teacher.photo}` : undefined}
+                          src={teacher.photo ? `https://crm-backend-l7jq.onrender.com/file/${teacher.photo}` : undefined}
                           sx={{ width: 32, height: 32, backgroundColor: getColor(teacher.id), fontSize: '0.75rem', fontWeight: 700 }}
                         >
                           {getInitials(teacher.full_name)}

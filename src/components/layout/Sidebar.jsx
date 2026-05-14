@@ -15,6 +15,8 @@ import WorkspacePremiumIcon from '@mui/icons-material/WorkspacePremium';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import BoltIcon from '@mui/icons-material/Bolt';
 import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
+import LogoutIcon from '@mui/icons-material/Logout';
+import { useNavigate } from 'react-router-dom';
 
 const menuItems = [
   { text: 'Asosiy', icon: <DashboardIcon />, path: '/dashboard' },
@@ -26,6 +28,12 @@ const menuItems = [
 
 export default function Sidebar({ openSettings, setOpenSettings, isSidebarCollapsed, setIsSidebarCollapsed, isManagementMenuOpen, setIsManagementMenuOpen }) {
   const location = useLocation();
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    navigate('/login');
+  };
 
   const activeStyles = {
     backgroundColor: '#7b61ff',
@@ -158,6 +166,31 @@ export default function Sidebar({ openSettings, setOpenSettings, isSidebarCollap
               </Box>
             </Box>
           )}
+
+          {/* Logout Button */}
+          <Box sx={{ p: 2, mt: 'auto', borderTop: '1px solid #f3f4f6' }}>
+            <ListItem disablePadding>
+              <ListItemButton
+                onClick={handleLogout}
+                sx={{
+                  ...defaultStyles,
+                  justifyContent: isSidebarCollapsed ? 'center' : 'flex-start',
+                  px: isSidebarCollapsed ? 0 : 2,
+                  minHeight: 52,
+                  color: '#ef4444',
+                  '&:hover': { backgroundColor: '#fef2f2', color: '#dc2626' },
+                  '& .MuiListItemIcon-root': { color: '#ef4444' }
+                }}
+              >
+                <ListItemIcon sx={{ minWidth: isSidebarCollapsed ? 0 : 36, justifyContent: 'center' }}>
+                  <LogoutIcon sx={{ fontSize: 22 }} />
+                </ListItemIcon>
+                {!isSidebarCollapsed && (
+                  <Typography sx={{ fontSize: '1rem', fontWeight: 700 }}>Chiqish</Typography>
+                )}
+              </ListItemButton>
+            </ListItem>
+          </Box>
         </Box>
       </Box>
     </Box>

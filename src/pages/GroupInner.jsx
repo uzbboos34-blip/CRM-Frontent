@@ -99,10 +99,12 @@ export default function GroupInner() {
     const dDate = new Date(d.getFullYear(), d.getMonth(), d.getDate());
     const tDate = new Date(today.getFullYear(), today.getMonth(), today.getDate());
 
-    if (isToday) {
-      navigate(`/group/${id}/attendance/${d.toISOString().slice(0, 10)}`);
-    } else if (dDate > tDate) {
+    if (dDate > tDate) {
+      // Kelgusi kun — hali dars bo'lmagan
       setSnackbar({ open: true, message: 'Hali dars boshlanish vaqti kelmagan!' });
+    } else {
+      // Bugun yoki o'tgan kun — davomatga o'tish
+      navigate(`/group/${id}/attendance/${d.toISOString().slice(0, 10)}`);
     }
   };
 
@@ -497,6 +499,7 @@ export default function GroupInner() {
                               {mg.dates.map((d, dIdx) => {
                                 const isToday = d.toDateString() === today.toDateString();
                                 const isPast = d < today;
+                                const isFuture = new Date(d.getFullYear(), d.getMonth(), d.getDate()) > new Date(today.getFullYear(), today.getMonth(), today.getDate());
                                 return (
                                   <Box key={dIdx} sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', minWidth: 44 }}>
                                     <Box
@@ -505,22 +508,34 @@ export default function GroupInner() {
                                         width: 44, height: 54, borderRadius: '10px', display: 'flex',
                                         flexDirection: 'column',
                                         alignItems: 'center', justifyContent: 'center',
-                                        border: isToday ? '2px solid #7b61ff' : '1.5px solid #e5e7eb',
-                                        backgroundColor: isToday ? '#f0eeff' : isPast ? '#f3f4f6' : '#fff',
+                                        border: isToday
+                                          ? '2px solid #7b61ff'
+                                          : isPast
+                                            ? '1.5px solid #10b981'
+                                            : '1.5px solid #e5e7eb',
+                                        backgroundColor: isToday
+                                          ? '#f0eeff'
+                                          : isPast
+                                            ? '#f0fdf4'
+                                            : '#fff',
                                         position: 'relative',
-                                        cursor: (isToday || (new Date(d.getFullYear(), d.getMonth(), d.getDate()) > new Date(today.getFullYear(), today.getMonth(), today.getDate()))) ? 'pointer' : 'not-allowed',
+                                        cursor: isFuture ? 'not-allowed' : 'pointer',
                                         gap: 0.2,
-                                        '&:hover': isToday ? { borderColor: '#7b61ff', backgroundColor: '#f0eeff' } : (new Date(d.getFullYear(), d.getMonth(), d.getDate()) > new Date(today.getFullYear(), today.getMonth(), today.getDate())) ? { borderColor: '#f97316' } : {},
+                                        '&:hover': isFuture
+                                          ? { borderColor: '#f97316' }
+                                          : isToday
+                                            ? { borderColor: '#7b61ff', backgroundColor: '#f0eeff' }
+                                            : { borderColor: '#059669', backgroundColor: '#dcfce7' },
                                         transition: 'all 0.15s',
-                                        opacity: isPast && !isToday ? 0.5 : 1,
+                                        opacity: 1,
                                       }}>
-                                      <Typography sx={{ fontSize: '0.62rem', color: isToday ? '#7b61ff' : '#9ca3af', fontWeight: 700, textTransform: 'uppercase', lineHeight: 1 }}>
+                                      <Typography sx={{ fontSize: '0.62rem', color: isToday ? '#7b61ff' : isPast ? '#10b981' : '#9ca3af', fontWeight: 700, textTransform: 'uppercase', lineHeight: 1 }}>
                                         {shortMonths[d.getMonth()]}
                                       </Typography>
                                       <Typography sx={{
                                         fontSize: '0.95rem',
-                                        fontWeight: isToday ? 800 : 700,
-                                        color: isToday ? '#7b61ff' : isPast ? '#9ca3af' : '#374151',
+                                        fontWeight: (isToday || isPast) ? 800 : 700,
+                                        color: isToday ? '#7b61ff' : isPast ? '#059669' : '#374151',
                                         lineHeight: 1
                                       }}>
                                         {d.getDate()}
@@ -549,6 +564,7 @@ export default function GroupInner() {
                         {calendarDates.map((d, idx) => {
                           const isToday = d.toDateString() === today.toDateString();
                           const isPast = d < today;
+                          const isFuture = new Date(d.getFullYear(), d.getMonth(), d.getDate()) > new Date(today.getFullYear(), today.getMonth(), today.getDate());
                           const shortMonths = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
                           return (
                             <Box key={idx} sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', minWidth: 48 }}>
@@ -558,22 +574,34 @@ export default function GroupInner() {
                                   width: 44, height: 54, borderRadius: '10px', display: 'flex',
                                   flexDirection: 'column',
                                   alignItems: 'center', justifyContent: 'center',
-                                  border: isToday ? '2px solid #7b61ff' : '1.5px solid #e5e7eb',
-                                  backgroundColor: isToday ? '#f0eeff' : isPast ? '#f3f4f6' : '#fff',
+                                  border: isToday
+                                    ? '2px solid #7b61ff'
+                                    : isPast
+                                      ? '1.5px solid #10b981'
+                                      : '1.5px solid #e5e7eb',
+                                  backgroundColor: isToday
+                                    ? '#f0eeff'
+                                    : isPast
+                                      ? '#f0fdf4'
+                                      : '#fff',
                                   position: 'relative',
-                                  cursor: (isToday || (new Date(d.getFullYear(), d.getMonth(), d.getDate()) > new Date(today.getFullYear(), today.getMonth(), today.getDate()))) ? 'pointer' : 'not-allowed',
+                                  cursor: isFuture ? 'not-allowed' : 'pointer',
                                   gap: 0.2,
-                                  '&:hover': isToday ? { borderColor: '#7b61ff', backgroundColor: '#f0eeff' } : (new Date(d.getFullYear(), d.getMonth(), d.getDate()) > new Date(today.getFullYear(), today.getMonth(), today.getDate())) ? { borderColor: '#f97316' } : {},
+                                  '&:hover': isFuture
+                                    ? { borderColor: '#f97316' }
+                                    : isToday
+                                      ? { borderColor: '#7b61ff', backgroundColor: '#f0eeff' }
+                                      : { borderColor: '#059669', backgroundColor: '#dcfce7' },
                                   transition: 'all 0.15s',
-                                  opacity: isPast && !isToday ? 0.5 : 1,
+                                  opacity: 1,
                                 }}>
-                                <Typography sx={{ fontSize: '0.62rem', color: isToday ? '#7b61ff' : '#9ca3af', fontWeight: 700, textTransform: 'uppercase', lineHeight: 1 }}>
+                                <Typography sx={{ fontSize: '0.62rem', color: isToday ? '#7b61ff' : isPast ? '#10b981' : '#9ca3af', fontWeight: 700, textTransform: 'uppercase', lineHeight: 1 }}>
                                   {shortMonths[d.getMonth()]}
                                 </Typography>
                                 <Typography sx={{
                                   fontSize: '0.95rem',
-                                  fontWeight: isToday ? 800 : 700,
-                                  color: isToday ? '#7b61ff' : isPast ? '#9ca3af' : '#374151',
+                                  fontWeight: (isToday || isPast) ? 800 : 700,
+                                  color: isToday ? '#7b61ff' : isPast ? '#059669' : '#374151',
                                   lineHeight: 1
                                 }}>
                                   {d.getDate()}

@@ -44,14 +44,14 @@ export default function Attendance() {
 
   const today = new Date();
 
-  const handleDateClick = (d, isToday) => {
+  const handleDateClick = (d) => {
     const dDate = new Date(d.getFullYear(), d.getMonth(), d.getDate());
     const tDate = new Date(today.getFullYear(), today.getMonth(), today.getDate());
 
-    if (isToday) {
-      navigate(`/group/${id}/attendance/${d.toISOString().slice(0, 10)}`);
-    } else if (dDate > tDate) {
+    if (dDate > tDate) {
       setSnackbar({ open: true, message: 'Hali dars boshlanish vaqti kelmagan!' });
+    } else {
+      navigate(`/group/${id}/attendance/${d.toISOString().slice(0, 10)}`);
     }
   };
 
@@ -92,6 +92,17 @@ export default function Attendance() {
         setAlreadyTaken(true);
         setLessonTopic(data.lesson.topic || '');
         setLessonType(data.lesson.type || 'plan');
+
+        if (data.attendances && data.attendances.length > 0) {
+          const recorded = {};
+          data.attendances.forEach(att => {
+            recorded[att.student_id] = att.isPresent;
+          });
+          setAttendance(prev => ({ ...prev, ...recorded }));
+        }
+      } else {
+        setAlreadyTaken(false);
+        setExistingLesson(null);
       }
     } catch (_) { }
   }
@@ -162,7 +173,8 @@ export default function Attendance() {
   const resolvePhoto = (photo) => {
     if (!photo) return undefined;
     if (photo.startsWith('http') || photo.startsWith('/')) return photo;
-    return `https://crm-backend-l7jq.onrender.com/file/${photo}`;
+    const base = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+    return `${base}/file/${photo}`;
   };
 
   const startTime = group.start_time || '09:30';
@@ -209,9 +221,11 @@ export default function Attendance() {
                 const isToday = d.toDateString() === today.toDateString();
                 const isSelected = d.toISOString().slice(0, 10) === date;
                 const isPast = d < today && !isToday;
+                const isFuture = new Date(d.getFullYear(), d.getMonth(), d.getDate()) > new Date(today.getFullYear(), today.getMonth(), today.getDate());
+                
                 return (
                   <Box key={i}
-                    onClick={() => handleDateClick(d, isToday)}
+                    onClick={() => handleDateClick(d)}
                     sx={{
                       minWidth: 44, height: 54, borderRadius: '10px',
                       display: 'flex', flexDirection: 'column',
@@ -220,17 +234,23 @@ export default function Attendance() {
                         ? '2px solid #10b981'
                         : isToday
                           ? '2px solid #7b61ff'
-                          : '1.5px solid #e5e7eb',
+                          : isPast 
+                            ? '1.5px solid #10b981'
+                            : '1.5px solid #e5e7eb',
                       backgroundColor: isSelected
                         ? '#d1fae5'
                         : isToday
                           ? '#f0eeff'
-                          : isPast ? '#f3f4f6' : '#fff',
-                      cursor: (isToday || (new Date(d.getFullYear(), d.getMonth(), d.getDate()) > new Date(today.getFullYear(), today.getMonth(), today.getDate()))) ? 'pointer' : 'not-allowed',
+                          : isPast ? '#f0fdf4' : '#fff',
+                      cursor: isFuture ? 'not-allowed' : 'pointer',
                       gap: 0.2,
                       transition: 'all 0.15s',
-                      opacity: isPast ? 0.5 : 1,
-                      '&:hover': isToday ? { borderColor: '#7b61ff', backgroundColor: '#f0eeff' } : (new Date(d.getFullYear(), d.getMonth(), d.getDate()) > new Date(today.getFullYear(), today.getMonth(), today.getDate())) ? { borderColor: '#f97316' } : {}
+                      opacity: 1,
+                      '&:hover': isFuture 
+                        ? { borderColor: '#f97316' } 
+                        : isToday 
+                          ? { borderColor: '#7b61ff', backgroundColor: '#f0eeff' } 
+                          : { borderColor: '#059669', backgroundColor: '#dcfce7' }
                     }}>
                     <Typography sx={{
                       fontSize: '0.6rem', fontWeight: 700, textTransform: 'uppercase', lineHeight: 1,

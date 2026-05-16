@@ -32,6 +32,7 @@ export default function Attendance() {
   const [group, setGroup] = useState(null);
   const [schedule, setSchedule] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [userRole, setUserRole] = useState(null);
   const [teacherTab, setTeacherTab] = useState(0);        // 0=Teacher 1=Assistant
   const [calMonthIdx, setCalMonthIdx] = useState(null);
   const [lessonTopic, setLessonTopic] = useState('');
@@ -57,18 +58,56 @@ export default function Attendance() {
 
   useEffect(() => {
     if (!token()) { navigate('/login'); return; }
-    Promise.all([fetchGroup(), fetchSchedule(), fetchExistingAttendance()]);
-  }, [id]);
+    loadData();
+  }, [id, date]);
 
-  async function fetchGroup() {
+  async function loadData() {
     setLoading(true);
     try {
-      const res = await api.get(`/api/v1/groups/${id}`);
-      const data = res.data?.data || res.data;
-      setGroup(data);
-      const init = {};
-      (data?.studentGroups || []).forEach(sg => { init[sg.students.id] = true; });
-      setAttendance(init);
+      // 1. Foydalanuvchi rolini olish
+      const userRes = await api.get('/api/v1/auth/me');
+      setUserRole(userRes.data?.role);
+
+      // 2. Guruh ma'lumotlarini olish
+      const groupRes = await api.get(`/api/v1/groups/${id}`);
+      const groupData = groupRes.data?.data || groupRes.data;
+      setGroup(groupData);
+
+      // 3. Mavjud davomatni tekshirish
+      const attRes = await api.get(`/api/v1/attendances/by-date?group_id=${id}&date=${date}`);
+      const attData = attRes.data;
+
+      const studentList = groupData?.studentGroups || [];
+      
+      if (attData?.lesson) {
+        setExistingLesson(attData.lesson);
+        setAlreadyTaken(true);
+        setLessonTopic(attData.lesson.topic || '');
+        setLessonType(attData.lesson.type || 'plan');
+
+        const recorded = {};
+        (attData.attendances || []).forEach(att => {
+          recorded[att.student_id] = att.isPresent;
+        });
+
+        const finalAtt = {};
+        studentList.forEach(sg => {
+          const sid = sg.students.id;
+          finalAtt[sid] = recorded[sid] === true;
+        });
+        setAttendance(finalAtt);
+      } else {
+        setAlreadyTaken(false);
+        setExistingLesson(null);
+        setLessonTopic('');
+        setLessonType('plan');
+        
+        const init = {};
+        studentList.forEach(sg => { init[sg.students.id] = true; });
+        setAttendance(init);
+      }
+
+      fetchSchedule();
     } catch (e) {
       if (e.response?.status === 401) { localStorage.removeItem('token'); navigate('/login'); }
     } finally {
@@ -80,30 +119,6 @@ export default function Attendance() {
     try {
       const res = await api.get(`/api/v1/groups/${id}/schedule`);
       setSchedule(res.data || []);
-    } catch (_) { }
-  }
-
-  async function fetchExistingAttendance() {
-    try {
-      const res = await api.get(`/api/v1/attendances/by-date?group_id=${id}&date=${date}`);
-      const data = res.data;
-      if (data?.lesson) {
-        setExistingLesson(data.lesson);
-        setAlreadyTaken(true);
-        setLessonTopic(data.lesson.topic || '');
-        setLessonType(data.lesson.type || 'plan');
-
-        if (data.attendances && data.attendances.length > 0) {
-          const recorded = {};
-          data.attendances.forEach(att => {
-            recorded[att.student_id] = att.isPresent;
-          });
-          setAttendance(prev => ({ ...prev, ...recorded }));
-        }
-      } else {
-        setAlreadyTaken(false);
-        setExistingLesson(null);
-      }
     } catch (_) { }
   }
 
@@ -141,7 +156,7 @@ export default function Attendance() {
           student_id: Number(sid), present
         })),
       });
-      setSnackbar({ open: true, message: 'Davomat muvaffaqiyatli saqlandi!', severity: 'success' });
+      setSnackbar({ open: true, message: alreadyTaken ? 'Davomat muvaffaqiyatli yangilandi!' : 'Davomat muvaffaqiyatli saqlandi!', severity: 'success' });
       setTimeout(() => navigate(`/group/${id}`), 1200);
     } catch (e) {
       const msg = e.response?.data?.message || 'Xatolik yuz berdi';
@@ -456,7 +471,7 @@ export default function Attendance() {
       </Box>
 
       {/* ── Saqlash ── */}
-      {alreadyTaken ? (
+      {alreadyTaken && userRole === 'TEACHER' ? (
         <Box sx={{
           mt: 4, p: 2.5, borderRadius: '12px', backgroundColor: '#f0fdf4',
           border: '1.5px solid #10b981', display: 'flex', alignItems: 'center', gap: 1.5
@@ -479,7 +494,7 @@ export default function Attendance() {
               borderRadius: '12px', px: 8, py: 1.2, textTransform: 'none', fontWeight: 800,
               backgroundColor: '#10b981', '&:hover': { backgroundColor: '#059669' }, boxShadow: 'none'
             }}>
-            {saving ? 'Saqlanmoqda...' : 'Saqlash'}
+            {saving ? 'Saqlanmoqda...' : (alreadyTaken ? 'Yangilash' : 'Saqlash')}
           </Button>
         </Box>
       )}

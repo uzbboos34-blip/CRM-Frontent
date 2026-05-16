@@ -18,7 +18,6 @@ export default function CreateVideo() {
   const [lessons, setLessons] = useState([]);
   const [formData, setFormData] = useState({
     lesson_id: '',
-    title: '',
     video_url: '',
     description: ''
   });
@@ -40,7 +39,6 @@ export default function CreateVideo() {
 
   function validate() {
     const e = {};
-    if (!formData.title) e.title = "Sarlavha kiriting";
     if (!formData.video_url && !videoFile) e.video_url = "Video yuklang yoki URL kiriting";
     setErrors(e);
     return Object.keys(e).length === 0;
@@ -49,8 +47,11 @@ export default function CreateVideo() {
   async function handleSubmit() {
     if (!validate()) return;
     
+    const selectedLesson = lessons.find(l => l.id === formData.lesson_id);
+    const autoTitle = selectedLesson?.topic || 'Dars videosi';
+
     const data = new FormData();
-    data.append('title', formData.title);
+    data.append('title', autoTitle);
     data.append('group_id', groupId);
     if (formData.lesson_id) data.append('lesson_id', formData.lesson_id);
     data.append('description', formData.description || '');
@@ -62,9 +63,8 @@ export default function CreateVideo() {
     }
 
     // Background upload
-    const selectedLesson = lessons.find(l => l.id === formData.lesson_id);
     startUpload('/api/v1/videos', data, { 
-      title: formData.title, 
+      title: autoTitle, 
       groupId, 
       type: 'video',
       lessonTopic: selectedLesson?.topic || '—'
@@ -88,23 +88,27 @@ export default function CreateVideo() {
 
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
         <Box>
-          <Typography sx={{ fontSize: '0.85rem', fontWeight: 700, mb: 1 }}>Sarlavha *</Typography>
-          <TextField
-            fullWidth
-            placeholder="Video sarlavhasi"
-            value={formData.title}
-            onChange={e => setFormData({ ...formData, title: e.target.value })}
-            error={!!errors.title}
-            helperText={errors.title}
-            sx={{ '& .MuiOutlinedInput-root': { borderRadius: '10px' } }}
-          />
+           <Typography sx={{ fontSize: '0.85rem', fontWeight: 700, mb: 1 }}>Mavzu (Darsni tanlang) *</Typography>
+           <FormControl fullWidth error={!!errors.lesson_id}>
+            <Select
+              value={formData.lesson_id}
+              onChange={e => setFormData({ ...formData, lesson_id: e.target.value })}
+              displayEmpty
+              sx={{ borderRadius: '10px' }}
+            >
+              <MenuItem value="" disabled>Darsni tanlang</MenuItem>
+              {lessons.map(l => (
+                <MenuItem key={l.id} value={l.id}>{l.topic}</MenuItem>
+              ))}
+            </Select>
+            {errors.lesson_id && <FormHelperText>{errors.lesson_id}</FormHelperText>}
+          </FormControl>
         </Box>
 
         <Box>
           <Typography sx={{ fontSize: '0.85rem', fontWeight: 700, mb: 1 }}>Video yuklash yoki URL *</Typography>
           
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-            {/* Thin Dashed Box Style */}
             <Box
               onClick={() => videoInputRef.current?.click()}
               sx={{
@@ -142,23 +146,6 @@ export default function CreateVideo() {
         {saving && (
           <LoadingBuffer label="Video yuklanmoqda..." />
         )}
-
-        <Box>
-           <Typography sx={{ fontSize: '0.85rem', fontWeight: 700, mb: 1 }}>Dars (ixtiyoriy)</Typography>
-           <FormControl fullWidth>
-            <Select
-              value={formData.lesson_id}
-              onChange={e => setFormData({ ...formData, lesson_id: e.target.value })}
-              displayEmpty
-              sx={{ borderRadius: '10px' }}
-            >
-              <MenuItem value="">Darsni tanlang</MenuItem>
-              {lessons.map(l => (
-                <MenuItem key={l.id} value={l.id}>{l.topic || `Dars #${l.id}`}</MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-        </Box>
 
         <Box>
           <Typography sx={{ fontSize: '0.85rem', fontWeight: 700, mb: 1 }}>Izoh</Typography>

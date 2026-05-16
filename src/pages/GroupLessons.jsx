@@ -15,6 +15,8 @@ import CheckCircleOutlined from '@mui/icons-material/CheckCircleOutlined';
 import MoreVert from '@mui/icons-material/MoreVert';
 import DeleteOutlined from '@mui/icons-material/DeleteOutlined';
 import EditOutlined from '@mui/icons-material/EditOutlined';
+import PauseCircleOutline from '@mui/icons-material/PauseCircleOutline';
+import PlayCircleOutline from '@mui/icons-material/PlayCircleOutline';
 
 const AddIcon = Add;
 const PersonOutlineIcon = PersonOutlined;
@@ -23,6 +25,8 @@ const CheckCircleOutlineIcon = CheckCircleOutlined;
 const MoreVertIcon = MoreVert;
 const DeleteOutlineIcon = DeleteOutlined;
 const EditOutlinedIcon = EditOutlined;
+const PauseIcon = PauseCircleOutline;
+const PlayIcon = PlayCircleOutline;
 
 /* ─── Format helpers ─────────────────────────────────────── */
 const MONTHS = [
@@ -411,81 +415,78 @@ export default function GroupLessons({ groupId }) {
             </Button>
           </Paper>
         ) : (
-          <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 3 }}>
-            {/* Background Uploads for Videos */}
-            {uploads.filter(u => u.metadata.groupId === groupId && u.metadata.type === 'video').map(u => (
-              <Paper key={u.id} sx={{
-                borderRadius: '16px', overflow: 'hidden', border: '2px dashed #10b981',
-                p: 2, background: '#f0fdf4', display: 'flex', flexDirection: 'column', gap: 2
-              }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                  <CircularProgress size={24} variant="determinate" value={u.progress} sx={{ color: '#10b981' }} />
-                  <Typography sx={{ fontWeight: 700, fontSize: '0.85rem' }}>{u.metadata.title}</Typography>
-                </Box>
-                <Box sx={{ width: '100%' }}>
-                  <Typography variant="caption" sx={{ color: '#6b7280' }}>
-                    {u.status === 'error' ? 'Xatolik yuz berdi' : `Yuklanmoqda: ${u.progress}%`}
-                  </Typography>
-                  <LinearProgress 
-                    variant="buffer" 
-                    value={u.progress} 
-                    valueBuffer={u.buffer} 
-                    sx={{ height: 6, borderRadius: 3, mt: 0.5, backgroundColor: '#d1fae5', '& .MuiLinearProgress-bar': { backgroundColor: '#10b981' } }} 
-                  />
-                  {u.status === 'error' && (
-                    <Typography sx={{ color: '#ef4444', fontSize: '0.7rem', mt: 0.5 }}>{u.error}</Typography>
-                  )}
-                </Box>
-              </Paper>
-            ))}
+          <TableContainer component={Paper} elevation={0} sx={{
+            border: '1px solid #e5e7eb', borderRadius: '16px', overflow: 'hidden',
+          }}>
+            <Table>
+              <TableHead>
+                <TableRow sx={{ backgroundColor: '#f9fafb' }}>
+                  <TableCell sx={thSx}>#</TableCell>
+                  <TableCell sx={thSx}>Video nomi</TableCell>
+                  <TableCell sx={thSx}>Dars nomi</TableCell>
+                  <TableCell sx={thSx}>Holat</TableCell>
+                  <TableCell sx={thSx}>Sana</TableCell>
+                  <TableCell sx={{ ...thSx, width: 100, textAlign: 'center' }}>Harakatlar</TableCell>
+                </TableRow>
+              </TableHead>
 
-            {videos.map((vid) => (
-              <Paper key={vid.id} sx={{
-                borderRadius: '16px', overflow: 'hidden', border: '1px solid #e5e7eb',
-                transition: 'transform 0.2s, box-shadow 0.2s',
-                '&:hover': { transform: 'translateY(-4px)', boxShadow: '0 12px 24px rgba(0,0,0,0.08)' }
-              }}>
-                {/* Video Preview */}
-                <Box sx={{ position: 'relative', pt: '56.25%', background: '#000' }}>
-                   <Box
-                    component="img"
-                    src={getYTThumb(vid.video_url)}
-                    sx={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', objectFit: 'cover' }}
-                   />
-                   <Box sx={{
-                     position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)',
-                     width: 48, height: 48, borderRadius: '50%', background: 'rgba(255,255,255,0.9)',
-                     display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer',
-                     '&:hover': { background: '#fff' }
-                   }} onClick={() => window.open(getFullVideoUrl(vid.video_url), '_blank')}>
-                      <Box sx={{
-                        width: 0, height: 0, borderTop: '8px solid transparent',
-                        borderBottom: '8px solid transparent', borderLeft: '14px solid #10b981',
-                        ml: 0.5
-                      }} />
-                   </Box>
-                </Box>
-                <Box sx={{ p: 2 }}>
-                  <Typography sx={{ fontWeight: 700, color: '#111827', fontSize: '0.9rem', mb: 0.5, lineHeight: 1.4 }}>
-                    {vid.title}
-                  </Typography>
-                  <Typography sx={{ fontSize: '0.78rem', color: '#6b7280', mb: 1.5, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
-                    {vid.description || 'Izoh yo\'q'}
-                  </Typography>
-                  <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                    <Typography sx={{ fontSize: '0.72rem', color: '#9ca3af' }}>
-                      {fmtDate(vid.created_at)}
-                    </Typography>
-                    {vid.lessons && (
-                      <Chip label={vid.lessons.topic} size="small" sx={{ height: 20, fontSize: '0.65rem', background: '#f0fdf4', color: '#10b981', fontWeight: 600 }} />
-                    )}
-                  </Box>
-                </Box>
-              </Paper>
-            ))}
-          </Box>
+              <TableBody>
+                {/* Background Uploads for Videos */}
+                {uploads.filter(u => u.metadata.groupId === groupId && u.metadata.type === 'video').map(u => (
+                  <TableRow key={u.id} sx={{ backgroundColor: '#f0fdf4' }}>
+                    <TableCell sx={tdSx}>--</TableCell>
+                    <TableCell sx={{ ...tdSx, color: '#3b82f6', fontWeight: 600 }}>
+                      {u.metadata.title}
+                    </TableCell>
+                    <TableCell sx={tdSx}>{u.metadata.lessonTopic || '—'}</TableCell>
+                    <TableCell sx={tdSx}>
+                      <Chip 
+                        label={`Yuklanyapti ${u.progress}%`} 
+                        size="small" 
+                        variant="outlined"
+                        sx={{ 
+                          height: 24, fontSize: '0.75rem', fontWeight: 700,
+                          color: '#3b82f6', borderColor: '#3b82f6', background: '#eff6ff'
+                        }} 
+                      />
+                    </TableCell>
+                    <TableCell sx={tdSx}>Bugun</TableCell>
+                    <TableCell sx={{ ...tdSx, textAlign: 'center' }}>
+                      <Box sx={{ display: 'flex', justifyContent: 'center', gap: 0.5 }}>
+                        <IconButton size="small" sx={{ color: '#9ca3af' }}><PauseIcon fontSize="small" /></IconButton>
+                        <IconButton size="small" sx={{ color: '#ef4444' }}><DeleteOutlineIcon fontSize="small" /></IconButton>
+                      </Box>
+                    </TableCell>
+                  </TableRow>
+                ))}
+
+                {videos.map((vid, idx) => (
+                  <TableRow key={vid.id} sx={{ '&:hover': { backgroundColor: '#f9fafb' } }}>
+                    <TableCell sx={tdSx}>{idx + 1}</TableCell>
+                    <TableCell 
+                      sx={{ ...tdSx, color: '#3b82f6', fontWeight: 600, cursor: 'pointer' }}
+                      onClick={() => window.open(getFullVideoUrl(vid.video_url), '_blank')}
+                    >
+                      {vid.title}
+                    </TableCell>
+                    <TableCell sx={tdSx}>{vid.lessons?.topic || '—'}</TableCell>
+                    <TableCell sx={tdSx}>
+                      <Chip label="Tayyor" size="small" sx={{ background: '#f0fdf4', color: '#10b981', fontWeight: 600, height: 24, fontSize: '0.75rem' }} />
+                    </TableCell>
+                    <TableCell sx={tdSx}>{fmtDate(vid.created_at)}</TableCell>
+                    <TableCell sx={{ ...tdSx, textAlign: 'center' }}>
+                       <IconButton size="small" onClick={(e) => { setAnchorEl(e.currentTarget); setMenuHw(vid); }}>
+                         <MoreVertIcon fontSize="small" />
+                       </IconButton>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
         )
       )}
+
 
       {/* ══ Tab 2: Imtihonlar ══════════════════════════════ */}
       {subTab === 2 && <EmptyTab label="Imtihonlar" />}

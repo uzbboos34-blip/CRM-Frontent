@@ -62,7 +62,13 @@ export default function CreateVideo() {
     }
 
     // Background upload
-    startUpload('/api/v1/videos', data, { title: formData.title, groupId, type: 'video' });
+    const selectedLesson = lessons.find(l => l.id === formData.lesson_id);
+    startUpload('/api/v1/videos', data, { 
+      title: formData.title, 
+      groupId, 
+      type: 'video',
+      lessonTopic: selectedLesson?.topic || '—'
+    });
     
     setSnackbar({ open: true, msg: "Video yuklash boshlandi...", sev: 'success' });
     setTimeout(() => navigate(`/group/${groupId}?tab=1`), 600);

@@ -215,13 +215,17 @@ export default function GroupLessons({ groupId }) {
 
               <TableBody>
                 {homeworks.map((hw, idx) => {
-                  const [datePart1, timePart1] = fmtDateTime(hw.created_at).split('\n');
-                  // Tugash vaqti: lesson.date + 24h (default)
-                  const endDate = hw.lessons?.date
-                    ? new Date(new Date(hw.lessons.date).getTime() + 86400000)
-                    : null;
-                  const [datePart2, timePart2] = fmtDateTime(endDate).split('\n');
+                  const createdAt = new Date(hw.created_at);
+                  const [datePart1, timePart1] = fmtDateTime(createdAt).split('\n');
+
+                  // Deadline: Created + 24 hours
+                  const deadlineDate = new Date(createdAt.getTime() + 86400000);
+                  const [datePart2, timePart2] = fmtDateTime(deadlineDate).split('\n');
+
+                  // Lesson Date: From the linked lesson
                   const lessonDate = fmtDate(hw.lessons?.date);
+
+                  const stats = hw.stats || { totalStudents: 0, pending: 0, graded: 0 };
 
                   return (
                     <TableRow
@@ -258,22 +262,22 @@ export default function GroupLessons({ groupId }) {
                         )}
                       </TableCell>
 
-                      {/* Students count (static placeholder) */}
+                      {/* Total Students */}
                       <TableCell sx={{ ...tdSx, textAlign: 'center' }}>
                         <Typography sx={{ fontWeight: 700, color: '#374151', fontSize: '0.85rem' }}>
-                          —
+                          {stats.totalStudents || '—'}
                         </Typography>
                       </TableCell>
                       {/* Pending */}
                       <TableCell sx={{ ...tdSx, textAlign: 'center' }}>
                         <Typography sx={{ fontWeight: 700, color: '#f59e0b', fontSize: '0.85rem' }}>
-                          0
+                          {stats.pending || 0}
                         </Typography>
                       </TableCell>
-                      {/* Done */}
+                      {/* Graded/Accepted */}
                       <TableCell sx={{ ...tdSx, textAlign: 'center' }}>
                         <Typography sx={{ fontWeight: 700, color: '#10b981', fontSize: '0.85rem' }}>
-                          0
+                          {stats.graded || 0}
                         </Typography>
                       </TableCell>
 

@@ -9,6 +9,7 @@ import GroupInner from './pages/GroupInner';
 import Attendance from './pages/Attendance';
 import Students from './pages/Students';
 import CreateHomeWork from './pages/CreateHomeWork';
+import CreateVideo from './pages/CreateVideo';
 
 function App() {
   return (
@@ -37,6 +38,7 @@ function App() {
           <Route path="group/:id/attendance/:date" element={<Attendance />} />
           <Route path="group/:id/homework/create" element={<CreateHomeWork />} />
           <Route path="group/:id/homework/edit/:hwId" element={<CreateHomeWork />} />
+          <Route path="group/:id/video/create" element={<CreateVideo />} />
           <Route path="students" element={<Students />} />
         </Route>
 

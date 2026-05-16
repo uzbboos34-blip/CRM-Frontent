@@ -46,6 +46,12 @@ function fmtDate(d) {
   return `${dt.getDate()} ${MONTHS[dt.getMonth()]}, ${dt.getFullYear()}`;
 }
 
+function getYTThumb(url) {
+  if (!url) return '';
+  const match = url.match(/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/);
+  return match ? `https://img.youtube.com/vi/${match[1]}/mqdefault.jpg` : 'https://placehold.co/600x400?text=Video+Link';
+}
+
 /* ─── Sub-tab labels ─────────────────────────────────────── */
 const SUB_TABS = ['Uyga vazifa', 'Videolar', 'Imtihonlar', 'Jurnal'];
 
@@ -57,14 +63,17 @@ export default function GroupLessons({ groupId }) {
 
   const [subTab, setSubTab]       = useState(0);
   const [homeworks, setHomeworks] = useState([]);
+  const [videos, setVideos]       = useState([]);
   const [loading, setLoading]     = useState(false);
   const [anchorEl, setAnchorEl]   = useState(null);
   const [menuHw, setMenuHw]       = useState(null);
   const [snackbar, setSnackbar]   = useState({ open: false, msg: '', sev: 'success' });
 
-  /* ── fetch homeworks for this group ── */
+  /* ── fetch data based on tab ── */
   useEffect(() => {
-    if (subTab === 0 && groupId) fetchHomeworks();
+    if (!groupId) return;
+    if (subTab === 0) fetchHomeworks();
+    if (subTab === 1) fetchVideos();
   }, [subTab, groupId]);
 
   async function fetchHomeworks() {
@@ -75,6 +84,19 @@ export default function GroupLessons({ groupId }) {
     } catch (e) {
       console.error('HomeWorks fetch error:', e);
       setHomeworks([]);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function fetchVideos() {
+    setLoading(true);
+    try {
+      const res = await api.get(`/api/v1/videos/group/${groupId}`);
+      setVideos(res.data?.data || res.data || []);
+    } catch (e) {
+      console.error('Videos fetch error:', e);
+      setVideos([]);
     } finally {
       setLoading(false);
     }
@@ -138,24 +160,25 @@ export default function GroupLessons({ groupId }) {
           </Tabs>
         </Box>
 
-        {/* Uyga vazifa qo'shish — faqat 0-tab */}
+        {/* Qo'shish tugmasi */}
         {subTab === 0 && (
           <Button
             variant="contained"
             startIcon={<AddIcon />}
             onClick={() => navigate(`/group/${groupId}/homework/create`)}
-            sx={{
-              background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
-              color: '#fff', textTransform: 'none', fontWeight: 700,
-              borderRadius: '10px', px: 2.5, py: 1,
-              boxShadow: '0 4px 14px rgba(16,185,129,0.35)',
-              '&:hover': {
-                background: 'linear-gradient(135deg, #059669 0%, #047857 100%)',
-                boxShadow: '0 6px 18px rgba(16,185,129,0.45)',
-              },
-            }}
+            sx={addBtnSx}
           >
             Uyga vazifa qo'shish
+          </Button>
+        )}
+        {subTab === 1 && (
+          <Button
+            variant="contained"
+            startIcon={<AddIcon />}
+            onClick={() => navigate(`/group/${groupId}/video/create`)}
+            sx={addBtnSx}
+          >
+            Video qo'shish
           </Button>
         )}
       </Box>
@@ -328,7 +351,74 @@ export default function GroupLessons({ groupId }) {
       )}
 
       {/* ══ Tab 1: Videolar ════════════════════════════════ */}
-      {subTab === 1 && <EmptyTab label="Videolar" />}
+      {subTab === 1 && (
+        loading ? (
+          <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
+            <CircularProgress sx={{ color: '#10b981' }} />
+          </Box>
+        ) : videos.length === 0 ? (
+          <Paper elevation={0} sx={emptyPaperSx}>
+            <Typography sx={{ color: '#9ca3af', fontWeight: 500 }}>
+              Hozircha videolar mavjud emas
+            </Typography>
+            <Button
+              variant="outlined"
+              startIcon={<AddIcon />}
+              onClick={() => navigate(`/group/${groupId}/video/create`)}
+              sx={emptyBtnSx}
+            >
+              Birinchi videoni qo'shish
+            </Button>
+          </Paper>
+        ) : (
+          <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 3 }}>
+            {videos.map((vid) => (
+              <Paper key={vid.id} sx={{
+                borderRadius: '16px', overflow: 'hidden', border: '1px solid #e5e7eb',
+                transition: 'transform 0.2s, box-shadow 0.2s',
+                '&:hover': { transform: 'translateY(-4px)', boxShadow: '0 12px 24px rgba(0,0,0,0.08)' }
+              }}>
+                {/* Video Preview */}
+                <Box sx={{ position: 'relative', pt: '56.25%', background: '#000' }}>
+                   <Box
+                    component="img"
+                    src={getYTThumb(vid.video_url)}
+                    sx={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', objectFit: 'cover' }}
+                   />
+                   <Box sx={{
+                     position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)',
+                     width: 48, height: 48, borderRadius: '50%', background: 'rgba(255,255,255,0.9)',
+                     display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer',
+                     '&:hover': { background: '#fff' }
+                   }} onClick={() => window.open(vid.video_url, '_blank')}>
+                      <Box sx={{
+                        width: 0, height: 0, borderTop: '8px solid transparent',
+                        borderBottom: '8px solid transparent', borderLeft: '14px solid #10b981',
+                        ml: 0.5
+                      }} />
+                   </Box>
+                </Box>
+                <Box sx={{ p: 2 }}>
+                  <Typography sx={{ fontWeight: 700, color: '#111827', fontSize: '0.9rem', mb: 0.5, lineHeight: 1.4 }}>
+                    {vid.title}
+                  </Typography>
+                  <Typography sx={{ fontSize: '0.78rem', color: '#6b7280', mb: 1.5, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                    {vid.description || 'Izoh yo\'q'}
+                  </Typography>
+                  <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <Typography sx={{ fontSize: '0.72rem', color: '#9ca3af' }}>
+                      {fmtDate(vid.created_at)}
+                    </Typography>
+                    {vid.lessons && (
+                      <Chip label={vid.lessons.topic} size="small" sx={{ height: 20, fontSize: '0.65rem', background: '#f0fdf4', color: '#10b981', fontWeight: 600 }} />
+                    )}
+                  </Box>
+                </Box>
+              </Paper>
+            ))}
+          </Box>
+        )
+      )}
 
       {/* ══ Tab 2: Imtihonlar ══════════════════════════════ */}
       {subTab === 2 && <EmptyTab label="Imtihonlar" />}
@@ -407,4 +497,26 @@ const thSx = {
 };
 const tdSx = {
   py: 1.5, px: 2, borderBottom: '1px solid #f3f4f6', verticalAlign: 'middle',
+};
+
+const addBtnSx = {
+  background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+  color: '#fff', textTransform: 'none', fontWeight: 700,
+  borderRadius: '10px', px: 2.5, py: 1,
+  boxShadow: '0 4px 14px rgba(16,185,129,0.35)',
+  '&:hover': {
+    background: 'linear-gradient(135deg, #059669 0%, #047857 100%)',
+    boxShadow: '0 6px 18px rgba(16,185,129,0.45)',
+  },
+};
+
+const emptyPaperSx = {
+  border: '1px solid #e5e7eb', borderRadius: '16px',
+  py: 8, textAlign: 'center',
+};
+
+const emptyBtnSx = {
+  mt: 2, textTransform: 'none', fontWeight: 600,
+  borderColor: '#10b981', color: '#10b981', borderRadius: '10px',
+  '&:hover': { borderColor: '#059669', backgroundColor: '#f0fdf4' },
 };

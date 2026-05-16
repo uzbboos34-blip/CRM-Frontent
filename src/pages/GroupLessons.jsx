@@ -15,7 +15,7 @@ import CheckCircleOutlined from '@mui/icons-material/CheckCircleOutlined';
 import MoreVert from '@mui/icons-material/MoreVert';
 import DeleteOutlined from '@mui/icons-material/DeleteOutlined';
 import EditOutlined from '@mui/icons-material/EditOutlined';
-import { PauseCircleOutline, PlayCircleOutline } from '@mui/icons-material';
+import { Pause, PlayArrow } from '@mui/icons-material';
 
 const AddIcon = Add;
 const PersonOutlineIcon = PersonOutlined;
@@ -24,8 +24,8 @@ const CheckCircleOutlineIcon = CheckCircleOutlined;
 const MoreVertIcon = MoreVert;
 const DeleteOutlineIcon = DeleteOutlined;
 const EditOutlinedIcon = EditOutlined;
-const PauseIcon = PauseCircleOutline;
-const PlayIcon = PlayCircleOutline;
+const PauseIcon = Pause;
+const PlayIcon = PlayArrow;
 
 /* ─── Format helpers ─────────────────────────────────────── */
 const MONTHS = [

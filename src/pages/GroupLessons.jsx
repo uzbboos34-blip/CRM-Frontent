@@ -75,7 +75,7 @@ const SUB_TABS = ['Uyga vazifa', 'Videolar', 'Imtihonlar', 'Jurnal'];
    ════════════════════════════════════════════════════════════ */
 export default function GroupLessons({ groupId }) {
   const navigate = useNavigate();
-  const { uploads } = useUploads();
+  const { uploads, setUploads } = useUploads();
 
   const [subTab, setSubTab]       = useState(0);
   const [homeworks, setHomeworks] = useState([]);
@@ -275,39 +275,7 @@ export default function GroupLessons({ groupId }) {
               </TableHead>
 
               <TableBody>
-                {/* Background Uploads for Homework */}
-                {uploads.filter(u => String(u.metadata.groupId) === String(groupId) && u.metadata.type === 'homework').map(u => (
-                  <TableRow key={u.id} sx={{ backgroundColor: u.status === 'error' ? '#fef2f2' : u.status === 'completed' ? '#f0fdf4' : '#f0fdf4' }}>
-                    <TableCell sx={tdSx}>--</TableCell>
-                    <TableCell sx={tdSx}>
-                      <Box sx={{ width: '100%' }}>
-                        <Typography sx={{ fontSize: '0.82rem', fontWeight: 600, color: u.status === 'error' ? '#991b1b' : '#065f46' }}>
-                          {u.metadata.title} {u.status === 'error' ? '(Xato)' : u.status === 'completed' ? '(Bajarildi)' : `(Yuklanmoqda ${u.progress}%)`}
-                        </Typography>
-                        {u.status === 'uploading' && (
-                          <LinearProgress 
-                            variant="buffer" 
-                            value={u.progress} 
-                            valueBuffer={u.buffer} 
-                            sx={{ height: 6, borderRadius: 3, mt: 0.5, backgroundColor: '#d1fae5', '& .MuiLinearProgress-bar': { backgroundColor: '#10b981' } }} 
-                          />
-                        )}
-                      </Box>
-                    </TableCell>
-                    <TableCell colSpan={6} sx={tdSx}>
-                      {u.status === 'error' ? (
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                          <Typography sx={{ color: '#ef4444', fontSize: '0.75rem', fontWeight: 600 }}>{u.error}</Typography>
-                          <Button size="small" variant="text" color="error" sx={{ fontSize: '0.65rem', p: 0 }} onClick={() => setUploads(prev => prev.filter(x => x.id !== u.id))}>Tozalash</Button>
-                        </Box>
-                      ) : u.status === 'completed' ? (
-                        <Typography sx={{ color: '#10b981', fontSize: '0.75rem', fontWeight: 600 }}>Muvaffaqiyatli saqlandi!</Typography>
-                      ) : (
-                        <Typography sx={{ color: '#6b7280', fontSize: '0.75rem' }}>Fayl yuklanmoqda, sahifadan chiqib ketmang...</Typography>
-                      )}
-                    </TableCell>
-                  </TableRow>
-                ))}
+                {/* Homework records list only (uploads moved to Videos tab) */}
 
                 {homeworks.map((hw, idx) => {
                   const createdAt = new Date(hw.created_at);
@@ -459,12 +427,13 @@ export default function GroupLessons({ groupId }) {
               </TableHead>
 
               <TableBody>
-                {/* Background Uploads for Videos */}
-                {uploads.filter(u => String(u.metadata.groupId) === String(groupId) && u.metadata.type === 'video').map(u => (
+                {/* Background Uploads (Videos & Homework) */}
+                {uploads.filter(u => String(u.metadata.groupId) === String(groupId)).map(u => (
                   <TableRow key={u.id} sx={{ backgroundColor: u.status === 'error' ? '#fef2f2' : u.status === 'completed' ? '#f0fdf4' : '#f0fdf4' }}>
                     <TableCell sx={tdSx}>--</TableCell>
                     <TableCell sx={{ ...tdSx, color: u.status === 'error' ? '#991b1b' : '#3b82f6', fontWeight: 600 }}>
                       {u.metadata.title}
+                      {u.metadata.type === 'homework' && <Chip label="Vazifa" size="small" sx={{ ml: 1, fontSize: '0.65rem', height: 18 }} />}
                     </TableCell>
                     <TableCell sx={tdSx}>{u.metadata.lessonTopic || '—'}</TableCell>
                     <TableCell sx={tdSx}>
@@ -500,11 +469,11 @@ export default function GroupLessons({ groupId }) {
                     <TableCell sx={{ ...tdSx, textAlign: 'center' }}>
                       <Box sx={{ display: 'flex', justifyContent: 'center', gap: 0.5 }}>
                         {u.status === 'error' ? (
-                          <IconButton size="small" sx={{ color: '#ef4444' }} onClick={() => setUploads(prev => prev.filter(x => x.id !== u.id))}><DeleteOutlineIcon fontSize="small" /></IconButton>
+                          <Button size="small" variant="text" color="error" sx={{ fontSize: '0.65rem', p: 0 }} onClick={() => setUploads(prev => prev.filter(x => x.id !== u.id))}>Tozalash</Button>
                         ) : (
                           <>
                             <IconButton size="small" sx={{ color: '#9ca3af' }}><PauseIcon fontSize="small" /></IconButton>
-                            <IconButton size="small" sx={{ color: '#ef4444' }}><DeleteOutlineIcon fontSize="small" /></IconButton>
+                            <IconButton size="small" sx={{ color: '#ef4444' }} onClick={() => setUploads(prev => prev.filter(x => x.id !== u.id))}><DeleteOutlineIcon fontSize="small" /></IconButton>
                           </>
                         )}
                       </Box>

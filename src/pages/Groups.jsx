@@ -142,7 +142,7 @@ export default function Groups() {
         max_students: 30,
         teachers: form.teachers.map(Number),
         students: form.students.map(Number),
-      }, authHeader());
+      });
       fetchGroups();
       setDrawerOpen(false);
       setForm(emptyForm());
@@ -170,7 +170,7 @@ export default function Groups() {
         max_students: 30,
         teachers: form.teachers.map(Number),
         students: form.students.map(Number),
-      }, authHeader());
+      });
       fetchGroups();
       setDrawerOpen(false);
       setEditingId(null);

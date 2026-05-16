@@ -8,6 +8,7 @@ import Groups from './pages/Groups';
 import GroupInner from './pages/GroupInner';
 import Attendance from './pages/Attendance';
 import Students from './pages/Students';
+import CreateHomeWork from './pages/CreateHomeWork';
 
 function App() {
   return (
@@ -34,6 +35,8 @@ function App() {
           <Route path="groups" element={<Groups />} />
           <Route path="group/:id" element={<GroupInner />} />
           <Route path="group/:id/attendance/:date" element={<Attendance />} />
+          <Route path="group/:id/homework/create" element={<CreateHomeWork />} />
+          <Route path="group/:id/homework/edit/:hwId" element={<CreateHomeWork />} />
           <Route path="students" element={<Students />} />
         </Route>
 

@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import api from '../api/axios';
+import GroupLessons from './GroupLessons';
 import {
   Box, Typography, Button, IconButton, Paper, Chip, Avatar,
   Tab, Tabs, Divider, CircularProgress, Collapse, Snackbar, Alert
@@ -630,11 +631,7 @@ export default function GroupInner() {
 
       {/* ── Tab 1: Guruh darsliklari ── */}
       {activeTab === 1 && (
-        <Paper elevation={0} sx={{ border: '1px solid #e5e7eb', borderRadius: '16px', p: 6, textAlign: 'center' }}>
-          <Typography color="text.secondary" sx={{ fontWeight: 500 }}>
-            Guruh darsliklari ma'lumotlari hozircha mavjud emas
-          </Typography>
-        </Paper>
+        <GroupLessons groupId={parseInt(id)} />
       )}
 
       {/* ── Tab 2: Akademik davomati ── */}

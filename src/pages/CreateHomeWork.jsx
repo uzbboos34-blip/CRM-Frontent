@@ -335,53 +335,48 @@ export default function CreateHomeWork() {
               '&:hover': { borderColor: '#7b61ff', background: '#f9f7ff' },
             }}
           >
-            {file ? (
-              <>
-                <AttachFileIcon sx={{ color: '#7b61ff', fontSize: 20 }} />
-                <Typography sx={{ fontSize: '0.85rem', color: '#374151', fontWeight: 600 }}>
-                  {file.name}
-                </Typography>
-                <IconButton
-                  size="small"
-                  onClick={e => { e.stopPropagation(); setFile(null); }}
-                  sx={{ color: '#9ca3af', p: 0.3, '&:hover': { color: '#ef4444' } }}
-                >
-                  <CloseIcon fontSize="small" />
-              border: '2px dashed #e5e7eb', borderRadius: '14px',
-              p: 2.5, textAlign: 'center', cursor: 'pointer',
-              backgroundColor: file ? '#f0fdf4' : '#fafafa',
-              transition: 'all 0.2s',
-              '&:hover': { borderColor: '#10b981', backgroundColor: '#f0fdf4' },
-            }}
-          >
-            <input type="file" hidden ref={fileInputRef} onChange={(e) => setFile(e.target.files[0])} />
-            <CloudUploadIcon sx={{ fontSize: 32, color: file ? '#10b981' : '#9ca3af', mb: 1 }} />
-            <Typography sx={{ fontSize: '0.85rem', fontWeight: 600, color: '#374151' }}>
-              {file ? file.name : "Fayl yuklash"}
-            </Typography>
-            <Typography sx={{ fontSize: '0.72rem', color: '#6b7280', mt: 0.5 }}>
-              PDF, DOCX yoki Rasm
-            </Typography>
-          </Box>
-
-          {/* Video Upload */}
+        {/* Video Upload - Thin Dashed Box */}
+        <Box>
+           <Typography sx={{ fontSize: '0.88rem', fontWeight: 700, color: '#374151', mb: 1 }}>
+            Video yuklash
+          </Typography>
           <Box
             onClick={() => videoInputRef.current?.click()}
             sx={{
-              border: '2px dashed #e5e7eb', borderRadius: '14px',
-              p: 2.5, textAlign: 'center', cursor: 'pointer',
-              backgroundColor: videoFile ? '#eff6ff' : '#fafafa',
+              border: '1px dashed #d1d5db', borderRadius: '10px',
+              p: 1.5, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1.5,
+              cursor: 'pointer', backgroundColor: videoFile ? '#f9fafb' : '#fff',
               transition: 'all 0.2s',
-              '&:hover': { borderColor: '#3b82f6', backgroundColor: '#eff6ff' },
+              '&:hover': { borderColor: '#10b981', backgroundColor: '#f9fafb' },
             }}
           >
             <input type="file" accept="video/*" hidden ref={videoInputRef} onChange={(e) => setVideoFile(e.target.files[0])} />
-            <VideoIcon sx={{ fontSize: 32, color: videoFile ? '#3b82f6' : '#9ca3af', mb: 1 }} />
-            <Typography sx={{ fontSize: '0.85rem', fontWeight: 600, color: '#374151' }}>
-              {videoFile ? videoFile.name : "Video yuklash"}
+            <CloudUploadIcon sx={{ color: '#9ca3af', fontSize: 20 }} />
+            <Typography sx={{ fontSize: '0.85rem', color: '#9ca3af', fontWeight: 500 }}>
+              {videoFile ? videoFile.name : "Yuklash"}
             </Typography>
-            <Typography sx={{ fontSize: '0.72rem', color: '#6b7280', mt: 0.5 }}>
-              MP4, MOV yoki AVI
+          </Box>
+        </Box>
+
+        {/* Document Upload */}
+        <Box>
+          <Typography sx={{ fontSize: '0.88rem', fontWeight: 700, color: '#374151', mb: 1 }}>
+            Fayl yuklash
+          </Typography>
+          <Box
+            onClick={() => fileInputRef.current?.click()}
+            sx={{
+              border: '1px dashed #d1d5db', borderRadius: '10px',
+              p: 1.5, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1.5,
+              cursor: 'pointer', backgroundColor: file ? '#f9fafb' : '#fff',
+              transition: 'all 0.2s',
+              '&:hover': { borderColor: '#10b981', backgroundColor: '#f9fafb' },
+            }}
+          >
+            <input type="file" hidden ref={fileInputRef} onChange={(e) => setFile(e.target.files[0])} />
+            <CloudUploadIcon sx={{ color: '#9ca3af', fontSize: 20 }} />
+            <Typography sx={{ fontSize: '0.85rem', color: '#9ca3af', fontWeight: 500 }}>
+              {file ? file.name : "Yuklash"}
             </Typography>
           </Box>
         </Box>
@@ -395,7 +390,7 @@ export default function CreateHomeWork() {
           <Button
             variant="outlined"
             fullWidth
-            onClick={() => navigate(-1)}
+            onClick={() => navigate(`/group/${groupId}?tab=1`)}
             sx={{ borderRadius: '12px', py: 1.2, textTransform: 'none', fontWeight: 700, color: '#374151', borderColor: '#d1d5db' }}
           >
             Bekor qilish

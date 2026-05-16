@@ -256,8 +256,8 @@ export default function GroupLessons({ groupId }) {
                   const deadlineDate = new Date(createdAt.getTime() + 86400000);
                   const [datePart2, timePart2] = fmtDateTime(deadlineDate).split('\n');
 
-                  // Lesson Date: From the linked lesson
-                  const lessonDate = fmtDate(hw.lessons?.date);
+                  // Lesson Date: From the linked lesson, fallback to created_at if missing
+                  const lessonDate = hw.lessons?.date ? fmtDate(hw.lessons.date) : fmtDate(hw.created_at);
 
                   const stats = hw.stats || { totalStudents: 0, pending: 0, graded: 0 };
 

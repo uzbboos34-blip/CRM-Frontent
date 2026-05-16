@@ -73,7 +73,7 @@ export default function CreateVideo() {
   return (
     <Box sx={{ maxWidth: 600, mx: 'auto', p: 3 }}>
        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 4 }}>
-        <IconButton onClick={() => navigate(-1)} sx={{ color: '#6b7280' }}>
+        <IconButton onClick={() => navigate(`/group/${groupId}?tab=1`)} sx={{ color: '#6b7280' }}>
           <ArrowBackIcon />
         </IconButton>
         <Typography variant="h5" sx={{ fontWeight: 800, color: '#111827' }}>
@@ -99,24 +99,21 @@ export default function CreateVideo() {
           <Typography sx={{ fontSize: '0.85rem', fontWeight: 700, mb: 1 }}>Video yuklash yoki URL *</Typography>
           
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-            {/* File Upload Box */}
+            {/* Thin Dashed Box Style */}
             <Box
               onClick={() => videoInputRef.current?.click()}
               sx={{
-                border: '2px dashed #e5e7eb', borderRadius: '14px',
-                p: 3, textAlign: 'center', cursor: 'pointer',
-                backgroundColor: videoFile ? '#eff6ff' : '#fafafa',
+                border: '1px dashed #d1d5db', borderRadius: '10px',
+                p: 1.5, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1.5,
+                cursor: 'pointer', backgroundColor: videoFile ? '#f9fafb' : '#fff',
                 transition: 'all 0.2s',
-                '&:hover': { borderColor: '#3b82f6', backgroundColor: '#eff6ff' },
+                '&:hover': { borderColor: '#10b981', backgroundColor: '#f9fafb' },
               }}
             >
               <input type="file" accept="video/*" hidden ref={videoInputRef} onChange={(e) => setVideoFile(e.target.files[0])} />
-              <VideoIcon sx={{ fontSize: 40, color: videoFile ? '#3b82f6' : '#9ca3af', mb: 1 }} />
-              <Typography sx={{ fontSize: '0.9rem', fontWeight: 600, color: '#374151' }}>
-                {videoFile ? videoFile.name : "Videoni tanlang"}
-              </Typography>
-              <Typography sx={{ fontSize: '0.75rem', color: '#6b7280', mt: 0.5 }}>
-                MP4, MOV yoki AVI
+              <CloudUploadIcon sx={{ color: '#9ca3af', fontSize: 20 }} />
+              <Typography sx={{ fontSize: '0.85rem', color: '#9ca3af', fontWeight: 500 }}>
+                {videoFile ? videoFile.name : "Yuklash"}
               </Typography>
             </Box>
 
@@ -172,7 +169,7 @@ export default function CreateVideo() {
         </Box>
 
         <Box sx={{ display: 'flex', gap: 2, mt: 2 }}>
-           <Button variant="outlined" fullWidth onClick={() => navigate(-1)} sx={{ borderRadius: '10px', textTransform: 'none', fontWeight: 700 }}>
+           <Button variant="outlined" fullWidth onClick={() => navigate(`/group/${groupId}?tab=1`)} sx={{ borderRadius: '10px', textTransform: 'none', fontWeight: 700 }}>
              Bekor qilish
            </Button>
            <Button
@@ -186,7 +183,7 @@ export default function CreateVideo() {
               '&:hover': { background: 'linear-gradient(135deg, #059669 0%, #047857 100%)' }
             }}
            >
-             {saving ? <CircularProgress size={24} color="inherit" /> : "Saqlash"}
+             {saving ? "Yuklanmoqda..." : "Saqlash"}
            </Button>
         </Box>
       </Box>

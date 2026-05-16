@@ -11,10 +11,13 @@ import Students from './pages/Students';
 import CreateHomeWork from './pages/CreateHomeWork';
 import CreateVideo from './pages/CreateVideo';
 
+import { UploadProvider } from './context/UploadContext';
+
 function App() {
   return (
     <BrowserRouter>
-      <Routes>
+      <UploadProvider>
+        <Routes>
         {/* Public Routes */}
         <Route path="/login" element={<Login />} />
 
@@ -45,6 +48,7 @@ function App() {
         {/* Catch all */}
         <Route path="*" element={<Navigate to="/dashboard" replace />} />
       </Routes>
+      </UploadProvider>
     </BrowserRouter>
   );
 }

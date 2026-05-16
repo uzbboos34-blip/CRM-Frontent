@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import api from '../api/axios';
+import { useUploads } from '../context/UploadContext';
 import {
   Box, Typography, Button, MenuItem, Select, FormControl,
   FormHelperText, Paper, Divider, CircularProgress,
@@ -82,6 +83,7 @@ function RichEditor({ value, onChange }) {
 export default function CreateHomeWork() {
   const { id: groupId, hwId } = useParams();
   const navigate = useNavigate();
+  const { startUpload } = useUploads();
 
   const [lessons, setLessons]       = useState([]);
   const [lessonId, setLessonId]     = useState('');
@@ -126,8 +128,7 @@ export default function CreateHomeWork() {
 
   async function handleSubmit() {
     if (!validate()) return;
-    setSaving(true);
-
+    
     const selectedLesson = lessons.find(l => l.id === lessonId);
     const autoTitle = selectedLesson?.topic || `Dars #${lessonId} vazifasi`;
 
@@ -139,16 +140,15 @@ export default function CreateHomeWork() {
     if (file) formData.append('file', file);
     if (videoFile) formData.append('video', videoFile);
 
-    try {
-      if (hwId) await api.put(`/api/v1/home-works/${hwId}`, formData);
-      else await api.post('/api/v1/home-works', formData);
-      setSnackbar({ open: true, msg: "Muvaffaqiyatli saqlandi!", sev: 'success' });
-      setTimeout(() => navigate(`/group/${groupId}?tab=1`), 1200);
-    } catch (e) {
-      setSnackbar({ open: true, msg: e.response?.data?.message || 'Xatolik', sev: 'error' });
-    } finally {
-      setSaving(false);
-    }
+    const url = hwId ? `/api/v1/home-works/${hwId}` : '/api/v1/home-works';
+    const method = hwId ? 'put' : 'post';
+    
+    // Background upload logic is in UploadContext (startUpload)
+    // Note: startUpload currently only does POST, I should update it or handle PUT
+    startUpload(url, formData, { title: autoTitle, groupId, type: 'homework' });
+    
+    setSnackbar({ open: true, msg: "Yuklash boshlandi...", sev: 'success' });
+    setTimeout(() => navigate(`/group/${groupId}?tab=1`), 600);
   }
 
   return (

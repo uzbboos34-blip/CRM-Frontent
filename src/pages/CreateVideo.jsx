@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import api from '../api/axios';
+import { useUploads } from '../context/UploadContext';
 import {
   Box, Typography, Button, MenuItem, Select, FormControl,
   FormHelperText, TextField, Paper, Divider, CircularProgress,
@@ -12,6 +13,7 @@ import LoadingBuffer from '../components/LoadingBuffer';
 export default function CreateVideo() {
   const { id: groupId } = useParams();
   const navigate = useNavigate();
+  const { startUpload } = useUploads();
 
   const [lessons, setLessons] = useState([]);
   const [formData, setFormData] = useState({
@@ -46,29 +48,26 @@ export default function CreateVideo() {
 
   async function handleSubmit() {
     if (!validate()) return;
-    setSaving(true);
-
+    
     const data = new FormData();
     data.append('title', formData.title);
     data.append('group_id', groupId);
     if (formData.lesson_id) data.append('lesson_id', formData.lesson_id);
     data.append('description', formData.description || '');
+    
     if (videoFile) {
       data.append('video', videoFile);
     } else {
       data.append('video_url', formData.video_url);
     }
 
-    try {
-      await api.post('/api/v1/videos', data);
-      setSnackbar({ open: true, msg: "Video muvaffaqiyatli qo'shildi!", sev: 'success' });
-      setTimeout(() => navigate(`/group/${groupId}?tab=1`), 1200);
-    } catch (e) {
-      setSnackbar({ open: true, msg: e.response?.data?.message || 'Xatolik', sev: 'error' });
-    } finally {
-      setSaving(false);
-    }
+    // Background upload
+    startUpload('/api/v1/videos', data, { title: formData.title, groupId, type: 'video' });
+    
+    setSnackbar({ open: true, msg: "Video yuklash boshlandi...", sev: 'success' });
+    setTimeout(() => navigate(`/group/${groupId}?tab=1`), 600);
   }
+
 
   return (
     <Box sx={{ maxWidth: 600, mx: 'auto', p: 3 }}>

@@ -5,8 +5,9 @@ import {
   Box, Typography, Button, Tab, Tabs, Table, TableBody,
   TableCell, TableContainer, TableHead, TableRow, Paper,
   CircularProgress, Chip, IconButton, Tooltip, Menu, MenuItem,
-  Snackbar, Alert,
+  Snackbar, Alert, LinearProgress,
 } from '@mui/material';
+import { useUploads } from '../context/UploadContext';
 import Add from '@mui/icons-material/Add';
 import PersonOutlined from '@mui/icons-material/PersonOutlined';
 import AccessTime from '@mui/icons-material/AccessTime';
@@ -71,6 +72,7 @@ const SUB_TABS = ['Uyga vazifa', 'Videolar', 'Imtihonlar', 'Jurnal'];
    ════════════════════════════════════════════════════════════ */
 export default function GroupLessons({ groupId }) {
   const navigate = useNavigate();
+  const { uploads } = useUploads();
 
   const [subTab, setSubTab]       = useState(0);
   const [homeworks, setHomeworks] = useState([]);
@@ -200,7 +202,7 @@ export default function GroupLessons({ groupId }) {
           <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
             <CircularProgress sx={{ color: '#10b981' }} />
           </Box>
-        ) : homeworks.length === 0 ? (
+        ) : (homeworks.length === 0 && uploads.filter(u => u.metadata.groupId === groupId && u.metadata.type === 'homework').length === 0) ? (
           <Paper elevation={0} sx={{
             border: '1px solid #e5e7eb', borderRadius: '16px',
             py: 8, textAlign: 'center',
@@ -248,6 +250,33 @@ export default function GroupLessons({ groupId }) {
               </TableHead>
 
               <TableBody>
+                {/* Background Uploads */}
+                {uploads.filter(u => u.metadata.groupId === groupId && u.metadata.type === 'homework').map(u => (
+                  <TableRow key={u.id} sx={{ backgroundColor: '#f0fdf4' }}>
+                    <TableCell sx={tdSx}>--</TableCell>
+                    <TableCell sx={tdSx}>
+                      <Box sx={{ width: '100%' }}>
+                        <Typography sx={{ fontSize: '0.82rem', fontWeight: 600, color: '#065f46' }}>
+                          {u.metadata.title} (Yuklanmoqda {u.progress}%)
+                        </Typography>
+                        <LinearProgress 
+                          variant="buffer" 
+                          value={u.progress} 
+                          valueBuffer={u.buffer} 
+                          sx={{ height: 6, borderRadius: 3, mt: 0.5, backgroundColor: '#d1fae5', '& .MuiLinearProgress-bar': { backgroundColor: '#10b981' } }} 
+                        />
+                      </Box>
+                    </TableCell>
+                    <TableCell colSpan={6} sx={tdSx}>
+                      {u.status === 'error' ? (
+                        <Typography sx={{ color: '#ef4444', fontSize: '0.75rem' }}>Xato: {u.error}</Typography>
+                      ) : (
+                        <Typography sx={{ color: '#6b7280', fontSize: '0.75rem' }}>Fayl yuklanmoqda, sahifadan chiqib ketmang...</Typography>
+                      )}
+                    </TableCell>
+                  </TableRow>
+                ))}
+
                 {homeworks.map((hw, idx) => {
                   const createdAt = new Date(hw.created_at);
                   const [datePart1, timePart1] = fmtDateTime(createdAt).split('\n');
@@ -367,7 +396,7 @@ export default function GroupLessons({ groupId }) {
           <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
             <CircularProgress sx={{ color: '#10b981' }} />
           </Box>
-        ) : videos.length === 0 ? (
+        ) : (videos.length === 0 && uploads.filter(u => u.metadata.groupId === groupId && u.metadata.type === 'video').length === 0) ? (
           <Paper elevation={0} sx={emptyPaperSx}>
             <Typography sx={{ color: '#9ca3af', fontWeight: 500 }}>
               Hozircha videolar mavjud emas
@@ -383,6 +412,33 @@ export default function GroupLessons({ groupId }) {
           </Paper>
         ) : (
           <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 3 }}>
+            {/* Background Uploads for Videos */}
+            {uploads.filter(u => u.metadata.groupId === groupId && u.metadata.type === 'video').map(u => (
+              <Paper key={u.id} sx={{
+                borderRadius: '16px', overflow: 'hidden', border: '2px dashed #10b981',
+                p: 2, background: '#f0fdf4', display: 'flex', flexDirection: 'column', gap: 2
+              }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                  <CircularProgress size={24} variant="determinate" value={u.progress} sx={{ color: '#10b981' }} />
+                  <Typography sx={{ fontWeight: 700, fontSize: '0.85rem' }}>{u.metadata.title}</Typography>
+                </Box>
+                <Box sx={{ width: '100%' }}>
+                  <Typography variant="caption" sx={{ color: '#6b7280' }}>
+                    {u.status === 'error' ? 'Xatolik yuz berdi' : `Yuklanmoqda: ${u.progress}%`}
+                  </Typography>
+                  <LinearProgress 
+                    variant="buffer" 
+                    value={u.progress} 
+                    valueBuffer={u.buffer} 
+                    sx={{ height: 6, borderRadius: 3, mt: 0.5, backgroundColor: '#d1fae5', '& .MuiLinearProgress-bar': { backgroundColor: '#10b981' } }} 
+                  />
+                  {u.status === 'error' && (
+                    <Typography sx={{ color: '#ef4444', fontSize: '0.7rem', mt: 0.5 }}>{u.error}</Typography>
+                  )}
+                </Box>
+              </Paper>
+            ))}
+
             {videos.map((vid) => (
               <Paper key={vid.id} sx={{
                 borderRadius: '16px', overflow: 'hidden', border: '1px solid #e5e7eb',

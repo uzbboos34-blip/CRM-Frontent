@@ -96,6 +96,15 @@ export default function GroupInner() {
   const [showAllDates, setShowAllDates] = useState(false);
   const [snackbar, setSnackbar] = useState({ open: false, message: '' });
 
+  // Initialize active tab from URL query param
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const tabParam = params.get('tab');
+    if (tabParam !== null) {
+      setActiveTab(parseInt(tabParam));
+    }
+  }, []);
+
   const handleDateClick = (d, isToday, isPast) => {
     const dDate = new Date(d.getFullYear(), d.getMonth(), d.getDate());
     const tDate = new Date(today.getFullYear(), today.getMonth(), today.getDate());

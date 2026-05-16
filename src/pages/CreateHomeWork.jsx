@@ -166,7 +166,11 @@ export default function CreateHomeWork() {
           <Typography sx={{ fontSize: '0.85rem', fontWeight: 700, mb: 1 }}>Sarlavha *</Typography>
           <TextField
             fullWidth placeholder="Vazifa sarlavhasi"
-            value={title} onChange={e => setTitle(e.target.value)}
+            value={title} 
+            onChange={e => {
+              setTitle(e.target.value);
+              setErrors(prev => ({ ...prev, title: '' }));
+            }}
             error={!!errors.title} helperText={errors.title}
             sx={{ '& .MuiOutlinedInput-root': { borderRadius: '10px' } }}
           />
@@ -177,7 +181,12 @@ export default function CreateHomeWork() {
           <Typography sx={{ fontSize: '0.85rem', fontWeight: 700, mb: 1 }}>Darsni tanlang *</Typography>
           <FormControl fullWidth error={!!errors.lessonId}>
             <Select
-              value={lessonId} onChange={e => setLessonId(e.target.value)} displayEmpty
+              value={lessonId} 
+              onChange={e => {
+                setLessonId(e.target.value);
+                setErrors(prev => ({ ...prev, lessonId: '' }));
+              }} 
+              displayEmpty
               sx={{ borderRadius: '10px' }}
             >
               <MenuItem value="" disabled>Mavzuni tanlang</MenuItem>

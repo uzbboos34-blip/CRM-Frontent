@@ -119,7 +119,6 @@ export default function CreateHomeWork() {
 
   function validate() {
     const e = {};
-    if (!title) e.title = "Sarlavha kiriting";
     if (!lessonId) e.lessonId = "Darsni tanlang";
     setErrors(e);
     return Object.keys(e).length === 0;
@@ -128,8 +127,12 @@ export default function CreateHomeWork() {
   async function handleSubmit() {
     if (!validate()) return;
     setSaving(true);
+
+    const selectedLesson = lessons.find(l => l.id === lessonId);
+    const autoTitle = selectedLesson?.topic || `Dars #${lessonId} vazifasi`;
+
     const formData = new FormData();
-    formData.append('title', title);
+    formData.append('title', autoTitle);
     formData.append('lesson_id', lessonId);
     formData.append('group_id', groupId);
     formData.append('description', description);
@@ -161,21 +164,6 @@ export default function CreateHomeWork() {
       </Box>
 
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3.5 }}>
-        {/* Title */}
-        <Box>
-          <Typography sx={{ fontSize: '0.85rem', fontWeight: 700, mb: 1 }}>Sarlavha *</Typography>
-          <TextField
-            fullWidth placeholder="Vazifa sarlavhasi"
-            value={title} 
-            onChange={e => {
-              setTitle(e.target.value);
-              setErrors(prev => ({ ...prev, title: '' }));
-            }}
-            error={!!errors.title} helperText={errors.title}
-            sx={{ '& .MuiOutlinedInput-root': { borderRadius: '10px' } }}
-          />
-        </Box>
-
         {/* Lesson */}
         <Box>
           <Typography sx={{ fontSize: '0.85rem', fontWeight: 700, mb: 1 }}>Darsni tanlang *</Typography>

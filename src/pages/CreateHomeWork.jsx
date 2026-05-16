@@ -148,14 +148,14 @@ export default function CreateHomeWork() {
     startUpload(url, formData, { title: autoTitle, groupId, type: 'homework' });
     
     setSnackbar({ open: true, msg: "Yuklash boshlandi...", sev: 'success' });
-    setTimeout(() => navigate(`/group/${groupId}?tab=1`), 600);
+    setTimeout(() => navigate(`/group/${groupId}?tab=1&subTab=0`), 600);
   }
 
   return (
     <Box sx={{ maxWidth: 680, mx: 'auto', p: 3 }}>
       {/* Header */}
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 4 }}>
-        <IconButton onClick={() => navigate(`/group/${groupId}?tab=1`)} sx={{ color: '#6b7280' }}>
+        <IconButton onClick={() => navigate(`/group/${groupId}?tab=1&subTab=0`)} sx={{ color: '#6b7280' }}>
           <ArrowBackIcon />
         </IconButton>
         <Typography variant="h5" sx={{ fontWeight: 800, color: '#111827' }}>
@@ -228,7 +228,7 @@ export default function CreateHomeWork() {
 
         {/* Actions */}
         <Box sx={{ display: 'flex', gap: 2, pt: 2 }}>
-          <Button variant="outlined" fullWidth onClick={() => navigate(`/group/${groupId}?tab=1`)} sx={{ borderRadius: '12px', py: 1.2, textTransform: 'none', fontWeight: 700 }}>
+          <Button variant="outlined" fullWidth onClick={() => navigate(`/group/${groupId}?tab=1&subTab=0`)} sx={{ borderRadius: '12px', py: 1.2, textTransform: 'none', fontWeight: 700 }}>
             Bekor qilish
           </Button>
           <Button

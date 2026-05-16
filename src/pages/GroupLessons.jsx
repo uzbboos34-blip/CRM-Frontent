@@ -85,6 +85,15 @@ export default function GroupLessons({ groupId }) {
   const [menuHw, setMenuHw]       = useState(null);
   const [snackbar, setSnackbar]   = useState({ open: false, msg: '', sev: 'success' });
 
+  /* ── read subTab from URL on mount ── */
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const sub = params.get('subTab');
+    if (sub !== null) {
+      setSubTab(parseInt(sub));
+    }
+  }, []);
+
   /* ── fetch data based on tab ── */
   useEffect(() => {
     if (!groupId) return;
@@ -266,26 +275,33 @@ export default function GroupLessons({ groupId }) {
               </TableHead>
 
               <TableBody>
-                {/* Background Uploads */}
+                {/* Background Uploads for Homework */}
                 {uploads.filter(u => String(u.metadata.groupId) === String(groupId) && u.metadata.type === 'homework').map(u => (
-                  <TableRow key={u.id} sx={{ backgroundColor: '#f0fdf4' }}>
+                  <TableRow key={u.id} sx={{ backgroundColor: u.status === 'error' ? '#fef2f2' : u.status === 'completed' ? '#f0fdf4' : '#f0fdf4' }}>
                     <TableCell sx={tdSx}>--</TableCell>
                     <TableCell sx={tdSx}>
                       <Box sx={{ width: '100%' }}>
-                        <Typography sx={{ fontSize: '0.82rem', fontWeight: 600, color: '#065f46' }}>
-                          {u.metadata.title} (Yuklanmoqda {u.progress}%)
+                        <Typography sx={{ fontSize: '0.82rem', fontWeight: 600, color: u.status === 'error' ? '#991b1b' : '#065f46' }}>
+                          {u.metadata.title} {u.status === 'error' ? '(Xato)' : u.status === 'completed' ? '(Bajarildi)' : `(Yuklanmoqda ${u.progress}%)`}
                         </Typography>
-                        <LinearProgress 
-                          variant="buffer" 
-                          value={u.progress} 
-                          valueBuffer={u.buffer} 
-                          sx={{ height: 6, borderRadius: 3, mt: 0.5, backgroundColor: '#d1fae5', '& .MuiLinearProgress-bar': { backgroundColor: '#10b981' } }} 
-                        />
+                        {u.status === 'uploading' && (
+                          <LinearProgress 
+                            variant="buffer" 
+                            value={u.progress} 
+                            valueBuffer={u.buffer} 
+                            sx={{ height: 6, borderRadius: 3, mt: 0.5, backgroundColor: '#d1fae5', '& .MuiLinearProgress-bar': { backgroundColor: '#10b981' } }} 
+                          />
+                        )}
                       </Box>
                     </TableCell>
                     <TableCell colSpan={6} sx={tdSx}>
                       {u.status === 'error' ? (
-                        <Typography sx={{ color: '#ef4444', fontSize: '0.75rem' }}>Xato: {u.error}</Typography>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                          <Typography sx={{ color: '#ef4444', fontSize: '0.75rem', fontWeight: 600 }}>{u.error}</Typography>
+                          <Button size="small" variant="text" color="error" sx={{ fontSize: '0.65rem', p: 0 }} onClick={() => setUploads(prev => prev.filter(x => x.id !== u.id))}>Tozalash</Button>
+                        </Box>
+                      ) : u.status === 'completed' ? (
+                        <Typography sx={{ color: '#10b981', fontSize: '0.75rem', fontWeight: 600 }}>Muvaffaqiyatli saqlandi!</Typography>
                       ) : (
                         <Typography sx={{ color: '#6b7280', fontSize: '0.75rem' }}>Fayl yuklanmoqda, sahifadan chiqib ketmang...</Typography>
                       )}
@@ -445,28 +461,52 @@ export default function GroupLessons({ groupId }) {
               <TableBody>
                 {/* Background Uploads for Videos */}
                 {uploads.filter(u => String(u.metadata.groupId) === String(groupId) && u.metadata.type === 'video').map(u => (
-                  <TableRow key={u.id} sx={{ backgroundColor: '#f0fdf4' }}>
+                  <TableRow key={u.id} sx={{ backgroundColor: u.status === 'error' ? '#fef2f2' : u.status === 'completed' ? '#f0fdf4' : '#f0fdf4' }}>
                     <TableCell sx={tdSx}>--</TableCell>
-                    <TableCell sx={{ ...tdSx, color: '#3b82f6', fontWeight: 600 }}>
+                    <TableCell sx={{ ...tdSx, color: u.status === 'error' ? '#991b1b' : '#3b82f6', fontWeight: 600 }}>
                       {u.metadata.title}
                     </TableCell>
                     <TableCell sx={tdSx}>{u.metadata.lessonTopic || '—'}</TableCell>
                     <TableCell sx={tdSx}>
-                      <Chip 
-                        label={`Yuklanyapti ${u.progress}%`} 
-                        size="small" 
-                        variant="outlined"
-                        sx={{ 
-                          height: 24, fontSize: '0.75rem', fontWeight: 700,
-                          color: '#3b82f6', borderColor: '#3b82f6', background: '#eff6ff'
-                        }} 
-                      />
+                      {u.status === 'error' ? (
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                          <Chip 
+                            label="Xato" 
+                            size="small" 
+                            variant="filled"
+                            sx={{ height: 24, fontSize: '0.75rem', fontWeight: 700, color: '#fff', background: '#ef4444' }} 
+                          />
+                          <Typography sx={{ color: '#ef4444', fontSize: '0.7rem' }}>{u.error}</Typography>
+                        </Box>
+                      ) : u.status === 'completed' ? (
+                        <Chip 
+                          label="Bajarildi" 
+                          size="small" 
+                          sx={{ height: 24, fontSize: '0.75rem', fontWeight: 700, color: '#fff', background: '#10b981' }} 
+                        />
+                      ) : (
+                        <Chip 
+                          label={`Yuklanyapti ${u.progress}%`} 
+                          size="small" 
+                          variant="outlined"
+                          sx={{ 
+                            height: 24, fontSize: '0.75rem', fontWeight: 700,
+                            color: '#3b82f6', borderColor: '#3b82f6', background: '#eff6ff'
+                          }} 
+                        />
+                      )}
                     </TableCell>
-                    <TableCell sx={tdSx}>Bugun</TableCell>
+                    <TableCell sx={tdSx}>{u.status === 'completed' ? 'Bajarildi' : 'Bugun'}</TableCell>
                     <TableCell sx={{ ...tdSx, textAlign: 'center' }}>
                       <Box sx={{ display: 'flex', justifyContent: 'center', gap: 0.5 }}>
-                        <IconButton size="small" sx={{ color: '#9ca3af' }}><PauseIcon fontSize="small" /></IconButton>
-                        <IconButton size="small" sx={{ color: '#ef4444' }}><DeleteOutlineIcon fontSize="small" /></IconButton>
+                        {u.status === 'error' ? (
+                          <IconButton size="small" sx={{ color: '#ef4444' }} onClick={() => setUploads(prev => prev.filter(x => x.id !== u.id))}><DeleteOutlineIcon fontSize="small" /></IconButton>
+                        ) : (
+                          <>
+                            <IconButton size="small" sx={{ color: '#9ca3af' }}><PauseIcon fontSize="small" /></IconButton>
+                            <IconButton size="small" sx={{ color: '#ef4444' }}><DeleteOutlineIcon fontSize="small" /></IconButton>
+                          </>
+                        )}
                       </Box>
                     </TableCell>
                   </TableRow>

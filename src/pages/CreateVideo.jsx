@@ -71,14 +71,14 @@ export default function CreateVideo() {
     });
     
     setSnackbar({ open: true, msg: "Video yuklash boshlandi...", sev: 'success' });
-    setTimeout(() => navigate(`/group/${groupId}?tab=1`), 600);
+    setTimeout(() => navigate(`/group/${groupId}?tab=1&subTab=1`), 600);
   }
 
 
   return (
     <Box sx={{ maxWidth: 600, mx: 'auto', p: 3 }}>
        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 4 }}>
-        <IconButton onClick={() => navigate(`/group/${groupId}?tab=1`)} sx={{ color: '#6b7280' }}>
+        <IconButton onClick={() => navigate(`/group/${groupId}?tab=1&subTab=1`)} sx={{ color: '#6b7280' }}>
           <ArrowBackIcon />
         </IconButton>
         <Typography variant="h5" sx={{ fontWeight: 800, color: '#111827' }}>
@@ -161,7 +161,7 @@ export default function CreateVideo() {
         </Box>
 
         <Box sx={{ display: 'flex', gap: 2, mt: 2 }}>
-           <Button variant="outlined" fullWidth onClick={() => navigate(`/group/${groupId}?tab=1`)} sx={{ borderRadius: '10px', textTransform: 'none', fontWeight: 700 }}>
+           <Button variant="outlined" fullWidth onClick={() => navigate(`/group/${groupId}?tab=1&subTab=1`)} sx={{ borderRadius: '10px', textTransform: 'none', fontWeight: 700 }}>
              Bekor qilish
            </Button>
            <Button

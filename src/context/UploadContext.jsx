@@ -4,7 +4,26 @@ import api from '../api/axios';
 const UploadContext = createContext();
 
 export function UploadProvider({ children }) {
-  const [uploads, setUploads] = useState([]);
+  const [uploads, setUploads] = useState(() => {
+    try {
+      const saved = localStorage.getItem('active_uploads');
+      if (!saved) return [];
+      const parsed = JSON.parse(saved);
+      // If we reloaded while uploading, mark as error/interrupted
+      return parsed.map(u => 
+        u.status === 'uploading' 
+          ? { ...u, status: 'error', error: 'Yuklash toʻxtatildi (sahifa yangilandi)' } 
+          : u
+      );
+    } catch (e) {
+      return [];
+    }
+  });
+
+  // Persist to localStorage
+  React.useEffect(() => {
+    localStorage.setItem('active_uploads', JSON.stringify(uploads));
+  }, [uploads]);
 
   const startUpload = async (url, formData, metadata, method = 'post', onComplete = null) => {
     const uploadId = Date.now() + Math.random().toString(36).substr(2, 9);
@@ -37,15 +56,14 @@ export function UploadProvider({ children }) {
         u.id === uploadId ? { ...u, status: 'completed', progress: 100 } : u
       ));
 
-      // Call the completion callback if provided
       if (onComplete) {
         onComplete(response.data);
       }
 
-      // Auto-remove after 5 seconds
+      // Auto-remove after 10 seconds (increased from 5 for visibility)
       setTimeout(() => {
         setUploads(prev => prev.filter(u => u.id !== uploadId));
-      }, 5000);
+      }, 10000);
 
       return response.data;
     } catch (error) {
@@ -58,7 +76,7 @@ export function UploadProvider({ children }) {
   };
 
   return (
-    <UploadContext.Provider value={{ uploads, startUpload }}>
+    <UploadContext.Provider value={{ uploads, setUploads, startUpload }}>
       {children}
     </UploadContext.Provider>
   );

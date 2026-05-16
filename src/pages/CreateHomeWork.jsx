@@ -172,10 +172,9 @@ export default function CreateHomeWork() {
     if (!groupId) return;
     api.get(`/api/v1/lessson?group_id=${groupId}`)
       .then(res => {
+        // Backend now filters by group_id and includes it in select
         const all = res.data?.data || res.data || [];
-        // Filter lessons belonging to this group
-        const filtered = all.filter(l => String(l.group_id) === String(groupId));
-        setLessons(filtered);
+        setLessons(all);
       })
       .catch(() => setLessons([]));
   }, [groupId]);

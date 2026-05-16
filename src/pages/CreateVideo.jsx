@@ -6,7 +6,8 @@ import {
   FormHelperText, TextField, Paper, Divider, CircularProgress,
   Snackbar, Alert, IconButton
 } from '@mui/material';
-import { ArrowBack as ArrowBackIcon } from '@mui/icons-material';
+import { ArrowBack as ArrowBackIcon, CloudUpload as CloudUploadIcon, VideoCall as VideoIcon } from '@mui/icons-material';
+import LoadingBuffer from '../components/LoadingBuffer';
 
 export default function CreateVideo() {
   const { id: groupId } = useParams();
@@ -19,9 +20,12 @@ export default function CreateVideo() {
     video_url: '',
     description: ''
   });
+  const [videoFile, setVideoFile] = useState(null);
   const [saving, setSaving] = useState(false);
   const [errors, setErrors] = useState({});
   const [snackbar, setSnackbar] = useState({ open: false, msg: '', sev: 'success' });
+
+  const videoInputRef = React.useRef(null);
 
   useEffect(() => {
     if (!groupId) return;
@@ -35,7 +39,7 @@ export default function CreateVideo() {
   function validate() {
     const e = {};
     if (!formData.title) e.title = "Sarlavha kiriting";
-    if (!formData.video_url) e.video_url = "Video linkini kiriting";
+    if (!formData.video_url && !videoFile) e.video_url = "Video yuklang yoki URL kiriting";
     setErrors(e);
     return Object.keys(e).length === 0;
   }
@@ -43,12 +47,20 @@ export default function CreateVideo() {
   async function handleSubmit() {
     if (!validate()) return;
     setSaving(true);
+
+    const data = new FormData();
+    data.append('title', formData.title);
+    data.append('group_id', groupId);
+    if (formData.lesson_id) data.append('lesson_id', formData.lesson_id);
+    data.append('description', formData.description || '');
+    if (videoFile) {
+      data.append('video', videoFile);
+    } else {
+      data.append('video_url', formData.video_url);
+    }
+
     try {
-      await api.post('/api/v1/videos', {
-        ...formData,
-        group_id: parseInt(groupId),
-        lesson_id: formData.lesson_id ? parseInt(formData.lesson_id) : undefined
-      });
+      await api.post('/api/v1/videos', data);
       setSnackbar({ open: true, msg: "Video muvaffaqiyatli qo'shildi!", sev: 'success' });
       setTimeout(() => navigate(`/group/${groupId}?tab=1`), 1200);
     } catch (e) {
@@ -84,17 +96,50 @@ export default function CreateVideo() {
         </Box>
 
         <Box>
-          <Typography sx={{ fontSize: '0.85rem', fontWeight: 700, mb: 1 }}>Video URL (YouTube) *</Typography>
-          <TextField
-            fullWidth
-            placeholder="https://www.youtube.com/watch?v=..."
-            value={formData.video_url}
-            onChange={e => setFormData({ ...formData, video_url: e.target.value })}
-            error={!!errors.video_url}
-            helperText={errors.video_url}
-            sx={{ '& .MuiOutlinedInput-root': { borderRadius: '10px' } }}
-          />
+          <Typography sx={{ fontSize: '0.85rem', fontWeight: 700, mb: 1 }}>Video yuklash yoki URL *</Typography>
+          
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+            {/* File Upload Box */}
+            <Box
+              onClick={() => videoInputRef.current?.click()}
+              sx={{
+                border: '2px dashed #e5e7eb', borderRadius: '14px',
+                p: 3, textAlign: 'center', cursor: 'pointer',
+                backgroundColor: videoFile ? '#eff6ff' : '#fafafa',
+                transition: 'all 0.2s',
+                '&:hover': { borderColor: '#3b82f6', backgroundColor: '#eff6ff' },
+              }}
+            >
+              <input type="file" accept="video/*" hidden ref={videoInputRef} onChange={(e) => setVideoFile(e.target.files[0])} />
+              <VideoIcon sx={{ fontSize: 40, color: videoFile ? '#3b82f6' : '#9ca3af', mb: 1 }} />
+              <Typography sx={{ fontSize: '0.9rem', fontWeight: 600, color: '#374151' }}>
+                {videoFile ? videoFile.name : "Videoni tanlang"}
+              </Typography>
+              <Typography sx={{ fontSize: '0.75rem', color: '#6b7280', mt: 0.5 }}>
+                MP4, MOV yoki AVI
+              </Typography>
+            </Box>
+
+            <Divider>yoki</Divider>
+
+            <TextField
+              fullWidth
+              placeholder="YouTube URL: https://www.youtube.com/watch?v=..."
+              value={formData.video_url}
+              onChange={e => {
+                setFormData({ ...formData, video_url: e.target.value });
+                if (e.target.value) setVideoFile(null);
+              }}
+              error={!!errors.video_url}
+              helperText={errors.video_url}
+              sx={{ '& .MuiOutlinedInput-root': { borderRadius: '10px' } }}
+            />
+          </Box>
         </Box>
+
+        {saving && (
+          <LoadingBuffer label="Video yuklanmoqda..." />
+        )}
 
         <Box>
            <Typography sx={{ fontSize: '0.85rem', fontWeight: 700, mb: 1 }}>Dars (ixtiyoriy)</Typography>

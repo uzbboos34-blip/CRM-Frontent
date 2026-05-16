@@ -163,57 +163,73 @@ function RichEditor({ value, onChange }) {
   );
 }
 
-/* ═══════════════════════════════════════════════════════════
-   CreateHomeWork Page
-   ═══════════════════════════════════════════════════════════ */
 export default function CreateHomeWork() {
-  const { id: groupId } = useParams();           // /group/:id/homework/create
+  const { id: groupId, hwId } = useParams();
   const navigate = useNavigate();
 
   const [lessons, setLessons]       = useState([]);
   const [lessonId, setLessonId]     = useState('');
+  const [title, setTitle]           = useState('');
   const [description, setDescription] = useState('');
   const [file, setFile]             = useState(null);
+  const [videoFile, setVideoFile]   = useState(null);
   const [saving, setSaving]         = useState(false);
   const [errors, setErrors]         = useState({});
   const [snackbar, setSnackbar]     = useState({ open: false, msg: '', sev: 'success' });
 
   const fileInputRef = useRef(null);
+  const videoInputRef = useRef(null);
 
-  /* ── Fetch lessons for this group (as topic options) ── */
   useEffect(() => {
     if (!groupId) return;
     api.get(`/api/v1/lessson?group_id=${groupId}`)
       .then(res => {
-        // Backend now filters by group_id and includes it in select
-        const all = res.data?.data || res.data || [];
-        setLessons(all);
+        setLessons(res.data?.data || res.data || []);
       })
       .catch(() => setLessons([]));
   }, [groupId]);
 
-  /* ── Validate ── */
+  useEffect(() => {
+    if (hwId) {
+      api.get(`/api/v1/home-works/${hwId}`)
+        .then(res => {
+          const d = res.data?.data || res.data;
+          if (d) {
+            setTitle(d.title || '');
+            setLessonId(d.lesson_id || '');
+            setDescription(d.description || '');
+          }
+        });
+    }
+  }, [hwId]);
+
   function validate() {
     const e = {};
-    if (!lessonId) e.lessonId = "Mavzuni tanlang";
+    if (!title) e.title = "Sarlavha kiriting";
+    if (!lessonId) e.lessonId = "Darsni tanlang";
     setErrors(e);
     return Object.keys(e).length === 0;
   }
 
-  /* ── Submit ── */
   async function handleSubmit() {
     if (!validate()) return;
     setSaving(true);
+    
+    const formData = new FormData();
+    formData.append('title', title);
+    formData.append('lesson_id', lessonId);
+    formData.append('group_id', groupId);
+    formData.append('description', description);
+    if (file) formData.append('file', file);
+    if (videoFile) formData.append('video', videoFile);
+
     try {
-      const selectedLesson = lessons.find(l => l.id === lessonId);
-      await api.post('/api/v1/home-works', {
-        lesson_id: lessonId,
-        group_id: parseInt(groupId),
-        title: selectedLesson?.topic || `Dars ${lessonId}`,
-        description: description,
-        file: file?.name || undefined,
-      });
-      setSnackbar({ open: true, msg: "Uyga vazifa muvaffaqiyatli qo'shildi!", sev: 'success' });
+      if (hwId) {
+        await api.put(`/api/v1/home-works/${hwId}`, formData);
+      } else {
+        await api.post('/api/v1/home-works', formData);
+      }
+      setSnackbar({ open: true, msg: `Muvaffaqiyatli ${hwId ? 'yangilandi' : 'yaratildi'}!`, sev: 'success' });
       setTimeout(() => navigate(`/group/${groupId}?tab=1`), 1200);
     } catch (e) {
       setSnackbar({
@@ -331,54 +347,72 @@ export default function CreateHomeWork() {
                   sx={{ color: '#9ca3af', p: 0.3, '&:hover': { color: '#ef4444' } }}
                 >
                   <CloseIcon fontSize="small" />
-                </IconButton>
-              </>
-            ) : (
-              <>
-                <CloudUploadIcon sx={{ color: '#9ca3af', fontSize: 20 }} />
-                <Typography sx={{ fontSize: '0.85rem', color: '#9ca3af' }}>
-                  Yuklash
-                </Typography>
-              </>
-            )}
+              border: '2px dashed #e5e7eb', borderRadius: '14px',
+              p: 2.5, textAlign: 'center', cursor: 'pointer',
+              backgroundColor: file ? '#f0fdf4' : '#fafafa',
+              transition: 'all 0.2s',
+              '&:hover': { borderColor: '#10b981', backgroundColor: '#f0fdf4' },
+            }}
+          >
+            <input type="file" hidden ref={fileInputRef} onChange={(e) => setFile(e.target.files[0])} />
+            <CloudUploadIcon sx={{ fontSize: 32, color: file ? '#10b981' : '#9ca3af', mb: 1 }} />
+            <Typography sx={{ fontSize: '0.85rem', fontWeight: 600, color: '#374151' }}>
+              {file ? file.name : "Fayl yuklash"}
+            </Typography>
+            <Typography sx={{ fontSize: '0.72rem', color: '#6b7280', mt: 0.5 }}>
+              PDF, DOCX yoki Rasm
+            </Typography>
           </Box>
-          <input
-            ref={fileInputRef}
-            type="file"
-            hidden
-            onChange={handleFileDrop}
-          />
+
+          {/* Video Upload */}
+          <Box
+            onClick={() => videoInputRef.current?.click()}
+            sx={{
+              border: '2px dashed #e5e7eb', borderRadius: '14px',
+              p: 2.5, textAlign: 'center', cursor: 'pointer',
+              backgroundColor: videoFile ? '#eff6ff' : '#fafafa',
+              transition: 'all 0.2s',
+              '&:hover': { borderColor: '#3b82f6', backgroundColor: '#eff6ff' },
+            }}
+          >
+            <input type="file" accept="video/*" hidden ref={videoInputRef} onChange={(e) => setVideoFile(e.target.files[0])} />
+            <VideoIcon sx={{ fontSize: 32, color: videoFile ? '#3b82f6' : '#9ca3af', mb: 1 }} />
+            <Typography sx={{ fontSize: '0.85rem', fontWeight: 600, color: '#374151' }}>
+              {videoFile ? videoFile.name : "Video yuklash"}
+            </Typography>
+            <Typography sx={{ fontSize: '0.72rem', color: '#6b7280', mt: 0.5 }}>
+              MP4, MOV yoki AVI
+            </Typography>
+          </Box>
         </Box>
 
-        {/* Buttons */}
-        <Box sx={{ display: 'flex', justifyContent: 'center', gap: 2, mt: 1 }}>
+        {saving && (
+          <LoadingBuffer label={videoFile ? "Video yuklanmoqda..." : "Ma'lumotlar saqlanmoqda..."} />
+        )}
+
+        {/* Actions */}
+        <Box sx={{ display: 'flex', gap: 2, pt: 2 }}>
           <Button
             variant="outlined"
+            fullWidth
             onClick={() => navigate(-1)}
-            sx={{
-              borderRadius: '10px', textTransform: 'none', fontWeight: 700,
-              px: 4, py: 1.1, borderColor: '#e5e7eb', color: '#374151',
-              '&:hover': { borderColor: '#7b61ff', color: '#7b61ff' },
-            }}
+            sx={{ borderRadius: '12px', py: 1.2, textTransform: 'none', fontWeight: 700, color: '#374151', borderColor: '#d1d5db' }}
           >
             Bekor qilish
           </Button>
           <Button
             variant="contained"
+            fullWidth
             onClick={handleSubmit}
             disabled={saving}
             sx={{
-              borderRadius: '10px', textTransform: 'none', fontWeight: 700,
-              px: 4, py: 1.1,
+              borderRadius: '12px', py: 1.2, textTransform: 'none', fontWeight: 700,
               background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
-              boxShadow: '0 4px 14px rgba(16,185,129,0.3)',
-              '&:hover': {
-                background: 'linear-gradient(135deg, #059669 0%, #047857 100%)',
-              },
-              '&:disabled': { opacity: 0.7 },
+              boxShadow: '0 4px 12px rgba(16,185,129,0.3)',
+              '&:hover': { background: 'linear-gradient(135deg, #059669 0%, #047857 100%)' }
             }}
           >
-            {saving ? <CircularProgress size={20} sx={{ color: '#fff' }} /> : "E'lon qilish"}
+            {saving ? "Yuklanmoqda..." : (hwId ? "Saqlash" : "E'lon qilish")}
           </Button>
         </Box>
       </Box>

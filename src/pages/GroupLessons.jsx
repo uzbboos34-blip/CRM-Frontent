@@ -48,8 +48,19 @@ function fmtDate(d) {
 
 function getYTThumb(url) {
   if (!url) return '';
-  const match = url.match(/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/);
-  return match ? `https://img.youtube.com/vi/${match[1]}/mqdefault.jpg` : 'https://placehold.co/600x400?text=Video+Link';
+  const ytMatch = url.match(/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/);
+  if (ytMatch) {
+    return `https://img.youtube.com/vi/${ytMatch[1]}/mqdefault.jpg`;
+  }
+  // Local video placeholder
+  return 'https://img.freepik.com/free-vector/gradient-play-button-concept_23-2148705809.jpg';
+}
+
+function getFullVideoUrl(url) {
+  if (!url) return '';
+  if (url.startsWith('http')) return url;
+  // Prepend backend URL for local files
+  return `https://crm-backend-l7jq.onrender.com/file/${url}`;
 }
 
 /* ─── Sub-tab labels ─────────────────────────────────────── */
@@ -390,7 +401,7 @@ export default function GroupLessons({ groupId }) {
                      width: 48, height: 48, borderRadius: '50%', background: 'rgba(255,255,255,0.9)',
                      display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer',
                      '&:hover': { background: '#fff' }
-                   }} onClick={() => window.open(vid.video_url, '_blank')}>
+                   }} onClick={() => window.open(getFullVideoUrl(vid.video_url), '_blank')}>
                       <Box sx={{
                         width: 0, height: 0, borderTop: '8px solid transparent',
                         borderBottom: '8px solid transparent', borderLeft: '14px solid #10b981',

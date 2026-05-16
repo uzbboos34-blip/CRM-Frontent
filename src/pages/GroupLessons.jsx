@@ -7,15 +7,21 @@ import {
   CircularProgress, Chip, IconButton, Tooltip, Menu, MenuItem,
   Snackbar, Alert,
 } from '@mui/material';
-import {
-  Add as AddIcon,
-  PersonOutline as PersonOutlineIcon,
-  AccessTime as AccessTimeIcon,
-  CheckCircleOutline as CheckCircleOutlineIcon,
-  MoreVert as MoreVertIcon,
-  DeleteOutline as DeleteOutlineIcon,
-  EditOutlined as EditOutlinedIcon,
-} from '@mui/icons-material';
+import Add from '@mui/icons-material/Add';
+import PersonOutlined from '@mui/icons-material/PersonOutlined';
+import AccessTime from '@mui/icons-material/AccessTime';
+import CheckCircleOutlined from '@mui/icons-material/CheckCircleOutlined';
+import MoreVert from '@mui/icons-material/MoreVert';
+import DeleteOutlined from '@mui/icons-material/DeleteOutlined';
+import EditOutlined from '@mui/icons-material/EditOutlined';
+
+const AddIcon = Add;
+const PersonOutlineIcon = PersonOutlined;
+const AccessTimeIcon = AccessTime;
+const CheckCircleOutlineIcon = CheckCircleOutlined;
+const MoreVertIcon = MoreVert;
+const DeleteOutlineIcon = DeleteOutlined;
+const EditOutlinedIcon = EditOutlined;
 
 /* ─── Format helpers ─────────────────────────────────────── */
 const MONTHS = [

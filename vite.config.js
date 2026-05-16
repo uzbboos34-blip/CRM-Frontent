@@ -3,6 +3,16 @@ import react from '@vitejs/plugin-react'
 
 export default defineConfig({
   plugins: [react()],
+  optimizeDeps: {
+    include: ['@mui/icons-material'],
+  },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: undefined,
+      },
+    },
+  },
   server: {
     proxy: {
       '/api': {
@@ -16,3 +26,4 @@ export default defineConfig({
     }
   }
 })
+

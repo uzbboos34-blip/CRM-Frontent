@@ -6,12 +6,15 @@ import {
   FormHelperText, Paper, Divider, CircularProgress,
   Snackbar, Alert, IconButton, Tooltip,
 } from '@mui/material';
-import {
-  ArrowBack as ArrowBackIcon,
-  CloudUpload as CloudUploadIcon,
-  AttachFile as AttachFileIcon,
-  Close as CloseIcon,
-} from '@mui/icons-material';
+import ArrowBack from '@mui/icons-material/ArrowBack';
+import CloudUpload from '@mui/icons-material/CloudUpload';
+import AttachFile from '@mui/icons-material/AttachFile';
+import Close from '@mui/icons-material/Close';
+
+const ArrowBackIcon = ArrowBack;
+const CloudUploadIcon = CloudUpload;
+const AttachFileIcon = AttachFile;
+const CloseIcon = Close;
 
 /* ═══════════════════════════════════════════════════════════
    Minimal Rich-Text Toolbar (no external lib)

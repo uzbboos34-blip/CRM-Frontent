@@ -27,6 +27,17 @@ const FONT_SIZES    = ['Normal', 'Small', 'Large', 'H1', 'H2'];
 function RichEditor({ value, onChange }) {
   const editorRef = useRef(null);
 
+  // Set initial content only once
+  useEffect(() => {
+    if (editorRef.current && value !== editorRef.current.innerHTML) {
+      // Only update if it's not a result of typing (e.g. initial load or external reset)
+      // This check is a bit naive but works for simple cases
+      if (value === '' || (value && editorRef.current.innerHTML === '')) {
+         editorRef.current.innerHTML = value;
+      }
+    }
+  }, [value]);
+
   function exec(cmd, val = null) {
     editorRef.current?.focus();
     document.execCommand(cmd, false, val);
@@ -34,7 +45,9 @@ function RichEditor({ value, onChange }) {
   }
 
   function syncValue() {
-    if (editorRef.current) onChange(editorRef.current.innerHTML);
+    if (editorRef.current) {
+      onChange(editorRef.current.innerHTML);
+    }
   }
 
   const toolBtnSx = {
@@ -125,6 +138,7 @@ function RichEditor({ value, onChange }) {
         contentEditable
         suppressContentEditableWarning
         onInput={syncValue}
+        onBlur={syncValue}
         sx={{
           minHeight: 140, p: 2,
           outline: 'none', fontSize: '0.9rem', color: '#111827',
@@ -144,7 +158,6 @@ function RichEditor({ value, onChange }) {
             color: '#9ca3af', pointerEvents: 'none',
           },
         }}
-        dangerouslySetInnerHTML={{ __html: value }}
       />
     </Box>
   );

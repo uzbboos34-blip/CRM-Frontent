@@ -15,8 +15,7 @@ import CheckCircleOutlined from '@mui/icons-material/CheckCircleOutlined';
 import MoreVert from '@mui/icons-material/MoreVert';
 import DeleteOutlined from '@mui/icons-material/DeleteOutlined';
 import EditOutlined from '@mui/icons-material/EditOutlined';
-import PauseCircleOutline from '@mui/icons-material/PauseCircleOutline';
-import PlayCircleOutline from '@mui/icons-material/PlayCircleOutline';
+import { PauseCircleOutline, PlayCircleOutline } from '@mui/icons-material';
 
 const AddIcon = Add;
 const PersonOutlineIcon = PersonOutlined;

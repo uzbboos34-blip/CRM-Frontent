@@ -94,7 +94,7 @@ export default function GroupLessons({ groupId }) {
 
   /* ── auto-refresh when background upload completes ── */
   useEffect(() => {
-    const completed = uploads.filter(u => u.metadata.groupId === groupId && u.status === 'completed');
+    const completed = uploads.filter(u => String(u.metadata.groupId) === String(groupId) && u.status === 'completed');
     if (completed.length > 0) {
       // Small delay to ensure DB is updated
       const timer = setTimeout(() => {
@@ -218,7 +218,7 @@ export default function GroupLessons({ groupId }) {
           <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
             <CircularProgress sx={{ color: '#10b981' }} />
           </Box>
-        ) : (homeworks.length === 0 && uploads.filter(u => u.metadata.groupId === groupId && u.metadata.type === 'homework').length === 0) ? (
+        ) : (homeworks.length === 0 && uploads.filter(u => String(u.metadata.groupId) === String(groupId) && u.metadata.type === 'homework').length === 0) ? (
           <Paper elevation={0} sx={{
             border: '1px solid #e5e7eb', borderRadius: '16px',
             py: 8, textAlign: 'center',
@@ -267,7 +267,7 @@ export default function GroupLessons({ groupId }) {
 
               <TableBody>
                 {/* Background Uploads */}
-                {uploads.filter(u => u.metadata.groupId === groupId && u.metadata.type === 'homework').map(u => (
+                {uploads.filter(u => String(u.metadata.groupId) === String(groupId) && u.metadata.type === 'homework').map(u => (
                   <TableRow key={u.id} sx={{ backgroundColor: '#f0fdf4' }}>
                     <TableCell sx={tdSx}>--</TableCell>
                     <TableCell sx={tdSx}>
@@ -412,7 +412,7 @@ export default function GroupLessons({ groupId }) {
           <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
             <CircularProgress sx={{ color: '#10b981' }} />
           </Box>
-        ) : (videos.length === 0 && uploads.filter(u => u.metadata.groupId === groupId && u.metadata.type === 'video').length === 0) ? (
+        ) : (videos.length === 0 && uploads.filter(u => String(u.metadata.groupId) === String(groupId) && u.metadata.type === 'video').length === 0) ? (
           <Paper elevation={0} sx={emptyPaperSx}>
             <Typography sx={{ color: '#9ca3af', fontWeight: 500 }}>
               Hozircha videolar mavjud emas
@@ -444,7 +444,7 @@ export default function GroupLessons({ groupId }) {
 
               <TableBody>
                 {/* Background Uploads for Videos */}
-                {uploads.filter(u => u.metadata.groupId === groupId && u.metadata.type === 'video').map(u => (
+                {uploads.filter(u => String(u.metadata.groupId) === String(groupId) && u.metadata.type === 'video').map(u => (
                   <TableRow key={u.id} sx={{ backgroundColor: '#f0fdf4' }}>
                     <TableCell sx={tdSx}>--</TableCell>
                     <TableCell sx={{ ...tdSx, color: '#3b82f6', fontWeight: 600 }}>

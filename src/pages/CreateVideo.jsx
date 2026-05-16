@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import api from '../api/axios';
 import {
@@ -25,7 +25,7 @@ export default function CreateVideo() {
   const [errors, setErrors] = useState({});
   const [snackbar, setSnackbar] = useState({ open: false, msg: '', sev: 'success' });
 
-  const videoInputRef = React.useRef(null);
+  const videoInputRef = useRef(null);
 
   useEffect(() => {
     if (!groupId) return;

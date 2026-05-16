@@ -6,7 +6,7 @@ const UploadContext = createContext();
 export function UploadProvider({ children }) {
   const [uploads, setUploads] = useState([]);
 
-  const startUpload = async (url, formData, metadata, method = 'post') => {
+  const startUpload = async (url, formData, metadata, method = 'post', onComplete = null) => {
     const uploadId = Date.now() + Math.random().toString(36).substr(2, 9);
     
     const newUpload = {
@@ -37,7 +37,12 @@ export function UploadProvider({ children }) {
         u.id === uploadId ? { ...u, status: 'completed', progress: 100 } : u
       ));
 
-      // Auto-remove after 5 seconds so user can see it's done
+      // Call the completion callback if provided
+      if (onComplete) {
+        onComplete(response.data);
+      }
+
+      // Auto-remove after 5 seconds
       setTimeout(() => {
         setUploads(prev => prev.filter(u => u.id !== uploadId));
       }, 5000);

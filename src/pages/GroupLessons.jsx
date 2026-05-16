@@ -92,6 +92,19 @@ export default function GroupLessons({ groupId }) {
     if (subTab === 1) fetchVideos();
   }, [subTab, groupId]);
 
+  /* ── auto-refresh when background upload completes ── */
+  useEffect(() => {
+    const completed = uploads.filter(u => u.metadata.groupId === groupId && u.status === 'completed');
+    if (completed.length > 0) {
+      // Small delay to ensure DB is updated
+      const timer = setTimeout(() => {
+        if (subTab === 0) fetchHomeworks();
+        if (subTab === 1) fetchVideos();
+      }, 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [uploads, groupId, subTab]);
+
   async function fetchHomeworks() {
     setLoading(true);
     try {

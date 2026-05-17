@@ -293,8 +293,10 @@ export default function GroupLessons({ groupId }) {
                   return (
                     <TableRow
                       key={hw.id}
+                      onClick={() => navigate(`/group/${groupId}/homework/${hw.id}`)}
                       sx={{
-                        '&:hover': { backgroundColor: '#fafafa' },
+                        cursor: 'pointer',
+                        '&:hover': { backgroundColor: '#f8f7ff' },
                         borderBottom: '1px solid #f3f4f6',
                         transition: 'background 0.15s',
                       }}
@@ -371,16 +373,20 @@ export default function GroupLessons({ groupId }) {
                         </Typography>
                       </TableCell>
 
-                      {/* Actions menu */}
-                      <TableCell sx={{ ...tdSx, textAlign: 'center' }}>
-                        <IconButton
-                          size="small"
-                          onClick={(e) => handleMenuOpen(e, hw)}
-                          sx={{ color: '#9ca3af', '&:hover': { color: '#374151' } }}
-                        >
-                          <MoreVertIcon fontSize="small" />
-                        </IconButton>
-                      </TableCell>
+                       {/* Actions menu */}
+                       <TableCell sx={{ ...tdSx, textAlign: 'center' }}>
+                         <IconButton
+                           size="small"
+                           onClick={(e) => { e.stopPropagation(); handleMenuOpen(e, hw); }}
+                           sx={{ color: '#9ca3af', '&:hover': { color: '#374151' } }}
+                         >
+                           <MoreVertIcon fontSize="small" />
+                         </IconButton>
+                       </TableCell>
+                       {/* Clickable arrow */}
+                       <TableCell sx={{ ...tdSx, textAlign: 'right', width: 32, pr: 2 }}>
+                         <Typography sx={{ color: '#d1d5db', fontSize: '1.1rem', fontWeight: 300 }}>›</Typography>
+                       </TableCell>
                     </TableRow>
                   );
                 })}

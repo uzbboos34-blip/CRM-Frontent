@@ -10,6 +10,8 @@ import Attendance from './pages/Attendance';
 import Students from './pages/Students';
 import CreateHomeWork from './pages/CreateHomeWork';
 import CreateVideo from './pages/CreateVideo';
+import HomeworkDetail from './pages/HomeworkDetail';
+import StudentHomeworkDetail from './pages/StudentHomeworkDetail';
 
 import { UploadProvider } from './context/UploadContext';
 
@@ -18,36 +20,45 @@ function App() {
     <BrowserRouter>
       <UploadProvider>
         <Routes>
-        {/* Public Routes */}
-        <Route path="/login" element={<Login />} />
+          {/* Public Routes */}
+          <Route path="/login" element={<Login />} />
 
-        {/* Protected Dashboard Routes */}
-        <Route path="/" element={<DashboardLayout />}>
-          <Route index element={<Navigate to="/dashboard" replace />} />
-          <Route path="dashboard" element={<Dashboard />} />
-          <Route path="management" element={<Management />} />
-          <Route path="management/courses" element={<Management />} />
-          <Route path="management/rooms" element={<Management />} />
-          <Route path="management/branches" element={<Management />} />
-          <Route path="management/staff" element={<Management />} />
-          <Route path="management/reasons" element={<Management />} />
-          <Route path="management/roles" element={<Management />} />
-          <Route path="management/coin" element={<Management />} />
-          <Route path="management/messages" element={<Management />} />
-          <Route path="management/check" element={<Management />} />
-          <Route path="teachers" element={<Teachers />} />
-          <Route path="groups" element={<Groups />} />
-          <Route path="group/:id" element={<GroupInner />} />
-          <Route path="group/:id/attendance/:date" element={<Attendance />} />
-          <Route path="group/:id/homework/create" element={<CreateHomeWork />} />
-          <Route path="group/:id/homework/edit/:hwId" element={<CreateHomeWork />} />
-          <Route path="group/:id/video/create" element={<CreateVideo />} />
-          <Route path="students" element={<Students />} />
-        </Route>
+          {/* Protected Dashboard Routes */}
+          <Route path="/" element={<DashboardLayout />}>
+            <Route index element={<Navigate to="/dashboard" replace />} />
+            <Route path="dashboard" element={<Dashboard />} />
+            <Route path="management" element={<Management />} />
+            <Route path="management/courses" element={<Management />} />
+            <Route path="management/rooms" element={<Management />} />
+            <Route path="management/branches" element={<Management />} />
+            <Route path="management/staff" element={<Management />} />
+            <Route path="management/reasons" element={<Management />} />
+            <Route path="management/roles" element={<Management />} />
+            <Route path="management/coin" element={<Management />} />
+            <Route path="management/messages" element={<Management />} />
+            <Route path="management/check" element={<Management />} />
+            <Route path="teachers" element={<Teachers />} />
+            <Route path="groups" element={<Groups />} />
+            <Route path="group/:id" element={<GroupInner />} />
+            <Route path="group/:id/attendance/:date" element={<Attendance />} />
 
-        {/* Catch all */}
-        <Route path="*" element={<Navigate to="/dashboard" replace />} />
-      </Routes>
+            {/* ── Homework routes ── */}
+            <Route path="group/:groupId/homework/create" element={<CreateHomeWork />} />
+            <Route path="group/:groupId/homework/edit/:hwId" element={<CreateHomeWork />} />
+            {/* 1st screenshot: homework detail (4 tabs) */}
+            <Route path="group/:groupId/homework/:hwId" element={<HomeworkDetail />} />
+            {/* 2nd+3rd screenshot: specific student submission + grading */}
+            <Route path="group/:groupId/homework/:hwId/student/:studentId" element={<StudentHomeworkDetail />} />
+
+            {/* ── Video routes ── */}
+            <Route path="group/:id/video/create" element={<CreateVideo />} />
+
+            <Route path="students" element={<Students />} />
+          </Route>
+
+          {/* Catch all */}
+          <Route path="*" element={<Navigate to="/dashboard" replace />} />
+        </Routes>
       </UploadProvider>
     </BrowserRouter>
   );

@@ -106,7 +106,7 @@ export default function StudentHomeworkDetail() {
         ? `Vazifa qabul qilindi (${grade} ball)`
         : `Vazifa qaytarildi (${grade} ball)`;
       setSnackbar({ open: true, msg: statusMsg, sev: grade >= 60 ? 'success' : 'warning' });
-      await fetchData();
+      navigate(`/group/${groupId}/homework/${hwId}`);
     } catch (e) {
       setSnackbar({ open: true, msg: e.response?.data?.message || 'Xatolik yuz berdi', sev: 'error' });
     } finally {
@@ -397,15 +397,7 @@ export default function StudentHomeworkDetail() {
             </Box>
           </Box>
 
-          {/* Color indicator */}
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 3 }}>
-            <Box sx={{
-              height: 6, borderRadius: 3, flex: 1,
-              background: `linear-gradient(to right, ${grade >= 60 ? '#10b981' : '#ef4444'} ${grade}%, #e5e7eb ${grade}%)`,
-            }} />
-          </Box>
-
-          <Divider sx={{ mb: 3 }} />
+          <Divider sx={{ mt: 2, mb: 3 }} />
 
           {/* Comment / Izoh */}
           <Typography sx={{ fontWeight: 700, fontSize: '0.95rem', color: '#111827', mb: 1.5 }}>

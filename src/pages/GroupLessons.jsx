@@ -604,6 +604,7 @@ export default function GroupLessons({ groupId }) {
         </Box>
         <Box sx={{
           width: '100%',
+          mx: 2,
           borderRadius: '12px',
           overflow: 'hidden',
           backgroundColor: '#000',

@@ -77,8 +77,9 @@ function getYTThumb(url) {
 function getFullVideoUrl(url) {
   if (!url) return '';
   if (url.startsWith('http')) return url;
-  // Prepend backend URL for local files
-  return `https://crm-backend-l7jq.onrender.com/file/${url}`;
+  const baseUrl = api.defaults.baseURL || import.meta.env.VITE_API_URL || 'https://crm-backend-l7jq.onrender.com';
+  const cleanBase = baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl;
+  return `${cleanBase}/file/${url}`;
 }
 
 /* ─── Sub-tab labels ─────────────────────────────────────── */
@@ -569,19 +570,20 @@ export default function GroupLessons({ groupId }) {
       <Dialog
         open={Boolean(previewVid)}
         onClose={() => setPreviewVid(null)}
-        maxWidth="md"
-        fullWidth
+        maxWidth={false}
         PaperProps={{
           sx: {
-            borderRadius: '16px',
-            p: 3,
+            width: '100%',
+            maxWidth: '640px',
+            borderRadius: '20px',
+            p: 4.5,
             backgroundColor: '#ffffff',
-            boxShadow: '0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1)',
+            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
           }
         }}
       >
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-          <Typography sx={{ fontWeight: 600, fontSize: '1rem', color: '#111827' }}>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2.5 }}>
+          <Typography sx={{ fontWeight: 600, fontSize: '1.05rem', color: '#111827' }}>
             {previewVid?.title}
           </Typography>
           <IconButton onClick={() => setPreviewVid(null)} size="small" sx={{ color: '#9ca3af', '&:hover': { color: '#374151' } }}>
@@ -597,8 +599,8 @@ export default function GroupLessons({ groupId }) {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)',
-          border: '1px solid #e5e7eb',
+          boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1)',
+          border: '1px solid #f3f4f6',
         }}>
           {previewVid && (
             <Box

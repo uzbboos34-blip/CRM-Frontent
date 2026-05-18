@@ -43,9 +43,9 @@ function fmtDateTime(d) {
   const dt = new Date(d);
   const day = dt.getDate();
   const mon = MONTHS[dt.getMonth()];
-  const yr  = dt.getFullYear();
-  const h   = String(dt.getHours()).padStart(2, '0');
-  const m   = String(dt.getMinutes()).padStart(2, '0');
+  const yr = dt.getFullYear();
+  const h = String(dt.getHours()).padStart(2, '0');
+  const m = String(dt.getMinutes()).padStart(2, '0');
   return `${day} ${mon}, ${yr}\n${h}:${m}`;
 }
 
@@ -78,14 +78,14 @@ function getFullVideoUrl(url) {
   if (!url) return '';
   if (url.startsWith('http')) return url;
   let baseUrl = api.defaults.baseURL || import.meta.env.VITE_API_URL || 'https://crm-backend-l7jq.onrender.com';
-  
+
   // Oxiridagi slashni olib tashlaymiz
   if (baseUrl.endsWith('/')) {
     baseUrl = baseUrl.slice(0, -1);
   }
   // Agar baseURL ichida /api/v1 bo'lsa, uni tozalaymiz (chunki static fayllar rootda /file da joylashgan)
   baseUrl = baseUrl.replace(/\/api\/v1$/, '');
-  
+
   return `${baseUrl}/file/${url}`;
 }
 
@@ -99,20 +99,20 @@ export default function GroupLessons({ groupId }) {
   const navigate = useNavigate();
   const { uploads, setUploads } = useUploads();
 
-  const [subTab, setSubTab]       = useState(0);
+  const [subTab, setSubTab] = useState(0);
   const [homeworks, setHomeworks] = useState([]);
-  const [videos, setVideos]       = useState([]);
-  const [loading, setLoading]     = useState(false);
+  const [videos, setVideos] = useState([]);
+  const [loading, setLoading] = useState(false);
   // Homework menu
-  const [anchorEl, setAnchorEl]   = useState(null);
-  const [menuHw, setMenuHw]       = useState(null);
+  const [anchorEl, setAnchorEl] = useState(null);
+  const [menuHw, setMenuHw] = useState(null);
   // Video menu (separate to avoid state confusion)
   const [vidAnchorEl, setVidAnchorEl] = useState(null);
-  const [menuVid, setMenuVid]         = useState(null);
+  const [menuVid, setMenuVid] = useState(null);
   // Video preview modal
-  const [previewVid, setPreviewVid]   = useState(null);
+  const [previewVid, setPreviewVid] = useState(null);
   const [uploadModalOpen, setUploadModalOpen] = useState(false);
-  const [snackbar, setSnackbar]   = useState({ open: false, msg: '', sev: 'success' });
+  const [snackbar, setSnackbar] = useState({ open: false, msg: '', sev: 'success' });
 
   /* ── read subTab from URL on mount ── */
   useEffect(() => {
@@ -430,20 +430,20 @@ export default function GroupLessons({ groupId }) {
                         </Typography>
                       </TableCell>
 
-                       {/* Actions menu */}
-                       <TableCell sx={{ ...tdSx, textAlign: 'center' }}>
-                         <IconButton
-                           size="small"
-                           onClick={(e) => { e.stopPropagation(); handleMenuOpen(e, hw); }}
-                           sx={{ color: '#9ca3af', '&:hover': { color: '#374151' } }}
-                         >
-                           <MoreVertIcon fontSize="small" />
-                         </IconButton>
-                       </TableCell>
-                       {/* Clickable arrow */}
-                       <TableCell sx={{ ...tdSx, textAlign: 'right', width: 32, pr: 2 }}>
-                         <Typography sx={{ color: '#d1d5db', fontSize: '1.1rem', fontWeight: 300 }}>›</Typography>
-                       </TableCell>
+                      {/* Actions menu */}
+                      <TableCell sx={{ ...tdSx, textAlign: 'center' }}>
+                        <IconButton
+                          size="small"
+                          onClick={(e) => { e.stopPropagation(); handleMenuOpen(e, hw); }}
+                          sx={{ color: '#9ca3af', '&:hover': { color: '#374151' } }}
+                        >
+                          <MoreVertIcon fontSize="small" />
+                        </IconButton>
+                      </TableCell>
+                      {/* Clickable arrow */}
+                      <TableCell sx={{ ...tdSx, textAlign: 'right', width: 32, pr: 2 }}>
+                        <Typography sx={{ color: '#d1d5db', fontSize: '1.1rem', fontWeight: 300 }}>›</Typography>
+                      </TableCell>
                     </TableRow>
                   );
                 })}
@@ -577,13 +577,12 @@ export default function GroupLessons({ groupId }) {
       <Dialog
         open={Boolean(previewVid)}
         onClose={() => setPreviewVid(null)}
-        maxWidth={false}
+        maxWidth="md"
+        fullWidth
         PaperProps={{
           sx: {
-            width: '90%',
-            maxWidth: '780px',
-            borderRadius: '18px',
-            p: 5.5,
+            borderRadius: '20px',
+            p: 8.5,
             backgroundColor: '#ffffff',
             boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
           }
@@ -598,8 +597,8 @@ export default function GroupLessons({ groupId }) {
           </IconButton>
         </Box>
         <Box sx={{
-          width: '100%',
-          borderRadius: '12px',
+          width: '90%',
+          borderRadius: '17px',
           overflow: 'hidden',
           backgroundColor: '#000',
           aspectRatio: '16/9',

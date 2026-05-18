@@ -5,7 +5,7 @@ import {
   Box, Typography, Button, Tab, Tabs, Table, TableBody,
   TableCell, TableContainer, TableHead, TableRow, Paper,
   CircularProgress, Chip, IconButton, Tooltip, Menu, MenuItem,
-  Snackbar, Alert, LinearProgress,
+  Snackbar, Alert, Dialog, DialogContent, DialogTitle,
 } from '@mui/material';
 import { useUploads } from '../context/UploadContext';
 import Add from '@mui/icons-material/Add';
@@ -15,6 +15,8 @@ import CheckCircleOutlined from '@mui/icons-material/CheckCircleOutlined';
 import MoreVert from '@mui/icons-material/MoreVert';
 import DeleteOutlined from '@mui/icons-material/DeleteOutlined';
 import EditOutlined from '@mui/icons-material/EditOutlined';
+import Close from '@mui/icons-material/Close';
+import PlayCircle from '@mui/icons-material/PlayCircle';
 import { Pause, PlayArrow } from '@mui/icons-material';
 
 const AddIcon = Add;
@@ -24,6 +26,8 @@ const CheckCircleOutlineIcon = CheckCircleOutlined;
 const MoreVertIcon = MoreVert;
 const DeleteOutlineIcon = DeleteOutlined;
 const EditOutlinedIcon = EditOutlined;
+const CloseIcon = Close;
+const PlayCircleIcon = PlayCircle;
 const PauseIcon = Pause;
 const PlayIcon = PlayArrow;
 
@@ -48,6 +52,15 @@ function fmtDate(d) {
   if (!d) return '—';
   const dt = new Date(d);
   return `${dt.getDate()} ${MONTHS[dt.getMonth()]}, ${dt.getFullYear()}`;
+}
+
+function fmtFileSize(bytes) {
+  if (!bytes) return '—';
+  const b = Number(bytes);
+  if (b === 0) return '—';
+  if (b < 1024 * 1024) return `${(b / 1024).toFixed(0)} KB`;
+  if (b < 1024 * 1024 * 1024) return `${(b / (1024 * 1024)).toFixed(2)} MB`;
+  return `${(b / (1024 * 1024 * 1024)).toFixed(2)} GB`;
 }
 
 function getYTThumb(url) {
@@ -81,8 +94,14 @@ export default function GroupLessons({ groupId }) {
   const [homeworks, setHomeworks] = useState([]);
   const [videos, setVideos]       = useState([]);
   const [loading, setLoading]     = useState(false);
+  // Homework menu
   const [anchorEl, setAnchorEl]   = useState(null);
   const [menuHw, setMenuHw]       = useState(null);
+  // Video menu (separate to avoid state confusion)
+  const [vidAnchorEl, setVidAnchorEl] = useState(null);
+  const [menuVid, setMenuVid]         = useState(null);
+  // Video preview modal
+  const [previewVid, setPreviewVid]   = useState(null);
   const [snackbar, setSnackbar]   = useState({ open: false, msg: '', sev: 'success' });
 
   /* ── read subTab from URL on mount ── */
@@ -140,7 +159,7 @@ export default function GroupLessons({ groupId }) {
     }
   }
 
-  /* ── delete ── */
+  /* ── delete homework ── */
   async function handleDelete(id) {
     handleMenuClose();
     try {
@@ -152,7 +171,19 @@ export default function GroupLessons({ groupId }) {
     }
   }
 
-  /* ── menu handlers ── */
+  /* ── delete video ── */
+  async function handleDeleteVideo(id) {
+    handleVidMenuClose();
+    try {
+      await api.delete(`/api/v1/videos/${id}`);
+      setSnackbar({ open: true, msg: "Video o'chirildi", sev: 'success' });
+      fetchVideos();
+    } catch (e) {
+      setSnackbar({ open: true, msg: e.response?.data?.message || 'Xatolik', sev: 'error' });
+    }
+  }
+
+  /* ── homework menu handlers ── */
   function handleMenuOpen(e, hw) {
     e.stopPropagation();
     setAnchorEl(e.currentTarget);
@@ -161,6 +192,17 @@ export default function GroupLessons({ groupId }) {
   function handleMenuClose() {
     setAnchorEl(null);
     setMenuHw(null);
+  }
+
+  /* ── video menu handlers ── */
+  function handleVidMenuOpen(e, vid) {
+    e.stopPropagation();
+    setVidAnchorEl(e.currentTarget);
+    setMenuVid(vid);
+  }
+  function handleVidMenuClose() {
+    setVidAnchorEl(null);
+    setMenuVid(null);
   }
 
   /* ─────────────────────────────────────────────────────── */
@@ -423,88 +465,84 @@ export default function GroupLessons({ groupId }) {
             <Table>
               <TableHead>
                 <TableRow sx={{ backgroundColor: '#f9fafb' }}>
-                  <TableCell sx={thSx}>#</TableCell>
                   <TableCell sx={thSx}>Video nomi</TableCell>
                   <TableCell sx={thSx}>Dars nomi</TableCell>
-                  <TableCell sx={thSx}>Holat</TableCell>
-                  <TableCell sx={thSx}>Sana</TableCell>
-                  <TableCell sx={{ ...thSx, width: 100, textAlign: 'center' }}>Harakatlar</TableCell>
+                  <TableCell sx={thSx}>Status</TableCell>
+                  <TableCell sx={thSx}>Dars sanasi</TableCell>
+                  <TableCell sx={thSx}>Hajmi</TableCell>
+                  <TableCell sx={thSx}>Qo'shilgan vaqti</TableCell>
+                  <TableCell sx={{ ...thSx, width: 80, textAlign: 'center' }}>Harakatlar</TableCell>
                 </TableRow>
               </TableHead>
 
               <TableBody>
-                {/* Background Uploads (Videos & Homework) */}
-                {uploads.filter(u => String(u.metadata.groupId) === String(groupId)).map(u => (
-                  <TableRow key={u.id} sx={{ backgroundColor: u.status === 'error' ? '#fef2f2' : u.status === 'completed' ? '#f0fdf4' : '#f0fdf4' }}>
-                    <TableCell sx={tdSx}>--</TableCell>
-                    <TableCell sx={{ ...tdSx, color: u.status === 'error' ? '#991b1b' : '#3b82f6', fontWeight: 600 }}>
-                      {u.metadata.title}
-                      {u.metadata.type === 'homework' && <Chip label="Vazifa" size="small" sx={{ ml: 1, fontSize: '0.65rem', height: 18 }} />}
-                    </TableCell>
-                    <TableCell sx={tdSx}>{u.metadata.lessonTopic || '—'}</TableCell>
-                    <TableCell sx={tdSx}>
-                      {u.status === 'error' ? (
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                          <Chip 
-                            label="Xato" 
-                            size="small" 
-                            variant="filled"
-                            sx={{ height: 24, fontSize: '0.75rem', fontWeight: 700, color: '#fff', background: '#ef4444' }} 
-                          />
-                          <Typography sx={{ color: '#ef4444', fontSize: '0.7rem' }}>{u.error}</Typography>
-                        </Box>
-                      ) : u.status === 'completed' ? (
-                        <Chip 
-                          label="Bajarildi" 
-                          size="small" 
-                          sx={{ height: 24, fontSize: '0.75rem', fontWeight: 700, color: '#fff', background: '#10b981' }} 
-                        />
-                      ) : (
-                        <Chip 
-                          label={`Yuklanyapti ${u.progress}%`} 
-                          size="small" 
-                          variant="outlined"
-                          sx={{ 
-                            height: 24, fontSize: '0.75rem', fontWeight: 700,
-                            color: '#3b82f6', borderColor: '#3b82f6', background: '#eff6ff'
-                          }} 
-                        />
-                      )}
-                    </TableCell>
-                    <TableCell sx={tdSx}>{u.status === 'completed' ? 'Bajarildi' : 'Bugun'}</TableCell>
-                    <TableCell sx={{ ...tdSx, textAlign: 'center' }}>
-                      <Box sx={{ display: 'flex', justifyContent: 'center', gap: 0.5 }}>
+                {/* Background Uploads in progress */}
+                {uploads
+                  .filter(u => String(u.metadata.groupId) === String(groupId) && u.metadata.type === 'video' && u.status !== 'completed')
+                  .map(u => (
+                    <TableRow key={u.id} sx={{ backgroundColor: u.status === 'error' ? '#fef2f2' : '#eff6ff' }}>
+                      <TableCell sx={{ ...tdSx, color: u.status === 'error' ? '#991b1b' : '#3b82f6', fontWeight: 600 }}>
+                        {u.metadata.title}
+                      </TableCell>
+                      <TableCell sx={tdSx}>{u.metadata.lessonTopic || '—'}</TableCell>
+                      <TableCell sx={tdSx}>
                         {u.status === 'error' ? (
-                          <Button size="small" variant="text" color="error" sx={{ fontSize: '0.65rem', p: 0 }} onClick={() => setUploads(prev => prev.filter(x => x.id !== u.id))}>Tozalash</Button>
+                          <Chip label="Xato" size="small" sx={{ height: 22, fontSize: '0.72rem', fontWeight: 700, color: '#fff', background: '#ef4444' }} />
                         ) : (
-                          <>
-                            <IconButton size="small" sx={{ color: '#9ca3af' }}><PauseIcon fontSize="small" /></IconButton>
-                            <IconButton size="small" sx={{ color: '#ef4444' }} onClick={() => setUploads(prev => prev.filter(x => x.id !== u.id))}><DeleteOutlineIcon fontSize="small" /></IconButton>
-                          </>
+                          <Chip
+                            label={`Yuklanyapti ${u.progress || 0}%`}
+                            size="small"
+                            variant="outlined"
+                            sx={{ height: 22, fontSize: '0.72rem', fontWeight: 700, color: '#3b82f6', borderColor: '#3b82f6', background: '#eff6ff' }}
+                          />
                         )}
-                      </Box>
-                    </TableCell>
-                  </TableRow>
-                ))}
+                      </TableCell>
+                      <TableCell sx={tdSx}>—</TableCell>
+                      <TableCell sx={tdSx}>—</TableCell>
+                      <TableCell sx={tdSx}>Bugun</TableCell>
+                      <TableCell sx={{ ...tdSx, textAlign: 'center' }}>
+                        {u.status === 'error' ? (
+                          <Button size="small" color="error" sx={{ fontSize: '0.65rem' }} onClick={() => setUploads(prev => prev.filter(x => x.id !== u.id))}>Tozalash</Button>
+                        ) : (
+                          <IconButton size="small" sx={{ color: '#ef4444' }} onClick={() => setUploads(prev => prev.filter(x => x.id !== u.id))}>
+                            <DeleteOutlineIcon fontSize="small" />
+                          </IconButton>
+                        )}
+                      </TableCell>
+                    </TableRow>
+                  ))
+                }
 
-                {videos.map((vid, idx) => (
-                  <TableRow key={vid.id} sx={{ '&:hover': { backgroundColor: '#f9fafb' } }}>
-                    <TableCell sx={tdSx}>{idx + 1}</TableCell>
-                    <TableCell 
-                      sx={{ ...tdSx, color: '#3b82f6', fontWeight: 600, cursor: 'pointer' }}
-                      onClick={() => window.open(getFullVideoUrl(vid.video_url), '_blank')}
-                    >
-                      {vid.title}
+                {/* Finished videos */}
+                {videos.map((vid) => (
+                  <TableRow
+                    key={vid.id}
+                    onClick={() => setPreviewVid(vid)}
+                    sx={{ cursor: 'pointer', '&:hover': { backgroundColor: '#f9fafb' } }}
+                  >
+                    <TableCell sx={{ ...tdSx }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <PlayCircleIcon sx={{ fontSize: 20, color: '#10b981', flexShrink: 0 }} />
+                        <Typography sx={{ fontWeight: 600, color: '#111827', fontSize: '0.85rem' }}>
+                          {vid.title}
+                        </Typography>
+                      </Box>
                     </TableCell>
                     <TableCell sx={tdSx}>{vid.lessons?.topic || '—'}</TableCell>
                     <TableCell sx={tdSx}>
-                      <Chip label="Tayyor" size="small" sx={{ background: '#f0fdf4', color: '#10b981', fontWeight: 600, height: 24, fontSize: '0.75rem' }} />
+                      <Chip label="Tayyor" size="small" sx={{ background: '#f0fdf4', color: '#10b981', fontWeight: 700, height: 24, fontSize: '0.75rem' }} />
                     </TableCell>
+                    <TableCell sx={tdSx}>{fmtDate(vid.lessons?.date || vid.created_at)}</TableCell>
+                    <TableCell sx={tdSx}>{fmtFileSize(vid.file_size)}</TableCell>
                     <TableCell sx={tdSx}>{fmtDate(vid.created_at)}</TableCell>
                     <TableCell sx={{ ...tdSx, textAlign: 'center' }}>
-                       <IconButton size="small" onClick={(e) => { setAnchorEl(e.currentTarget); setMenuHw(vid); }}>
-                         <MoreVertIcon fontSize="small" />
-                       </IconButton>
+                      <IconButton
+                        size="small"
+                        onClick={(e) => handleVidMenuOpen(e, vid)}
+                        sx={{ color: '#9ca3af', '&:hover': { color: '#374151' } }}
+                      >
+                        <MoreVertIcon fontSize="small" />
+                      </IconButton>
                     </TableCell>
                   </TableRow>
                 ))}
@@ -521,7 +559,36 @@ export default function GroupLessons({ groupId }) {
       {/* ══ Tab 3: Jurnal ══════════════════════════════════ */}
       {subTab === 3 && <EmptyTab label="Jurnal" />}
 
-      {/* ── Context menu ── */}
+      {/* ── Video Preview Modal ── */}
+      <Dialog
+        open={Boolean(previewVid)}
+        onClose={() => setPreviewVid(null)}
+        maxWidth="md"
+        fullWidth
+        PaperProps={{ sx: { borderRadius: '16px', overflow: 'hidden' } }}
+      >
+        <DialogTitle sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', pb: 1 }}>
+          <Typography sx={{ fontWeight: 700, fontSize: '1rem', color: '#111827' }}>
+            {previewVid?.title}
+          </Typography>
+          <IconButton onClick={() => setPreviewVid(null)} size="small">
+            <CloseIcon fontSize="small" />
+          </IconButton>
+        </DialogTitle>
+        <DialogContent sx={{ p: 0 }}>
+          {previewVid && (
+            <Box
+              component="video"
+              src={getFullVideoUrl(previewVid.video_url)}
+              controls
+              autoPlay={false}
+              sx={{ width: '100%', maxHeight: '70vh', display: 'block', background: '#000' }}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* ── Homework Context menu ── */}
       <Menu
         anchorEl={anchorEl}
         open={Boolean(anchorEl)}
@@ -543,6 +610,32 @@ export default function GroupLessons({ groupId }) {
         </MenuItem>
         <MenuItem
           onClick={() => handleDelete(menuHw?.id)}
+          sx={{ gap: 1.5, fontSize: '0.85rem', fontWeight: 600, color: '#ef4444' }}
+        >
+          <DeleteOutlineIcon fontSize="small" />
+          O'chirish
+        </MenuItem>
+      </Menu>
+
+      {/* ── Video Context menu ── */}
+      <Menu
+        anchorEl={vidAnchorEl}
+        open={Boolean(vidAnchorEl)}
+        onClose={handleVidMenuClose}
+        PaperProps={{
+          elevation: 3,
+          sx: { borderRadius: '12px', minWidth: 160, py: 0.5 },
+        }}
+      >
+        <MenuItem
+          onClick={() => { handleVidMenuClose(); setPreviewVid(menuVid); }}
+          sx={{ gap: 1.5, fontSize: '0.85rem', fontWeight: 600, color: '#374151' }}
+        >
+          <PlayCircleIcon fontSize="small" sx={{ color: '#10b981' }} />
+          Ko'rish
+        </MenuItem>
+        <MenuItem
+          onClick={() => handleDeleteVideo(menuVid?.id)}
           sx={{ gap: 1.5, fontSize: '0.85rem', fontWeight: 600, color: '#ef4444' }}
         >
           <DeleteOutlineIcon fontSize="small" />

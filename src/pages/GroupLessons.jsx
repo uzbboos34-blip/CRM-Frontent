@@ -589,7 +589,7 @@ export default function GroupLessons({ groupId }) {
       >
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', p: 2 }}>
           <Typography sx={{ fontWeight: 600, fontSize: '1.05rem', color: '#111827' }}>
-            {previewVid?.title}
+            {previewVid?.lessons?.topic || previewVid?.title}
           </Typography>
           <IconButton onClick={() => setPreviewVid(null)} size="small">
             <CloseIcon fontSize="small" />

@@ -573,16 +573,16 @@ export default function GroupLessons({ groupId }) {
         maxWidth={false}
         PaperProps={{
           sx: {
-            width: '100%',
-            maxWidth: '640px',
-            borderRadius: '20px',
-            p: 4.5,
+            width: '90%',
+            maxWidth: '860px',
+            borderRadius: '16px',
+            p: 3,
             backgroundColor: '#ffffff',
             boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
           }
         }}
       >
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2.5 }}>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
           <Typography sx={{ fontWeight: 600, fontSize: '1.05rem', color: '#111827' }}>
             {previewVid?.title}
           </Typography>

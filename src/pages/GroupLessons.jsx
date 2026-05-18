@@ -578,12 +578,15 @@ export default function GroupLessons({ groupId }) {
         open={Boolean(previewVid)}
         onClose={() => setPreviewVid(null)}
         fullWidth
+        sx={{
+          '& .MuiDialog-paper': {
+            margin: '16px',  // ← shu qatorni qo'shing
+          }
+        }}
         PaperProps={{
           sx: {
             borderRadius: '25px',
-            pt: 4,   // yuqori
-            pb: 4,   // pastki
-            px: 4,   // chap va o'ng
+            p: 3,
             backgroundColor: '#ffffff',
             maxWidth: '550px',  // xohlagan qiymat
             width: '100%',

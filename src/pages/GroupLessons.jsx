@@ -578,14 +578,12 @@ export default function GroupLessons({ groupId }) {
         open={Boolean(previewVid)}
         onClose={() => setPreviewVid(null)}
         fullWidth
-        sx={{
-          '& .MuiDialog-paper': {
+        PaperProps={{
+          sx: {
             borderRadius: '25px',
             backgroundColor: '#ffffff',
             maxWidth: '550px',
             overflow: 'hidden',
-            position: 'relative',
-            left: { xs: 0, md: '110px' },
           }
         }}
       >

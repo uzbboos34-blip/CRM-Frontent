@@ -598,7 +598,7 @@ export default function GroupLessons({ groupId }) {
         <Box sx={{ px: 2, pb: 2 }}>
           <Box sx={{
             width: '100%',
-            borderRadius: '12px',
+            borderRadius: '9px',
             overflow: 'hidden',
             backgroundColor: '#000',
             aspectRatio: '16/9',

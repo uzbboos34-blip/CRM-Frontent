@@ -578,23 +578,16 @@ export default function GroupLessons({ groupId }) {
         open={Boolean(previewVid)}
         onClose={() => setPreviewVid(null)}
         fullWidth
-        sx={{
-          '& .MuiDialog-paper': {
-            margin: '32px',
-          }
-        }}
         PaperProps={{
           sx: {
             borderRadius: '25px',
-            p: 3,
             backgroundColor: '#ffffff',
             maxWidth: '550px',
-            width: '100%',
-            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+            overflow: 'hidden',
           }
         }}
       >
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', p: 2 }}>
           <Typography sx={{ fontWeight: 600, fontSize: '1.05rem', color: '#111827' }}>
             {previewVid?.title}
           </Typography>
@@ -602,23 +595,24 @@ export default function GroupLessons({ groupId }) {
             <CloseIcon fontSize="small" />
           </IconButton>
         </Box>
-        <Box sx={{
-          width: '100%',
-          mx: 2,
-          borderRadius: '12px',
-          overflow: 'hidden',
-          backgroundColor: '#000',
-          aspectRatio: '16/9',
-        }}>
-          {previewVid && (
-            <Box
-              component="video"
-              src={getFullVideoUrl(previewVid.video_url)}
-              controls
-              autoPlay={false}
-              sx={{ width: '100%', height: '100%', display: 'block', objectFit: 'contain' }}
-            />
-          )}
+        <Box sx={{ px: 2, pb: 2 }}>
+          <Box sx={{
+            width: '100%',
+            borderRadius: '12px',
+            overflow: 'hidden',
+            backgroundColor: '#000',
+            aspectRatio: '16/9',
+          }}>
+            {previewVid && (
+              <Box
+                component="video"
+                src={getFullVideoUrl(previewVid.video_url)}
+                controls
+                autoPlay={false}
+                sx={{ width: '100%', height: '100%', display: 'block' }}
+              />
+            )}
+          </Box>
         </Box>
       </Dialog>
 

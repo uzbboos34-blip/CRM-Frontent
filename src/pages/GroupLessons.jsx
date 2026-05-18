@@ -496,7 +496,7 @@ export default function GroupLessons({ groupId }) {
                   .map(u => (
                     <TableRow key={u.id} sx={{ backgroundColor: u.status === 'error' ? '#fef2f2' : '#eff6ff' }}>
                       <TableCell sx={{ ...tdSx, color: u.status === 'error' ? '#991b1b' : '#3b82f6', fontWeight: 600 }}>
-                        {u.metadata.lessonTopic || u.metadata.title}
+                        {u.metadata.title}
                       </TableCell>
                       <TableCell sx={tdSx}>{u.metadata.lessonTopic || '—'}</TableCell>
                       <TableCell sx={tdSx}>
@@ -538,7 +538,7 @@ export default function GroupLessons({ groupId }) {
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                         <PlayCircleIcon sx={{ fontSize: 20, color: '#10b981', flexShrink: 0 }} />
                         <Typography sx={{ fontWeight: 600, color: '#111827', fontSize: '0.85rem' }}>
-                          {vid.lessons?.topic || vid.title}
+                          {vid.title}
                         </Typography>
                       </Box>
                     </TableCell>

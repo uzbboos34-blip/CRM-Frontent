@@ -595,7 +595,7 @@ export default function GroupLessons({ groupId }) {
             <CloseIcon fontSize="small" />
           </IconButton>
         </Box>
-        <Box sx={{ px: 2, pb: 2 }}>
+        <Box sx={{ pl: 2.8, pr: 1.2, pb: 2 }}>
           <Box sx={{
             width: '100%',
             borderRadius: '9px',

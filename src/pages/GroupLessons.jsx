@@ -577,13 +577,14 @@ export default function GroupLessons({ groupId }) {
       <Dialog
         open={Boolean(previewVid)}
         onClose={() => setPreviewVid(null)}
-        maxWidth="sm"
         fullWidth
         PaperProps={{
           sx: {
             borderRadius: '25px',
-            p: 2,
+            p: 3,
             backgroundColor: '#ffffff',
+            maxWidth: '500px',  // xohlagan qiymat
+            width: '100%',
             boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
           }
         }}
@@ -598,7 +599,7 @@ export default function GroupLessons({ groupId }) {
         </Box>
         <Box sx={{
           width: '100%',
-          borderRadius: '17px',
+          borderRadius: '12px',
           overflow: 'hidden',
           backgroundColor: '#000',
           aspectRatio: '16/9',

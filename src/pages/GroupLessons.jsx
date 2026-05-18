@@ -582,7 +582,7 @@ export default function GroupLessons({ groupId }) {
         PaperProps={{
           sx: {
             borderRadius: '25px',
-            p: 8,
+            p: 2,
             backgroundColor: '#ffffff',
             boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
           }

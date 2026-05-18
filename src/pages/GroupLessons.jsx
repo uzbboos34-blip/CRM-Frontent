@@ -77,9 +77,16 @@ function getYTThumb(url) {
 function getFullVideoUrl(url) {
   if (!url) return '';
   if (url.startsWith('http')) return url;
-  const baseUrl = api.defaults.baseURL || import.meta.env.VITE_API_URL || 'https://crm-backend-l7jq.onrender.com';
-  const cleanBase = baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl;
-  return `${cleanBase}/file/${url}`;
+  let baseUrl = api.defaults.baseURL || import.meta.env.VITE_API_URL || 'https://crm-backend-l7jq.onrender.com';
+  
+  // Oxiridagi slashni olib tashlaymiz
+  if (baseUrl.endsWith('/')) {
+    baseUrl = baseUrl.slice(0, -1);
+  }
+  // Agar baseURL ichida /api/v1 bo'lsa, uni tozalaymiz (chunki static fayllar rootda /file da joylashgan)
+  baseUrl = baseUrl.replace(/\/api\/v1$/, '');
+  
+  return `${baseUrl}/file/${url}`;
 }
 
 /* ─── Sub-tab labels ─────────────────────────────────────── */
@@ -570,13 +577,12 @@ export default function GroupLessons({ groupId }) {
       <Dialog
         open={Boolean(previewVid)}
         onClose={() => setPreviewVid(null)}
-        maxWidth={false}
+        maxWidth="md"
+        fullWidth
         PaperProps={{
           sx: {
-            width: '90%',
-            maxWidth: '860px',
             borderRadius: '16px',
-            p: 3,
+            p: 4.5,
             backgroundColor: '#ffffff',
             boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
           }

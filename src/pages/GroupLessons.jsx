@@ -571,27 +571,45 @@ export default function GroupLessons({ groupId }) {
         onClose={() => setPreviewVid(null)}
         maxWidth="md"
         fullWidth
-        PaperProps={{ sx: { borderRadius: '16px', overflow: 'hidden' } }}
+        PaperProps={{
+          sx: {
+            borderRadius: '16px',
+            p: 3,
+            backgroundColor: '#ffffff',
+            boxShadow: '0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1)',
+          }
+        }}
       >
-        <DialogTitle sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', pb: 1 }}>
-          <Typography sx={{ fontWeight: 700, fontSize: '1rem', color: '#111827' }}>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+          <Typography sx={{ fontWeight: 600, fontSize: '1rem', color: '#111827' }}>
             {previewVid?.title}
           </Typography>
-          <IconButton onClick={() => setPreviewVid(null)} size="small">
+          <IconButton onClick={() => setPreviewVid(null)} size="small" sx={{ color: '#9ca3af', '&:hover': { color: '#374151' } }}>
             <CloseIcon fontSize="small" />
           </IconButton>
-        </DialogTitle>
-        <DialogContent sx={{ p: 0 }}>
+        </Box>
+        <Box sx={{
+          width: '100%',
+          borderRadius: '12px',
+          overflow: 'hidden',
+          backgroundColor: '#000',
+          aspectRatio: '16/9',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)',
+          border: '1px solid #e5e7eb',
+        }}>
           {previewVid && (
             <Box
               component="video"
               src={getFullVideoUrl(previewVid.video_url)}
               controls
               autoPlay={false}
-              sx={{ width: '100%', maxHeight: '70vh', display: 'block', background: '#000' }}
+              sx={{ width: '100%', height: '100%', display: 'block', objectFit: 'contain' }}
             />
           )}
-        </DialogContent>
+        </Box>
       </Dialog>
 
       {/* ── Video Upload Modal ── */}

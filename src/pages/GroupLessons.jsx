@@ -577,12 +577,12 @@ export default function GroupLessons({ groupId }) {
       <Dialog
         open={Boolean(previewVid)}
         onClose={() => setPreviewVid(null)}
-        maxWidth="md"
+        maxWidth="sm"
         fullWidth
         PaperProps={{
           sx: {
-            borderRadius: '20px',
-            p: 8.5,
+            borderRadius: '25px',
+            p: 8,
             backgroundColor: '#ffffff',
             boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
           }
@@ -597,7 +597,7 @@ export default function GroupLessons({ groupId }) {
           </IconButton>
         </Box>
         <Box sx={{
-          width: '90%',
+          width: '100%',
           borderRadius: '17px',
           overflow: 'hidden',
           backgroundColor: '#000',

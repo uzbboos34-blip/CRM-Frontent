@@ -584,7 +584,8 @@ export default function GroupLessons({ groupId }) {
             backgroundColor: '#ffffff',
             maxWidth: '550px',
             overflow: 'hidden',
-            marginLeft: { xs: 0, md: '110px' },
+            position: 'relative',
+            left: { xs: 0, md: '110px' },
           }
         }}
       >

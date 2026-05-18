@@ -580,7 +580,7 @@ export default function GroupLessons({ groupId }) {
         fullWidth
         sx={{
           '& .MuiDialog-paper': {
-            margin: '16px',  // ← shu qatorni qo'shing
+            margin: '32px',
           }
         }}
         PaperProps={{
@@ -588,7 +588,7 @@ export default function GroupLessons({ groupId }) {
             borderRadius: '25px',
             p: 3,
             backgroundColor: '#ffffff',
-            maxWidth: '550px',  // xohlagan qiymat
+            maxWidth: '550px',
             width: '100%',
             boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
           }
@@ -598,21 +598,16 @@ export default function GroupLessons({ groupId }) {
           <Typography sx={{ fontWeight: 600, fontSize: '1.05rem', color: '#111827' }}>
             {previewVid?.title}
           </Typography>
-          <IconButton onClick={() => setPreviewVid(null)} size="small" sx={{ color: '#9ca3af', '&:hover': { color: '#374151' } }}>
+          <IconButton onClick={() => setPreviewVid(null)} size="small">
             <CloseIcon fontSize="small" />
           </IconButton>
         </Box>
         <Box sx={{
-          width: '99%',
+          width: '100%',
           borderRadius: '12px',
           overflow: 'hidden',
           backgroundColor: '#000',
           aspectRatio: '16/9',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1)',
-          border: '1px solid #f3f4f6',
         }}>
           {previewVid && (
             <Box

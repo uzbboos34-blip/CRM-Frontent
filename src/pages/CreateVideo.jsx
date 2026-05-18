@@ -1,34 +1,53 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import api from '../api/axios';
 import { useUploads } from '../context/UploadContext';
 import {
-  Box, Typography, Button, MenuItem, Select, FormControl,
-  FormHelperText, TextField, Paper, Divider, CircularProgress,
-  Snackbar, Alert, IconButton, Chip, LinearProgress
+  Box, Typography, Button, MenuItem, Select,
+  TextField, Snackbar, Alert, IconButton, CircularProgress,
 } from '@mui/material';
 import {
-  ArrowBack as ArrowBackIcon,
-  CloudUpload as CloudUploadIcon,
   DeleteOutlined as DeleteIcon,
-  VideoFile as VideoFileIcon,
-  Add as AddIcon,
+  Close as CloseIcon,
 } from '@mui/icons-material';
 
-export default function CreateVideo() {
-  const { id: groupId } = useParams();
-  const navigate = useNavigate();
+// Custom SVG icon for upload
+const UploadBoxIcon = (props) => (
+  <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" {...props}>
+    <path d="M11.6667 30H28.3333C31.0948 30 33.3333 27.7614 33.3333 25V18.3333C33.3333 16.4924 31.8409 15 30 15H25L23.3333 11.6667H16.6667L15 15H10C8.15906 15 6.66667 16.4924 6.66667 18.3333V25C6.66667 27.7614 8.90524 30 11.6667 30Z" stroke="#10b981" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+    <path d="M20 25V16.6667M20 16.6667L16.6667 20M20 16.6667L23.3333 20" stroke="#10b981" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+  </svg>
+);
+
+const thSx = {
+  fontWeight: 700,
+  fontSize: '0.8rem',
+  color: '#6b7280',
+  py: 1.5,
+  px: 2,
+  borderBottom: '1px solid #e5e7eb',
+  whiteSpace: 'nowrap',
+};
+const tdSx = {
+  py: 1.5,
+  px: 2,
+  borderBottom: '1px solid #f3f4f6',
+  verticalAlign: 'middle',
+};
+
+export default function CreateVideo({ groupId: propGroupId, onClose }) {
+  const { id } = useParams();
+  const groupId = propGroupId || id;
   const { startUpload } = useUploads();
 
   const [lessons, setLessons] = useState([]);
-  // Each row: { id, file, lesson_id, video_url, title }
-  const [rows, setRows] = useState([{ id: Date.now(), file: null, lesson_id: '', video_url: '', title: '' }]);
+  const [rows, setRows] = useState([]);
   const [saving, setSaving] = useState(false);
   const [errors, setErrors] = useState({});
   const [snackbar, setSnackbar] = useState({ open: false, msg: '', sev: 'success' });
+  const [dragOver, setDragOver] = useState(false);
 
-  // Refs per row for file input
-  const fileRefs = useRef({});
+  const globalInputRef = useRef(null);
 
   useEffect(() => {
     if (!groupId) return;
@@ -37,9 +56,19 @@ export default function CreateVideo() {
       .catch(() => setLessons([]));
   }, [groupId]);
 
-  /* ── Row helpers ── */
-  function addRow() {
-    setRows(prev => [...prev, { id: Date.now(), file: null, lesson_id: '', video_url: '', title: '' }]);
+  /* ── helpers ── */
+  function addFilesToRows(files) {
+    const videoFiles = files.filter(f => f.type.startsWith('video/') || /\.(mp4|webm|mpeg|avi|mkv|m4v|ogm|mov|mpg)$/i.test(f.name));
+    if (!videoFiles.length) return;
+
+    setRows(prev => {
+      const updated = [...prev];
+      videoFiles.forEach(file => {
+        const name = file.name;
+        updated.push({ id: Date.now() + Math.random(), file, lesson_id: '', title: name });
+      });
+      return updated;
+    });
   }
 
   function removeRow(id) {
@@ -48,83 +77,45 @@ export default function CreateVideo() {
 
   function updateRow(id, field, value) {
     setRows(prev => prev.map(r => r.id === id ? { ...r, [field]: value } : r));
-    // clear error
-    setErrors(prev => {
-      const next = { ...prev };
-      delete next[`${id}_${field}`];
-      return next;
-    });
+    setErrors(prev => { const n = { ...prev }; delete n[`${id}_file`]; return n; });
   }
 
-  function handleFileChange(id, e) {
-    const file = e.target.files[0];
-    if (!file) return;
-    updateRow(id, 'file', file);
-    // Auto-fill title from filename if empty
-    setRows(prev => prev.map(r => {
-      if (r.id !== id) return r;
-      const name = file.name.replace(/\.[^/.]+$/, '');
-      return { ...r, file, title: r.title || name };
-    }));
-    // reset input so same file can be re-selected
-    e.target.value = '';
-  }
-
-  /* ── Drag & Drop ── */
+  /* ── drag & drop ── */
   function handleDrop(e) {
     e.preventDefault();
-    const files = Array.from(e.dataTransfer.files).filter(f => f.type.startsWith('video/'));
-    if (!files.length) return;
-
-    setRows(prev => {
-      const updated = [...prev];
-      // Fill existing empty rows first, then add new ones
-      files.forEach(file => {
-        const emptyIdx = updated.findIndex(r => !r.file && !r.video_url);
-        if (emptyIdx !== -1) {
-          const name = file.name.replace(/\.[^/.]+$/, '');
-          updated[emptyIdx] = { ...updated[emptyIdx], file, title: name };
-        } else {
-          const name = file.name.replace(/\.[^/.]+$/, '');
-          updated.push({ id: Date.now() + Math.random(), file, lesson_id: '', video_url: '', title: name });
-        }
-      });
-      return updated;
-    });
+    setDragOver(false);
+    addFilesToRows(Array.from(e.dataTransfer.files));
   }
 
-  /* ── Validation ── */
+  /* ── validate ── */
   function validate() {
     const e = {};
-    rows.forEach(r => {
-      if (!r.file && !r.video_url) {
-        e[`${r.id}_file`] = "Video fayl yoki URL kiritilishi shart";
-      }
+    rows.forEach(r => { 
+      if (!r.file) e[`${r.id}_file`] = true; 
+      if (!r.lesson_id) e[`${r.id}_lesson`] = true;
+      if (!r.title) e[`${r.id}_title`] = true;
     });
     setErrors(e);
     return Object.keys(e).length === 0;
   }
 
-  /* ── Submit ── */
+  /* ── submit ── */
   async function handleSubmit() {
+    if (rows.length === 0) {
+      if (onClose) onClose();
+      return;
+    }
     if (!validate()) return;
     setSaving(true);
 
-    let submitted = 0;
     for (const row of rows) {
       const selectedLesson = lessons.find(l => l.id === row.lesson_id);
-      const autoTitle = row.title || selectedLesson?.topic || `Dars videosi ${submitted + 1}`;
-
+      const autoTitle = row.title || 'Dars videosi';
       const data = new FormData();
       data.append('title', autoTitle);
       data.append('group_id', groupId);
       if (row.lesson_id) data.append('lesson_id', row.lesson_id);
-
-      if (row.file) {
-        data.append('video', row.file);
-      } else {
-        data.append('video_url', row.video_url);
-      }
+      if (row.file) data.append('video', row.file);
 
       startUpload('/api/v1/videos', data, {
         title: autoTitle,
@@ -132,293 +123,201 @@ export default function CreateVideo() {
         type: 'video',
         lessonTopic: selectedLesson?.topic || '—',
       });
-      submitted++;
     }
 
-    setSnackbar({ open: true, msg: `${submitted} ta video yuklash boshlandi...`, sev: 'success' });
-    setTimeout(() => navigate(`/group/${groupId}?tab=1&subTab=1`), 600);
+    setSnackbar({ open: true, msg: `${rows.length} ta video yuklash boshlandi...`, sev: 'success' });
+    setTimeout(() => {
+      if (onClose) onClose();
+    }, 600);
     setSaving(false);
   }
 
-  const hasMultiple = rows.length > 1;
+  const hasFiles = rows.length > 0;
 
   return (
-    <Box sx={{ maxWidth: 740, mx: 'auto', p: { xs: 2, md: 3 } }}>
+    <Box sx={{ width: '100%', display: 'flex', flexDirection: 'column', p: 3 }}>
+
       {/* Header */}
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 4 }}>
-        <IconButton
-          onClick={() => navigate(`/group/${groupId}?tab=1&subTab=1`)}
-          sx={{ color: '#6b7280', '&:hover': { backgroundColor: '#f3f4f6' } }}
-        >
-          <ArrowBackIcon />
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+        <Typography sx={{ fontWeight: 700, fontSize: '1.2rem', color: '#111827' }}>
+          Qo'shish
+        </Typography>
+        <IconButton onClick={onClose} size="small" sx={{ color: '#9ca3af', '&:hover': { color: '#374151' } }}>
+          <CloseIcon />
         </IconButton>
-        <Box>
-          <Typography variant="h5" sx={{ fontWeight: 800, color: '#111827', lineHeight: 1.2 }}>
-            Video qo'shish
-          </Typography>
-          <Typography sx={{ fontSize: '0.8rem', color: '#9ca3af', mt: 0.3 }}>
-            Bir yoki bir nechta video yuklang
-          </Typography>
-        </Box>
       </Box>
 
-      {/* Drop zone */}
+      {/* Upload Zone */}
       <Box
-        onDragOver={e => e.preventDefault()}
+        onDragOver={e => { e.preventDefault(); setDragOver(true); }}
+        onDragLeave={() => setDragOver(false)}
         onDrop={handleDrop}
+        onClick={() => globalInputRef.current?.click()}
         sx={{
-          border: '2px dashed #d1d5db',
-          borderRadius: '14px',
-          p: 3,
-          mb: 3,
+          border: '1px solid #e5e7eb',
+          borderRadius: '12px',
+          py: 4,
+          px: 3,
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
-          gap: 1,
+          gap: 1.5,
           cursor: 'pointer',
           transition: 'all 0.2s',
-          '&:hover': { borderColor: '#10b981', backgroundColor: '#f0fdf4' },
-        }}
-        onClick={() => {
-          // click hidden multi-input
-          document.getElementById('global-video-input')?.click();
+          backgroundColor: dragOver ? '#f0fdf4' : '#fff',
+          '&:hover': { backgroundColor: '#f9fafb' },
+          mb: hasFiles ? 3 : 0,
         }}
       >
         <input
-          id="global-video-input"
+          ref={globalInputRef}
           type="file"
           accept="video/*"
           multiple
           hidden
-          onChange={e => {
-            const files = Array.from(e.target.files);
-            if (!files.length) return;
-            setRows(prev => {
-              const updated = [...prev];
-              files.forEach(file => {
-                const name = file.name.replace(/\.[^/.]+$/, '');
-                const emptyIdx = updated.findIndex(r => !r.file && !r.video_url);
-                if (emptyIdx !== -1) {
-                  updated[emptyIdx] = { ...updated[emptyIdx], file, title: name };
-                } else {
-                  updated.push({ id: Date.now() + Math.random(), file, lesson_id: '', video_url: '', title: name });
-                }
-              });
-              return updated;
-            });
-            e.target.value = '';
-          }}
+          onChange={e => { addFilesToRows(Array.from(e.target.files)); e.target.value = ''; }}
         />
-        <CloudUploadIcon sx={{ fontSize: 40, color: '#10b981' }} />
-        <Typography sx={{ fontWeight: 700, color: '#374151', fontSize: '0.95rem' }}>
+        <UploadBoxIcon />
+        <Typography sx={{ fontWeight: 600, color: '#111827', fontSize: '0.95rem', textAlign: 'center' }}>
           Videofaylni yuklash uchun ushbu hudud ustiga bosing yoki faylni shu yerga olib keling
         </Typography>
-        <Typography sx={{ fontSize: '0.78rem', color: '#9ca3af' }}>
-          Videofayl: mp4, webm, mpeg, .avi, .mkv, .m4v, .ogm, .mov, .mpg formatlaridan birida bo'lishi kerak
+        <Typography sx={{ fontSize: '0.75rem', color: '#9ca3af', textAlign: 'center' }}>
+          Videofayl: .mp4, .webm, .mpeg, .avi, .mkv, .m4v, .ogm, .mov, .mpg formatlaridan birida bo'lishi kerak
         </Typography>
       </Box>
 
-      {/* Rows table */}
-      <Paper elevation={0} sx={{ border: '1px solid #e5e7eb', borderRadius: '14px', overflow: 'hidden', mb: 3 }}>
-        {/* Table header */}
-        <Box sx={{
-          display: 'grid',
-          gridTemplateColumns: hasMultiple ? '2fr 2fr 2fr 44px' : '2fr 2fr 2fr',
-          gap: 0,
-          backgroundColor: '#f9fafb',
-          borderBottom: '1px solid #e5e7eb',
-          px: 2,
-          py: 1.2,
-        }}>
-          <Typography sx={thSx}>File name</Typography>
-          <Typography sx={thSx}>* Dars</Typography>
-          <Typography sx={thSx}>* Video nomi</Typography>
-          {hasMultiple && <Typography sx={thSx}>Actions</Typography>}
-        </Box>
+      {/* Table for files */}
+      {hasFiles && (
+        <Box sx={{ border: '1px solid #e5e7eb', borderRadius: '12px', overflow: 'hidden', mb: 3 }}>
+          <Box sx={{
+            display: 'grid',
+            gridTemplateColumns: '2fr 2fr 2fr 60px',
+            backgroundColor: '#fff',
+            borderBottom: '1px solid #e5e7eb',
+          }}>
+            {['File name', '* Dars', '* Video nomi', 'Actions'].map((h, i) => (
+              <Box key={i} sx={{ ...thSx, background: 'transparent' }}>
+                {h}
+              </Box>
+            ))}
+          </Box>
 
-        {/* Rows */}
-        {rows.map((row, idx) => {
-          const fileErr = errors[`${row.id}_file`];
-          return (
-            <Box
-              key={row.id}
-              sx={{
-                display: 'grid',
-                gridTemplateColumns: hasMultiple ? '2fr 2fr 2fr 44px' : '2fr 2fr 2fr',
-                alignItems: 'center',
-                gap: 0,
-                px: 2,
-                py: 1.2,
-                borderBottom: idx < rows.length - 1 ? '1px solid #f3f4f6' : 'none',
-                backgroundColor: fileErr ? '#fef2f2' : 'white',
-              }}
-            >
-              {/* File name / upload cell */}
-              <Box sx={{ pr: 1 }}>
-                {row.file ? (
-                  <Box
+          {rows.map((row, idx) => {
+            const hasErr = errors[`${row.id}_file`];
+            const darsErr = errors[`${row.id}_lesson`];
+            const titleErr = errors[`${row.id}_title`];
+            return (
+              <Box
+                key={row.id}
+                sx={{
+                  display: 'grid',
+                  gridTemplateColumns: '2fr 2fr 2fr 60px',
+                  alignItems: 'center',
+                  borderBottom: idx < rows.length - 1 ? '1px solid #f3f4f6' : 'none',
+                  backgroundColor: hasErr ? '#fef2f2' : 'white',
+                }}
+              >
+                {/* File name */}
+                <Box sx={{ ...tdSx }}>
+                  <Typography sx={{
+                    fontSize: '0.85rem', color: '#111827', fontWeight: 500,
+                    overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                    maxWidth: 180,
+                  }}>
+                    {row.file?.name}
+                  </Typography>
+                </Box>
+
+                {/* Dars select */}
+                <Box sx={{ ...tdSx }}>
+                  <Select
+                    size="small"
+                    value={row.lesson_id}
+                    onChange={e => updateRow(row.id, 'lesson_id', e.target.value)}
+                    displayEmpty
+                    error={darsErr}
+                    fullWidth
                     sx={{
-                      display: 'flex', alignItems: 'center', gap: 0.7,
-                      backgroundColor: '#f0fdf4', borderRadius: '8px',
-                      px: 1, py: 0.5, cursor: 'pointer',
-                      border: '1px solid #a7f3d0',
-                      '&:hover': { borderColor: '#10b981' },
+                      borderRadius: '8px',
+                      fontSize: '0.85rem',
+                      height: 36,
+                      backgroundColor: '#f9fafb',
+                      '& fieldset': { borderColor: '#e5e7eb' },
                     }}
-                    onClick={() => fileRefs.current[row.id]?.click()}
                   >
-                    <VideoFileIcon sx={{ fontSize: 16, color: '#10b981', flexShrink: 0 }} />
-                    <Typography sx={{
-                      fontSize: '0.78rem', color: '#065f46', fontWeight: 600,
-                      overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-                      maxWidth: 140,
-                    }}>
-                      {row.file.name}
-                    </Typography>
-                    <input
-                      ref={el => fileRefs.current[row.id] = el}
-                      type="file"
-                      accept="video/*"
-                      hidden
-                      onChange={e => handleFileChange(row.id, e)}
-                    />
-                  </Box>
-                ) : (
-                  <Box>
-                    <Box
-                      sx={{
-                        display: 'flex', alignItems: 'center', gap: 0.7,
-                        border: `1px dashed ${fileErr ? '#ef4444' : '#d1d5db'}`,
-                        borderRadius: '8px', px: 1, py: 0.5,
-                        cursor: 'pointer', transition: 'all 0.2s',
-                        '&:hover': { borderColor: '#10b981', backgroundColor: '#f9fafb' },
-                      }}
-                      onClick={() => fileRefs.current[row.id]?.click()}
-                    >
-                      <CloudUploadIcon sx={{ fontSize: 16, color: '#9ca3af' }} />
-                      <Typography sx={{ fontSize: '0.78rem', color: '#9ca3af' }}>Fayl tanlang</Typography>
-                      <input
-                        ref={el => fileRefs.current[row.id] = el}
-                        type="file"
-                        accept="video/*"
-                        hidden
-                        onChange={e => handleFileChange(row.id, e)}
-                      />
-                    </Box>
-                    {/* OR URL field */}
-                    <TextField
-                      size="small"
-                      placeholder="yoki URL..."
-                      value={row.video_url}
-                      onChange={e => {
-                        updateRow(row.id, 'video_url', e.target.value);
-                      }}
-                      error={!!fileErr && !row.video_url}
-                      sx={{
-                        mt: 0.6,
-                        '& .MuiOutlinedInput-root': { borderRadius: '8px', fontSize: '0.78rem' },
-                        '& input': { py: 0.6, px: 1 },
-                      }}
-                      fullWidth
-                    />
-                    {fileErr && (
-                      <Typography sx={{ fontSize: '0.7rem', color: '#ef4444', mt: 0.3 }}>
-                        {fileErr}
-                      </Typography>
-                    )}
-                  </Box>
-                )}
-              </Box>
-
-              {/* Lesson select */}
-              <Box sx={{ px: 1 }}>
-                <Select
-                  size="small"
-                  value={row.lesson_id}
-                  onChange={e => updateRow(row.id, 'lesson_id', e.target.value)}
-                  displayEmpty
-                  fullWidth
-                  sx={{ borderRadius: '8px', fontSize: '0.82rem' }}
-                >
-                  <MenuItem value="" disabled sx={{ fontSize: '0.82rem', color: '#9ca3af' }}>
-                    Darsni tanlang
-                  </MenuItem>
-                  {lessons.map(l => (
-                    <MenuItem key={l.id} value={l.id} sx={{ fontSize: '0.82rem' }}>
-                      {l.topic}
+                    <MenuItem value="" disabled sx={{ fontSize: '0.85rem', color: '#9ca3af' }}>
+                      Darsni tanlang
                     </MenuItem>
-                  ))}
-                </Select>
-              </Box>
+                    {lessons.map(l => (
+                      <MenuItem key={l.id} value={l.id} sx={{ fontSize: '0.85rem' }}>
+                        {l.topic}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </Box>
 
-              {/* Video title */}
-              <Box sx={{ px: 1 }}>
-                <TextField
-                  size="small"
-                  placeholder={`Video ${idx + 1}`}
-                  value={row.title}
-                  onChange={e => updateRow(row.id, 'title', e.target.value)}
-                  fullWidth
-                  sx={{ '& .MuiOutlinedInput-root': { borderRadius: '8px', fontSize: '0.82rem' } }}
-                />
-              </Box>
+                {/* Title */}
+                <Box sx={{ ...tdSx }}>
+                  <TextField
+                    size="small"
+                    value={row.title}
+                    onChange={e => updateRow(row.id, 'title', e.target.value)}
+                    error={titleErr}
+                    fullWidth
+                    sx={{ 
+                      '& .MuiOutlinedInput-root': { 
+                        borderRadius: '8px', fontSize: '0.85rem', height: 36, backgroundColor: '#f9fafb',
+                        '& fieldset': { borderColor: '#e5e7eb' }
+                      } 
+                    }}
+                  />
+                </Box>
 
-              {/* Delete row */}
-              {hasMultiple && (
-                <Box sx={{ display: 'flex', justifyContent: 'center' }}>
+                {/* Delete */}
+                <Box sx={{ ...tdSx, display: 'flex', justifyContent: 'center' }}>
                   <IconButton
                     size="small"
                     onClick={() => removeRow(row.id)}
-                    sx={{ color: '#ef4444', '&:hover': { backgroundColor: '#fef2f2' } }}
+                    sx={{ border: '1px solid #e5e7eb', borderRadius: '8px', '&:hover': { backgroundColor: '#fef2f2', color: '#ef4444' } }}
                   >
-                    <DeleteIcon fontSize="small" />
+                    <DeleteIcon fontSize="small" sx={{ color: '#9ca3af' }} />
                   </IconButton>
                 </Box>
-              )}
-            </Box>
-          );
-        })}
-      </Paper>
+              </Box>
+            );
+          })}
+        </Box>
+      )}
 
-      {/* Actions */}
-      <Box sx={{ display: 'flex', gap: 2, justifyContent: 'space-between', flexWrap: 'wrap' }}>
+      {/* Footer */}
+      <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1.5, mt: hasFiles ? 0 : 2 }}>
         <Button
-          variant="text"
-          startIcon={<AddIcon />}
-          onClick={addRow}
+          variant="outlined"
+          onClick={onClose}
           sx={{
-            textTransform: 'none', fontWeight: 600, color: '#10b981',
-            '&:hover': { backgroundColor: '#f0fdf4' },
+            textTransform: 'none', fontWeight: 600, color: '#374151', 
+            borderColor: '#e5e7eb', borderRadius: '8px', px: 3, py: 0.8,
+            '&:hover': { backgroundColor: '#f9fafb', borderColor: '#d1d5db' },
           }}
         >
-          Qator qo'shish
+          Bekor qilish
         </Button>
-
-        <Box sx={{ display: 'flex', gap: 2 }}>
-          <Button
-            variant="outlined"
-            onClick={() => navigate(`/group/${groupId}?tab=1&subTab=1`)}
-            sx={{
-              borderRadius: '10px', textTransform: 'none', fontWeight: 700,
-              borderColor: '#d1d5db', color: '#374151',
-              '&:hover': { borderColor: '#9ca3af', backgroundColor: '#f9fafb' },
-            }}
-          >
-            Bekor qilish
-          </Button>
-          <Button
-            variant="contained"
-            onClick={handleSubmit}
-            disabled={saving}
-            sx={{
-              borderRadius: '10px', textTransform: 'none', fontWeight: 700, px: 3,
-              background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
-              boxShadow: '0 4px 14px rgba(16,185,129,0.35)',
-              '&:hover': { background: 'linear-gradient(135deg, #059669 0%, #047857 100%)' },
-            }}
-          >
-            {saving ? <CircularProgress size={20} sx={{ color: '#fff' }} /> : 'Fayllarni yuklash'}
-          </Button>
-        </Box>
+        <Button
+          variant="contained"
+          onClick={handleSubmit}
+          disabled={saving || rows.length === 0}
+          startIcon={saving ? <CircularProgress size={16} sx={{ color: '#fff' }} /> : null}
+          sx={{
+            textTransform: 'none', fontWeight: 600,
+            borderRadius: '8px', px: 3, py: 0.8,
+            background: '#10b981', color: '#fff',
+            boxShadow: 'none',
+            '&:hover': { background: '#059669', boxShadow: 'none' },
+            '&.Mui-disabled': { background: '#9ca3af', color: '#f3f4f6' }
+          }}
+        >
+          {saving ? 'Yuklanmoqda...' : 'Fayllarni yuklash'}
+        </Button>
       </Box>
 
       <Snackbar

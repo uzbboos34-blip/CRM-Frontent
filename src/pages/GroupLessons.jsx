@@ -8,6 +8,7 @@ import {
   Snackbar, Alert, Dialog, DialogContent, DialogTitle,
 } from '@mui/material';
 import { useUploads } from '../context/UploadContext';
+import CreateVideo from './CreateVideo';
 import Add from '@mui/icons-material/Add';
 import PersonOutlined from '@mui/icons-material/PersonOutlined';
 import AccessTime from '@mui/icons-material/AccessTime';
@@ -102,6 +103,7 @@ export default function GroupLessons({ groupId }) {
   const [menuVid, setMenuVid]         = useState(null);
   // Video preview modal
   const [previewVid, setPreviewVid]   = useState(null);
+  const [uploadModalOpen, setUploadModalOpen] = useState(false);
   const [snackbar, setSnackbar]   = useState({ open: false, msg: '', sev: 'success' });
 
   /* ── read subTab from URL on mount ── */
@@ -254,11 +256,16 @@ export default function GroupLessons({ groupId }) {
         {subTab === 1 && (
           <Button
             variant="contained"
-            startIcon={<AddIcon />}
-            onClick={() => navigate(`/group/${groupId}/video/create`)}
-            sx={addBtnSx}
+            onClick={() => setUploadModalOpen(true)}
+            sx={{
+              background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+              color: '#fff', textTransform: 'none', fontWeight: 600,
+              borderRadius: '8px', px: 3, py: 0.8,
+              boxShadow: 'none',
+              '&:hover': { background: 'linear-gradient(135deg, #059669 0%, #047857 100%)', boxShadow: 'none' },
+            }}
           >
-            Video qo'shish
+            Qo'shish
           </Button>
         )}
       </Box>
@@ -451,8 +458,7 @@ export default function GroupLessons({ groupId }) {
             </Typography>
             <Button
               variant="outlined"
-              startIcon={<AddIcon />}
-              onClick={() => navigate(`/group/${groupId}/video/create`)}
+              onClick={() => setUploadModalOpen(true)}
               sx={emptyBtnSx}
             >
               Birinchi videoni qo'shish
@@ -586,6 +592,17 @@ export default function GroupLessons({ groupId }) {
             />
           )}
         </DialogContent>
+      </Dialog>
+
+      {/* ── Video Upload Modal ── */}
+      <Dialog
+        open={uploadModalOpen}
+        onClose={() => setUploadModalOpen(false)}
+        maxWidth="md"
+        fullWidth
+        PaperProps={{ sx: { borderRadius: '16px', overflow: 'hidden' } }}
+      >
+        <CreateVideo groupId={groupId} onClose={() => setUploadModalOpen(false)} />
       </Dialog>
 
       {/* ── Homework Context menu ── */}

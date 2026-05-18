@@ -581,7 +581,9 @@ export default function GroupLessons({ groupId }) {
         PaperProps={{
           sx: {
             borderRadius: '25px',
-            p: 10,
+            pt: 4,   // yuqori
+            pb: 4,   // pastki
+            px: 4,   // chap va o'ng
             backgroundColor: '#ffffff',
             maxWidth: '550px',  // xohlagan qiymat
             width: '100%',
@@ -598,7 +600,7 @@ export default function GroupLessons({ groupId }) {
           </IconButton>
         </Box>
         <Box sx={{
-          width: '97%',
+          width: '99%',
           borderRadius: '12px',
           overflow: 'hidden',
           backgroundColor: '#000',

@@ -1014,15 +1014,13 @@ export default function GroupLessons({ groupId }) {
         open={deleteConfirmOpen}
         onClose={() => setDeleteConfirmOpen(false)}
         fullWidth
-        maxWidth={false}
         PaperProps={{
           sx: {
-            borderRadius: '16px !important',
-            padding: '24px 20px !important',
-            width: '320px !important',
-            minWidth: '320px !important',
-            maxWidth: '95% !important',
-            mx: 'auto !important',
+            borderRadius: '16px',
+            padding: '24px 20px',
+            maxWidth: '320px',
+            mx: 'auto',
+            backgroundColor: '#ffffff',
             border: '1px solid #f3f4f6',
             boxShadow: '0 20px 25px -5px rgba(0,0,0,0.08), 0 10px 10px -5px rgba(0,0,0,0.03)'
           }

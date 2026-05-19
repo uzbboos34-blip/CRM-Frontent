@@ -486,6 +486,7 @@ export default function GroupLessons({ groupId }) {
             </Button>
           </Paper>
         ) : (
+          <>
           {/* Desktop jadval — mobilda yashiriladi */}
           <TableContainer component={Paper} elevation={0} sx={{
             border: '1px solid #e5e7eb', borderRadius: '16px', overflow: 'hidden',
@@ -634,6 +635,7 @@ export default function GroupLessons({ groupId }) {
               </Paper>
             ))}
           </Box>
+          </>
         )
       )}
 

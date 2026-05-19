@@ -458,12 +458,10 @@ export default function GroupLessons({ groupId }) {
                   return (
                     <TableRow
                       key={hw.id}
-                      onClick={() => navigate(`/group/${groupId}/homework/${hw.id}`)}
                       sx={{
-                        cursor: 'pointer',
-                        '&:hover': { backgroundColor: '#f8f7ff' },
                         borderBottom: '1px solid #f3f4f6',
                         transition: 'background 0.15s',
+                        '&:hover': { backgroundColor: '#f8f7ff' },
                       }}
                     >
                       {/* # */}
@@ -475,14 +473,19 @@ export default function GroupLessons({ groupId }) {
 
                       {/* Mavzu */}
                       <TableCell sx={{ ...tdSx, maxWidth: 340 }}>
-                        <Typography sx={{
-                          fontWeight: 600, color: '#111827', fontSize: '0.85rem',
-                          lineHeight: 1.4,
-                          display: '-webkit-box',
-                          WebkitLineClamp: 2,
-                          WebkitBoxOrient: 'vertical',
-                          overflow: 'hidden',
-                        }}>
+                        <Typography
+                          onClick={() => navigate(`/group/${groupId}/homework/${hw.id}`)}
+                          sx={{
+                            fontWeight: 600, color: '#111827', fontSize: '0.85rem',
+                            lineHeight: 1.4,
+                            cursor: 'pointer',
+                            display: '-webkit-box',
+                            WebkitLineClamp: 2,
+                            WebkitBoxOrient: 'vertical',
+                            overflow: 'hidden',
+                            '&:hover': { textDecoration: 'underline', color: '#10b981' }
+                          }}
+                        >
                           {hw.title}
                         </Typography>
                         {hw.lessons?.topic && (
@@ -549,8 +552,11 @@ export default function GroupLessons({ groupId }) {
                         </IconButton>
                       </TableCell>
                       {/* Clickable arrow */}
-                      <TableCell sx={{ ...tdSx, textAlign: 'right', width: 32, pr: 2 }}>
-                        <Typography sx={{ color: '#d1d5db', fontSize: '1.1rem', fontWeight: 300 }}>›</Typography>
+                      <TableCell
+                        onClick={() => navigate(`/group/${groupId}/homework/${hw.id}`)}
+                        sx={{ ...tdSx, textAlign: 'right', width: 32, pr: 2, cursor: 'pointer' }}
+                      >
+                        <Typography sx={{ color: '#d1d5db', fontSize: '1.1rem', fontWeight: 300, '&:hover': { color: '#10b981' } }}>›</Typography>
                       </TableCell>
                     </TableRow>
                   );
@@ -642,13 +648,22 @@ export default function GroupLessons({ groupId }) {
                   {videos.map((vid) => (
                     <TableRow
                       key={vid.id}
-                      onClick={() => setPreviewVid(vid)}
-                      sx={{ cursor: 'pointer', '&:hover': { backgroundColor: '#f9fafb' } }}
+                      sx={{ '&:hover': { backgroundColor: '#f9fafb' } }}
                     >
                       <TableCell sx={{ ...tdSx }}>
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <Box
+                          onClick={() => setPreviewVid(vid)}
+                          sx={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 1,
+                            cursor: 'pointer',
+                            width: 'fit-content',
+                            '&:hover .vid-title': { textDecoration: 'underline', color: '#10b981' }
+                          }}
+                        >
                           <PlayCircleIcon sx={{ fontSize: 20, color: '#10b981', flexShrink: 0 }} />
-                          <Typography sx={{ fontWeight: 600, color: '#111827', fontSize: '0.85rem' }}>
+                          <Typography className="vid-title" sx={{ fontWeight: 600, color: '#111827', fontSize: '0.85rem', transition: 'color 0.2s' }}>
                             {vid.title}
                           </Typography>
                         </Box>
@@ -692,7 +707,7 @@ export default function GroupLessons({ groupId }) {
                         sx={{
                           height: 22, fontSize: '0.72rem', fontWeight: 700,
                           color: u.status === 'error' ? '#fff' : '#3b82f6',
-                          background: u.status === 'error' ? '#ef4444' : '#eff6ff',
+                          background: u.status === 'error' ? '#eff6ff' : '#eff6ff',
                           border: u.status === 'error' ? 'none' : '1px solid #3b82f6'
                         }}
                       />
@@ -705,18 +720,22 @@ export default function GroupLessons({ groupId }) {
                 <Paper
                   key={vid.id}
                   elevation={0}
-                  onClick={() => setPreviewVid(vid)}
-                  sx={{ border: '1px solid #e5e7eb', borderRadius: '12px', p: 2, cursor: 'pointer', '&:hover': { backgroundColor: '#f9fafb' } }}
+                  sx={{ border: '1px solid #e5e7eb', borderRadius: '12px', p: 2, '&:hover': { backgroundColor: '#f9fafb' } }}
                 >
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 1 }}>
-                    <PlayCircleIcon sx={{ fontSize: 28, color: '#10b981', flexShrink: 0 }} />
-                    <Box sx={{ flex: 1, minWidth: 0 }}>
-                      <Typography sx={{ fontWeight: 700, color: '#111827', fontSize: '0.9rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                        {vid.title}
-                      </Typography>
-                      <Typography sx={{ fontSize: '0.75rem', color: '#6b7280' }}>
-                        {vid.lessons?.topic || '—'}
-                      </Typography>
+                    <Box
+                      onClick={() => setPreviewVid(vid)}
+                      sx={{ display: 'flex', alignItems: 'center', gap: 1.5, flex: 1, minWidth: 0, cursor: 'pointer', '&:hover .vid-title': { textDecoration: 'underline' } }}
+                    >
+                      <PlayCircleIcon sx={{ fontSize: 28, color: '#10b981', flexShrink: 0 }} />
+                      <Box sx={{ flex: 1, minWidth: 0 }}>
+                        <Typography className="vid-title" sx={{ fontWeight: 700, color: '#111827', fontSize: '0.9rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                          {vid.title}
+                        </Typography>
+                        <Typography sx={{ fontSize: '0.75rem', color: '#6b7280' }}>
+                          {vid.lessons?.topic || '—'}
+                        </Typography>
+                      </Box>
                     </Box>
                     <Chip label="Tayyor" size="small" sx={{ background: '#f0fdf4', color: '#10b981', fontWeight: 700, height: 24, fontSize: '0.72rem', flexShrink: 0 }} />
                   </Box>
@@ -781,11 +800,23 @@ export default function GroupLessons({ groupId }) {
                     return (
                       <TableRow
                         key={ex.id}
-                        onClick={() => navigate(`/group/${groupId}/exam/${ex.id}`)}
-                        sx={{ cursor: 'pointer', '&:hover': { backgroundColor: '#f8f7ff' }, borderBottom: '1px solid #f3f4f6' }}
+                        sx={{ '&:hover': { backgroundColor: '#f8f7ff' }, borderBottom: '1px solid #f3f4f6' }}
                       >
                         <TableCell sx={tdSx}>{exams.length - idx}</TableCell>
-                        <TableCell sx={{ ...tdSx, fontWeight: 600, color: '#3b82f6' }}>{ex.title}</TableCell>
+                        <TableCell sx={{ ...tdSx }}>
+                          <Typography
+                            onClick={() => navigate(`/group/${groupId}/exam/${ex.id}`)}
+                            sx={{
+                              fontWeight: 600,
+                              color: '#3b82f6',
+                              cursor: 'pointer',
+                              width: 'fit-content',
+                              '&:hover': { textDecoration: 'underline', color: '#1d4ed8' }
+                            }}
+                          >
+                            {ex.title}
+                          </Typography>
+                        </TableCell>
                         <TableCell sx={{ ...tdSx, textAlign: 'center' }}>{ex._count?.examAnswers || 0}</TableCell>
                         <TableCell sx={{ ...tdSx, textAlign: 'center' }}>0</TableCell>
                         <TableCell sx={tdSx}>

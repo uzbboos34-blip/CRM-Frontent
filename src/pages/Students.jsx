@@ -22,6 +22,8 @@ import PlaceIcon from '@mui/icons-material/Place';
 import KeyIcon from '@mui/icons-material/VpnKey';
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 import GroupsIcon from '@mui/icons-material/Groups';
+import DeleteOutlineIcon from '@mui/icons-material/DeleteOutlined';
+import RefreshIcon from '@mui/icons-material/Refresh';
 
 const ITEMS_PER_PAGE = 10;
 
@@ -47,6 +49,9 @@ export default function Students() {
   const [isGroupModalOpen, setIsGroupModalOpen] = useState(false);
   const [selectedGroups, setSelectedGroups] = useState([]);
   const [groupSearch, setGroupSearch] = useState('');
+  
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [studentToDelete, setStudentToDelete] = useState(null);
 
   const filteredGroups = allGroups.filter(g =>
     g.name.toLowerCase().includes(groupSearch.toLowerCase())
@@ -79,7 +84,11 @@ export default function Students() {
 
   async function getStudents(q = '') {
     try {
-      const url = q ? `/api/v1/students/all?full_name=${q}` : '/api/v1/students/all';
+      const statusParam = activeTab === 'students' ? 'active' : 'inactive';
+      let url = `/api/v1/students/all?status=${statusParam}`;
+      if (q) {
+        url += `&full_name=${q}`;
+      }
       const res = await api.get(url);
       setStudents(res.data.data || []);
     } catch (err) {
@@ -187,13 +196,31 @@ export default function Students() {
     }
   }
 
-  async function deleteStudent(id) {
-    if (!window.confirm('O\'chirmoqchimisiz?')) return;
+  const triggerDelete = (id) => {
+    setStudentToDelete(id);
+    setDeleteConfirmOpen(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!studentToDelete) return;
     try {
-      await api.delete(`/api/v1/students/${id}`);
-      getStudents();
+      await api.delete(`/api/v1/students/${studentToDelete}`);
+      getStudents(searchQuery);
+      setDeleteConfirmOpen(false);
+      setStudentToDelete(null);
     } catch (err) {
       alert('Xatolik: ' + (err.response?.data?.message || 'O\'chirib bo\'lmadi'));
+    }
+  };
+
+  async function restoreStudent(id) {
+    try {
+      const formData = new FormData();
+      formData.append('status', 'active');
+      await api.put(`/api/v1/students/${id}`, formData);
+      getStudents(searchQuery);
+    } catch (err) {
+      alert('Xatolik: ' + (err.response?.data?.message || 'Arxivdan chiqarib bo\'lmadi'));
     }
   }
 
@@ -207,7 +234,7 @@ export default function Students() {
       getStudents(searchQuery);
     }, 500);
     return () => clearTimeout(delayDebounce);
-  }, [searchQuery]);
+  }, [searchQuery, activeTab]);
 
   const totalPages = Math.max(1, Math.ceil(students.length / ITEMS_PER_PAGE));
   const paginated = students.slice((page - 1) * ITEMS_PER_PAGE, page * ITEMS_PER_PAGE);
@@ -307,11 +334,19 @@ export default function Students() {
                     <TableCell><Typography sx={{ fontSize: '0.8rem', color: '#374151' }}>{formatDate(student.birth_date)}</Typography></TableCell>
                     <TableCell><Typography sx={{ fontSize: '0.8rem', color: '#6b7280' }}>{formatDate(student.created_at)}</Typography></TableCell>
                     <TableCell>
-                      <Stack direction="row" spacing={0.5}>
-                        <IconButton size="small" sx={{ '&:hover': { color: '#7b61ff' } }}><VisibilityIcon sx={{ fontSize: 18 }} /></IconButton>
-                        <IconButton size="small" onClick={() => deleteStudent(student.id)} sx={{ '&:hover': { color: '#ef4444' } }}><DeleteIcon sx={{ fontSize: 18 }} /></IconButton>
-                        <IconButton size="small" onClick={() => openEditDrawer(student)} sx={{ '&:hover': { color: '#10b981' } }}><EditIcon sx={{ fontSize: 18 }} /></IconButton>
-                      </Stack>
+                      {activeTab === 'archive' ? (
+                        <Tooltip title="Arxivdan chiqarish">
+                          <IconButton size="small" onClick={() => restoreStudent(student.id)} sx={{ color: '#10b981', '&:hover': { color: '#059669' } }}>
+                            <RefreshIcon sx={{ fontSize: 18 }} />
+                          </IconButton>
+                        </Tooltip>
+                      ) : (
+                        <Stack direction="row" spacing={0.5}>
+                          <IconButton size="small" sx={{ '&:hover': { color: '#7b61ff' } }}><VisibilityIcon sx={{ fontSize: 18 }} /></IconButton>
+                          <IconButton size="small" onClick={() => triggerDelete(student.id)} sx={{ '&:hover': { color: '#ef4444' } }}><DeleteIcon sx={{ fontSize: 18 }} /></IconButton>
+                          <IconButton size="small" onClick={() => openEditDrawer(student)} sx={{ '&:hover': { color: '#10b981' } }}><EditIcon sx={{ fontSize: 18 }} /></IconButton>
+                        </Stack>
+                      )}
                     </TableCell>
                   </TableRow>
                 );
@@ -511,6 +546,77 @@ export default function Students() {
             Qo'shish
           </Button>
         </DialogActions>
+      </Dialog>
+
+      {/* ─── O'chirishni Tasdiqlash Modali (Beautiful Premium UI) ─── */}
+      <Dialog
+        open={deleteConfirmOpen}
+        onClose={() => setDeleteConfirmOpen(false)}
+        PaperProps={{
+          sx: {
+            borderRadius: '20px',
+            width: '420px',
+            maxWidth: '90vw',
+            boxShadow: '0 25px 50px -12px rgba(0,0,0,0.15)'
+          }
+        }}
+      >
+        <DialogContent sx={{ p: 4 }}>
+          <Box sx={{ textAlign: 'center' }}>
+            <Box sx={{
+              width: 64, height: 64,
+              borderRadius: '50%',
+              background: '#fef2f2',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              mx: 'auto', mb: 3
+            }}>
+              <DeleteOutlineIcon sx={{ fontSize: 32, color: '#ef4444' }} />
+            </Box>
+
+            <Typography sx={{ fontWeight: 700, fontSize: '1.2rem', color: '#111827', mb: 1.5 }}>
+              Talabani arxivlash
+            </Typography>
+
+            <Typography sx={{ fontSize: '0.875rem', color: '#6b7280', lineHeight: 1.5, mb: 4 }}>
+              Haqiqatan ham ushbu talabani arxivga ko'chirmoqchimisiz? Uni keyinchalik arxiv bo'limidan yana faollashtirishingiz mumkin.
+            </Typography>
+
+            <Stack direction="row" spacing={2} sx={{ justifyContent: 'center' }}>
+              <Button
+                onClick={() => setDeleteConfirmOpen(false)}
+                variant="outlined"
+                sx={{
+                  borderRadius: '12px',
+                  textTransform: 'none',
+                  fontWeight: 600,
+                  borderColor: '#e5e7eb',
+                  color: '#374151',
+                  px: 3, py: 1.2,
+                  '&:hover': { borderColor: '#d1d5db', backgroundColor: '#f9fafb' }
+                }}
+              >
+                Bekor qilish
+              </Button>
+              <Button
+                onClick={handleConfirmDelete}
+                variant="contained"
+                sx={{
+                  borderRadius: '12px',
+                  textTransform: 'none',
+                  fontWeight: 600,
+                  backgroundColor: '#ef4444',
+                  color: '#fff',
+                  px: 3, py: 1.2,
+                  '&:hover': { backgroundColor: '#dc2626' }
+                }}
+              >
+                Arxivlash
+              </Button>
+            </Stack>
+          </Box>
+        </DialogContent>
       </Dialog>
     </Box>
   );

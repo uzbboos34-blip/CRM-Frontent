@@ -2,28 +2,33 @@ import { useState, useEffect } from 'react';
 import api from '../api/axios';
 import {
   Box, Typography, Button, IconButton, Paper,
-  Drawer, TextField, Stack
+  Drawer, TextField, Stack, Tooltip, Dialog, DialogTitle, DialogContent, DialogActions
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import CloseIcon from '@mui/icons-material/Close';
+import DeleteOutlineIcon from '@mui/icons-material/DeleteOutlined';
+import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 
 export default function Rooms() {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [form, setForm] = useState({ name: '', capacity: '' });
   const [rooms, setRooms] = useState([]);
   const [editingId, setEditingId] = useState(null);
+  const [activeTab, setActiveTab] = useState('active');
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [roomToDelete, setRoomToDelete] = useState(null);
 
   async function getRooms() {
-    const res = await api.get("/api/v1/rooms?status=active")
-    setRooms(res.data)
+    const res = await api.get(`/api/v1/rooms?status=${activeTab}`);
+    setRooms(res.data || []);
   }
 
   useEffect(() => {
-    getRooms()
-  }, [])
+    getRooms();
+  }, [activeTab]);
 
   function openCreateDrawer() {
     setEditingId(null);
@@ -55,13 +60,29 @@ export default function Rooms() {
     getRooms()
   }
 
-  async function deleteRoom(id) {
+  const triggerDelete = (id) => {
+    setRoomToDelete(id);
+    setDeleteConfirmOpen(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!roomToDelete) return;
     try {
-      await api.delete(`/api/v1/rooms/${id}`)
-      getRooms()
-    } catch (error) {
-      console.error("Xonani o'chirishda xatolik:", error);
-      alert("Xonani o'chirishda xatolik yuz berdi");
+      await api.delete(`/api/v1/rooms/${roomToDelete}`);
+      getRooms();
+      setDeleteConfirmOpen(false);
+      setRoomToDelete(null);
+    } catch (e) {
+      alert('Xatolik: ' + (e.response?.data?.message || 'O\'chirib bo\'lmadi'));
+    }
+  };
+
+  async function restoreRoom(id) {
+    try {
+      await api.put(`/api/v1/rooms/${id}`, { status: 'active' });
+      getRooms();
+    } catch (e) {
+      alert('Xatolik: ' + (e.response?.data?.message || 'Qaytarib bo\'lmadi'));
     }
   }
 
@@ -96,6 +117,26 @@ export default function Rooms() {
           </Button>
         </Box>
 
+        {/* Tabs */}
+        <Box sx={{ display: 'flex', gap: 1, mb: 3 }}>
+          {[
+            { key: 'active', label: "Xonalar" },
+            { key: 'inactive', label: "Arxiv", icon: <CalendarMonthIcon sx={{ fontSize: 16 }} /> }
+          ].map(tab => (
+            <Button key={tab.key} startIcon={tab.icon}
+              onClick={() => setActiveTab(tab.key)}
+              sx={{
+                textTransform: 'none', borderRadius: '8px', fontWeight: 600, px: 2,
+                color: activeTab === tab.key ? '#7b61ff' : '#6b7280',
+                borderBottom: activeTab === tab.key ? '2px solid #7b61ff' : '2px solid transparent',
+                '&:hover': { backgroundColor: 'transparent', color: '#7b61ff' }
+              }}
+            >
+              {tab.label}
+            </Button>
+          ))}
+        </Box>
+
         {/* Xona kartalar — har doim 4 ta qatorda */}
         <Box sx={{
           display: 'grid',
@@ -122,12 +163,22 @@ export default function Rooms() {
                     </Typography>
                   </Box>
                   <Stack direction="row" spacing={0.5}>
-                    <IconButton size="small" onClick={() => deleteRoom(room.id)} sx={{ color: '#9ca3af', '&:hover': { color: '#ef4444' } }}>
-                      <DeleteIcon  sx={{ fontSize: 18 }} />
-                    </IconButton>
-                    <IconButton size="small" onClick={() => openEditDrawer(room)} sx={{ color: '#9ca3af', '&:hover': { color: '#7b61ff' } }}>
-                      <EditIcon sx={{ fontSize: 18 }} />
-                    </IconButton>
+                    {activeTab === 'inactive' ? (
+                      <Tooltip title="Arxivdan chiqarish">
+                        <IconButton size="small" onClick={() => restoreRoom(room.id)} sx={{ color: '#10b981', '&:hover': { color: '#059669' } }}>
+                          <RefreshIcon sx={{ fontSize: 18 }} />
+                        </IconButton>
+                      </Tooltip>
+                    ) : (
+                      <>
+                        <IconButton size="small" onClick={() => triggerDelete(room.id)} sx={{ color: '#9ca3af', '&:hover': { color: '#ef4444' } }}>
+                          <DeleteIcon  sx={{ fontSize: 18 }} />
+                        </IconButton>
+                        <IconButton size="small" onClick={() => openEditDrawer(room)} sx={{ color: '#9ca3af', '&:hover': { color: '#7b61ff' } }}>
+                          <EditIcon sx={{ fontSize: 18 }} />
+                        </IconButton>
+                      </>
+                    )}
                   </Stack>
                 </Box>
               </Paper>
@@ -182,6 +233,77 @@ export default function Rooms() {
           </Stack>
         </Box>
       </Drawer>
+
+      {/* ─── O'chirishni Tasdiqlash Modali (Beautiful Premium UI) ─── */}
+      <Dialog
+        open={deleteConfirmOpen}
+        onClose={() => setDeleteConfirmOpen(false)}
+        PaperProps={{
+          sx: {
+            borderRadius: '20px',
+            width: '420px',
+            maxWidth: '90vw',
+            boxShadow: '0 25px 50px -12px rgba(0,0,0,0.15)'
+          }
+        }}
+      >
+        <DialogContent sx={{ p: 4 }}>
+          <Box sx={{ textAlign: 'center' }}>
+            <Box sx={{
+              width: 64, height: 64,
+              borderRadius: '50%',
+              background: '#fef2f2',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              mx: 'auto', mb: 3
+            }}>
+              <DeleteOutlineIcon sx={{ fontSize: 32, color: '#ef4444' }} />
+            </Box>
+
+            <Typography sx={{ fontWeight: 700, fontSize: '1.2rem', color: '#111827', mb: 1.5 }}>
+              Xonani arxivlash
+            </Typography>
+
+            <Typography sx={{ fontSize: '0.875rem', color: '#6b7280', lineHeight: 1.5, mb: 4 }}>
+              Haqiqatan ham ushbu xonani arxivga ko'chirmoqchimisiz? Uni keyinchalik arxiv bo'limidan yana faollashtirishingiz mumkin.
+            </Typography>
+
+            <Stack direction="row" spacing={2} sx={{ justifyContent: 'center' }}>
+              <Button
+                onClick={() => setDeleteConfirmOpen(false)}
+                variant="outlined"
+                sx={{
+                  borderRadius: '12px',
+                  textTransform: 'none',
+                  fontWeight: 600,
+                  borderColor: '#e5e7eb',
+                  color: '#374151',
+                  px: 3, py: 1.2,
+                  '&:hover': { borderColor: '#d1d5db', backgroundColor: '#f9fafb' }
+                }}
+              >
+                Bekor qilish
+              </Button>
+              <Button
+                onClick={handleConfirmDelete}
+                variant="contained"
+                sx={{
+                  borderRadius: '12px',
+                  textTransform: 'none',
+                  fontWeight: 600,
+                  backgroundColor: '#ef4444',
+                  color: '#fff',
+                  px: 3, py: 1.2,
+                  '&:hover': { backgroundColor: '#dc2626' }
+                }}
+              >
+                Arxivlash
+              </Button>
+            </Stack>
+          </Box>
+        </DialogContent>
+      </Dialog>
     </Box>
   );
 }

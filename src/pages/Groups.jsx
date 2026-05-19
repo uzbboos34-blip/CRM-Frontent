@@ -20,6 +20,7 @@ import SearchIcon from '@mui/icons-material/Search';
 import PersonIcon from '@mui/icons-material/Person';
 import GroupIcon from '@mui/icons-material/Group';
 import EditIcon from '@mui/icons-material/Edit';
+import DeleteOutlineIcon from '@mui/icons-material/DeleteOutlined';
 
 // ── helpers ──────────────────────────────────────────────────────────────────
 const token = () => localStorage.getItem('token');
@@ -76,6 +77,9 @@ export default function Groups() {
   const [form, setForm] = useState(emptyForm());
   const [saving, setSaving] = useState(false);
   const [editingId, setEditingId] = useState(null);
+
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [groupToDelete, setGroupToDelete] = useState(null);
 
   const [teacherModalOpen, setTeacherModalOpen] = useState(false);
   const [teacherSearch, setTeacherSearch] = useState('');
@@ -189,26 +193,79 @@ export default function Groups() {
 
   async function openEditDrawer(group) {
     setEditingId(group.id);
+
+    // Pre-fetch courses and rooms if they are empty
+    let currentCourses = courses;
+    let currentRooms = rooms;
+    if (courses.length === 0) {
+      try {
+        const res = await api.get('/api/v1/courses/all');
+        currentCourses = res.data?.data || res.data || [];
+        setCourses(currentCourses);
+      } catch {}
+    }
+    if (rooms.length === 0) {
+      try {
+        const res = await api.get('/api/v1/rooms?status=active');
+        currentRooms = res.data?.data || res.data || [];
+        setRooms(currentRooms);
+      } catch {}
+    }
+
+    const foundCourse = currentCourses.find(c => c.name === group.course);
+    const foundRoom = currentRooms.find(r => r.name === group.rooms);
+
+    let studentIds = [];
+    try {
+      await fetchStudents();
+      await fetchTeachers();
+      const res = await api.get(`/api/v1/groups/${group.id}`);
+      const fullGroupData = res.data?.data || res.data;
+      studentIds = fullGroupData.studentGroups?.map(sg => sg.students?.id).filter(Boolean) || [];
+    } catch (e) {
+      console.error("Guruh tafsilotlarini yuklashda xatolik:", e);
+    }
+
     setForm({
       id: group.id,
       name: group.name,
       description: group.description || group.name,
-      course_id: '',
-      room_id: '',
+      course_id: foundCourse ? foundCourse.id : '',
+      room_id: foundRoom ? foundRoom.id : '',
       week_day: group.week_day || [],
       start_time: group.start_time || '09:00',
       start_date: group.start_date ? group.start_date.split('T')[0] : '',
       end_date: group.end_date ? group.end_date.split('T')[0] : '',
       teachers: (group.teachers || []).map(t => t.id),
-      students: []
+      students: studentIds
     });
     setDrawerOpen(true);
   }
 
-  async function deleteGroup(id) {
-    if (!window.confirm('Guruhni o\'chirmoqchimisiz?')) return;
-    try { await api.delete(`/api/v1/groups/${id}`); fetchGroups(); }
-    catch (e) { alert('Xatolik: ' + (e.response?.data?.message || 'O\'chirib bo\'lmadi')); }
+  const triggerDelete = (id) => {
+    setGroupToDelete(id);
+    setDeleteConfirmOpen(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!groupToDelete) return;
+    try {
+      await api.delete(`/api/v1/groups/${groupToDelete}`);
+      fetchGroups();
+      setDeleteConfirmOpen(false);
+      setGroupToDelete(null);
+    } catch (e) {
+      alert('Xatolik: ' + (e.response?.data?.message || 'O\'chirib bo\'lmadi'));
+    }
+  };
+
+  async function restoreGroup(id) {
+    try {
+      await api.put(`/api/v1/groups/${id}`, { status: 'active' });
+      fetchGroups();
+    } catch (e) {
+      alert('Xatolik: ' + (e.response?.data?.message || 'Qaytarib bo\'lmadi'));
+    }
   }
 
   const toggleDay = (day) => setForm(f => ({
@@ -423,12 +480,20 @@ export default function Groups() {
                     {/* Actions */}
                     <TableCell>
                       <Box sx={{ display: 'flex', gap: 0.5 }}>
-                        <IconButton size="small" onClick={() => deleteGroup(group.id)} sx={{ color: '#9ca3af', '&:hover': { color: '#ef4444' } }}>
-                          <DeleteIcon sx={{ fontSize: 16 }} />
-                        </IconButton>
-                        <IconButton size="small" onClick={() => openEditDrawer(group)} sx={{ color: '#9ca3af', '&:hover': { color: '#10b981' } }}>
-                          <EditIcon sx={{ fontSize: 18 }} />
-                        </IconButton>
+                        {activeTab === 'archive' ? (
+                          <IconButton size="small" onClick={() => restoreGroup(group.id)} sx={{ color: '#10b981', '&:hover': { color: '#059669' } }}>
+                            <RefreshIcon sx={{ fontSize: 16 }} />
+                          </IconButton>
+                        ) : (
+                          <>
+                            <IconButton size="small" onClick={() => triggerDelete(group.id)} sx={{ color: '#9ca3af', '&:hover': { color: '#ef4444' } }}>
+                              <DeleteIcon sx={{ fontSize: 16 }} />
+                            </IconButton>
+                            <IconButton size="small" onClick={() => openEditDrawer(group)} sx={{ color: '#9ca3af', '&:hover': { color: '#10b981' } }}>
+                              <EditIcon sx={{ fontSize: 18 }} />
+                            </IconButton>
+                          </>
+                        )}
                       </Box>
                     </TableCell>
                   </TableRow>
@@ -718,6 +783,77 @@ export default function Groups() {
           <Button onClick={() => setStudentModalOpen(false)} variant="outlined" sx={{ borderRadius: '8px', textTransform: 'none', fontWeight: 600, borderColor: '#e5e7eb', color: '#374151', flex: 1 }}>Bekor qilish</Button>
           <Button onClick={confirmStudents} variant="contained" sx={{ backgroundColor: '#10b981', borderRadius: '8px', textTransform: 'none', fontWeight: 700, flex: 1, '&:hover': { backgroundColor: '#059669' } }}>Qo'shish</Button>
         </DialogActions>
+      </Dialog>
+
+      {/* ─── O'chirishni Tasdiqlash Modali (Beautiful Premium UI) ─── */}
+      <Dialog
+        open={deleteConfirmOpen}
+        onClose={() => setDeleteConfirmOpen(false)}
+        PaperProps={{
+          sx: {
+            borderRadius: '20px',
+            width: '420px',
+            maxWidth: '90vw',
+            boxShadow: '0 25px 50px -12px rgba(0,0,0,0.15)'
+          }
+        }}
+      >
+        <DialogContent sx={{ p: 4 }}>
+          <Box sx={{ textAlign: 'center' }}>
+            <Box sx={{
+              width: 64, height: 64,
+              borderRadius: '50%',
+              background: '#fef2f2',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              mx: 'auto', mb: 3
+            }}>
+              <DeleteOutlineIcon sx={{ fontSize: 32, color: '#ef4444' }} />
+            </Box>
+
+            <Typography sx={{ fontWeight: 700, fontSize: '1.2rem', color: '#111827', mb: 1.5 }}>
+              Guruhni arxivlash
+            </Typography>
+
+            <Typography sx={{ fontSize: '0.875rem', color: '#6b7280', lineHeight: 1.5, mb: 4 }}>
+              Haqiqatan ham ushbu guruhni arxivga ko'chirmoqchimisiz? Uni keyinchalik arxiv bo'limidan yana faollashtirishingiz mumkin.
+            </Typography>
+
+            <Stack direction="row" spacing={2} sx={{ justifyContent: 'center' }}>
+              <Button
+                onClick={() => setDeleteConfirmOpen(false)}
+                variant="outlined"
+                sx={{
+                  borderRadius: '12px',
+                  textTransform: 'none',
+                  fontWeight: 600,
+                  borderColor: '#e5e7eb',
+                  color: '#374151',
+                  px: 3, py: 1.2,
+                  '&:hover': { borderColor: '#d1d5db', backgroundColor: '#f9fafb' }
+                }}
+              >
+                Bekor qilish
+              </Button>
+              <Button
+                onClick={handleConfirmDelete}
+                variant="contained"
+                sx={{
+                  borderRadius: '12px',
+                  textTransform: 'none',
+                  fontWeight: 600,
+                  backgroundColor: '#ef4444',
+                  color: '#fff',
+                  px: 3, py: 1.2,
+                  '&:hover': { backgroundColor: '#dc2626' }
+                }}
+              >
+                Arxivlash
+              </Button>
+            </Stack>
+          </Box>
+        </DialogContent>
       </Dialog>
     </Box>
   );

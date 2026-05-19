@@ -4,7 +4,7 @@ import {
   Box, Typography, Button, IconButton, Paper, TextField,
   Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
   Avatar, InputAdornment, Checkbox, Stack, Divider, Drawer, Dialog,
-  DialogTitle, DialogContent, DialogActions, Chip
+  DialogTitle, DialogContent, DialogActions, Chip, Tooltip
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -18,6 +18,8 @@ import KeyboardArrowLeftIcon from '@mui/icons-material/KeyboardArrowLeft';
 import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight';
 import GroupsIcon from '@mui/icons-material/Groups';
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
+import DeleteOutlineIcon from '@mui/icons-material/DeleteOutlined';
+import RefreshIcon from '@mui/icons-material/Refresh';
 
 const ITEMS_PER_PAGE = 10;
 
@@ -42,6 +44,9 @@ export default function Teachers() {
   const [searchQuery, setSearchQuery] = useState('');
   const [page, setPage] = useState(1);
   const [activeTab, setActiveTab] = useState('teachers');
+  
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [teacherToDelete, setTeacherToDelete] = useState(null);
 
   const [form, setForm] = useState({
     full_name: '',
@@ -58,7 +63,11 @@ export default function Teachers() {
 
   async function getTeachers(search = '') {
     try {
-      const url = search ? `/api/v1/teachers?full_name=${search}` : '/api/v1/teachers';
+      const statusParam = activeTab === 'teachers' ? 'active' : 'inactive';
+      let url = `/api/v1/teachers?status=${statusParam}`;
+      if (search) {
+        url += `&full_name=${search}`;
+      }
       const res = await api.get(url);
       setTeachers(res.data.data || []);
     } catch (err) {
@@ -154,13 +163,31 @@ export default function Teachers() {
     }
   }
 
-  async function deleteTeacher(id) {
-    if (!window.confirm('O\'chirmoqchimisiz?')) return;
+  const triggerDelete = (id) => {
+    setTeacherToDelete(id);
+    setDeleteConfirmOpen(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!teacherToDelete) return;
     try {
-      await api.delete(`/api/v1/teachers/${id}`);
+      await api.delete(`/api/v1/teachers/${teacherToDelete}`);
       getTeachers(searchQuery);
+      setDeleteConfirmOpen(false);
+      setTeacherToDelete(null);
     } catch (err) {
       alert('Xatolik: ' + (err.response?.data?.message || 'O\'chirib bo\'lmadi'));
+    }
+  };
+
+  async function restoreTeacher(id) {
+    try {
+      const formData = new FormData();
+      formData.append('status', 'active');
+      await api.put(`/api/v1/teachers/${id}`, formData);
+      getTeachers(searchQuery);
+    } catch (err) {
+      alert('Xatolik: ' + (err.response?.data?.message || 'Arxivdan chiqarib bo\'lmadi'));
     }
   }
 
@@ -178,7 +205,7 @@ export default function Teachers() {
       getTeachers(searchQuery);
     }, 500);
     return () => clearTimeout(timer);
-  }, [searchQuery]);
+  }, [searchQuery, activeTab]);
 
   const totalPages = Math.max(1, Math.ceil(teachers.length / ITEMS_PER_PAGE));
   const paginated = teachers.slice((page - 1) * ITEMS_PER_PAGE, page * ITEMS_PER_PAGE);
@@ -333,17 +360,25 @@ export default function Teachers() {
                     <TableCell><Typography sx={{ fontSize: '0.8rem', color: '#374151' }}>{teacher.address || '—'}</Typography></TableCell>
                     <TableCell><Typography sx={{ fontSize: '0.8rem', color: '#6b7280' }}>{formatDate(teacher.created_at)}</Typography></TableCell>
                     <TableCell>
-                      <Stack direction="row" spacing={0.5}>
-                        <IconButton size="small" sx={{ color: '#9ca3af', '&:hover': { color: '#7b61ff' } }}>
-                          <VisibilityIcon sx={{ fontSize: 18 }} />
-                        </IconButton>
-                        <IconButton size="small" sx={{ color: '#9ca3af', '&:hover': { color: '#ef4444' } }} onClick={() => deleteTeacher(teacher.id)}>
-                          <DeleteIcon sx={{ fontSize: 18 }} />
-                        </IconButton>
-                        <IconButton size="small" sx={{ color: '#9ca3af', '&:hover': { color: '#10b981' } }} onClick={() => openEditDrawer(teacher)}>
-                          <EditIcon sx={{ fontSize: 18 }} />
-                        </IconButton>
-                      </Stack>
+                      {activeTab === 'archive' ? (
+                        <Tooltip title="Arxivdan chiqarish">
+                          <IconButton size="small" onClick={() => restoreTeacher(teacher.id)} sx={{ color: '#10b981', '&:hover': { color: '#059669' } }}>
+                            <RefreshIcon sx={{ fontSize: 18 }} />
+                          </IconButton>
+                        </Tooltip>
+                      ) : (
+                        <Stack direction="row" spacing={0.5}>
+                          <IconButton size="small" sx={{ color: '#9ca3af', '&:hover': { color: '#7b61ff' } }}>
+                            <VisibilityIcon sx={{ fontSize: 18 }} />
+                          </IconButton>
+                          <IconButton size="small" sx={{ color: '#9ca3af', '&:hover': { color: '#ef4444' } }} onClick={() => triggerDelete(teacher.id)}>
+                            <DeleteIcon sx={{ fontSize: 18 }} />
+                          </IconButton>
+                          <IconButton size="small" sx={{ color: '#9ca3af', '&:hover': { color: '#10b981' } }} onClick={() => openEditDrawer(teacher)}>
+                            <EditIcon sx={{ fontSize: 18 }} />
+                          </IconButton>
+                        </Stack>
+                      )}
                     </TableCell>
                   </TableRow>
                 );
@@ -603,6 +638,77 @@ export default function Teachers() {
             Qo'shish
           </Button>
         </DialogActions>
+      </Dialog>
+
+      {/* ─── O'chirishni Tasdiqlash Modali (Beautiful Premium UI) ─── */}
+      <Dialog
+        open={deleteConfirmOpen}
+        onClose={() => setDeleteConfirmOpen(false)}
+        PaperProps={{
+          sx: {
+            borderRadius: '20px',
+            width: '420px',
+            maxWidth: '90vw',
+            boxShadow: '0 25px 50px -12px rgba(0,0,0,0.15)'
+          }
+        }}
+      >
+        <DialogContent sx={{ p: 4 }}>
+          <Box sx={{ textAlign: 'center' }}>
+            <Box sx={{
+              width: 64, height: 64,
+              borderRadius: '50%',
+              background: '#fef2f2',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              mx: 'auto', mb: 3
+            }}>
+              <DeleteOutlineIcon sx={{ fontSize: 32, color: '#ef4444' }} />
+            </Box>
+
+            <Typography sx={{ fontWeight: 700, fontSize: '1.2rem', color: '#111827', mb: 1.5 }}>
+              O'qituvchini arxivlash
+            </Typography>
+
+            <Typography sx={{ fontSize: '0.875rem', color: '#6b7280', lineHeight: 1.5, mb: 4 }}>
+              Haqiqatan ham ushbu o'qituvchini arxivga ko'chirmoqchimisiz? Uni keyinchalik arxiv bo'limidan yana faollashtirishingiz mumkin.
+            </Typography>
+
+            <Stack direction="row" spacing={2} sx={{ justifyContent: 'center' }}>
+              <Button
+                onClick={() => setDeleteConfirmOpen(false)}
+                variant="outlined"
+                sx={{
+                  borderRadius: '12px',
+                  textTransform: 'none',
+                  fontWeight: 600,
+                  borderColor: '#e5e7eb',
+                  color: '#374151',
+                  px: 3, py: 1.2,
+                  '&:hover': { borderColor: '#d1d5db', backgroundColor: '#f9fafb' }
+                }}
+              >
+                Bekor qilish
+              </Button>
+              <Button
+                onClick={handleConfirmDelete}
+                variant="contained"
+                sx={{
+                  borderRadius: '12px',
+                  textTransform: 'none',
+                  fontWeight: 600,
+                  backgroundColor: '#ef4444',
+                  color: '#fff',
+                  px: 3, py: 1.2,
+                  '&:hover': { backgroundColor: '#dc2626' }
+                }}
+              >
+                Arxivlash
+              </Button>
+            </Stack>
+          </Box>
+        </DialogContent>
       </Dialog>
     </Box>
   );

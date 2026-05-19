@@ -4,7 +4,7 @@ import {
   Box, Typography, Button, IconButton, Paper, Grid, Chip,
   Drawer, TextField, Stack, FormControlLabel, Checkbox,
   Select, MenuItem, FormControl, InputAdornment, Divider,
-  FormGroup
+  FormGroup, Tooltip, Dialog, DialogTitle, DialogContent, DialogActions
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -12,6 +12,8 @@ import EditIcon from '@mui/icons-material/Edit';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import CloseIcon from '@mui/icons-material/Close';
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
+import DeleteOutlineIcon from '@mui/icons-material/DeleteOutlined';
+import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 
 const colorOptions = [
   '#1e293b', '#7b61ff', '#ef4444', '#f97316', '#16a34a',
@@ -32,16 +34,19 @@ export default function Courses() {
     color: '#7b61ff',
   });
 
-  const [courses, setCourses] = useState([])
+  const [courses, setCourses] = useState([]);
+  const [activeTab, setActiveTab] = useState('active');
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [courseToDelete, setCourseToDelete] = useState(null);
 
   async function getCourses() {
-    const res = await api.get("/api/v1/courses/all?status=active")
-    setCourses(res.data)
+    const res = await api.get(`/api/v1/courses/all?status=${activeTab}`);
+    setCourses(res.data || []);
   }
 
   useEffect(() => {
-    getCourses()
-  }, [])
+    getCourses();
+  }, [activeTab]);
 
   function openCreateDrawer() {
     setEditingId(null);
@@ -109,10 +114,30 @@ export default function Courses() {
       setEditingId(null);
   }
 
-  async function deleteCourse(id) {
-      const token = localStorage.getItem("token");
-      await api.delete(`/api/v1/courses/${id}`);
+  const triggerDelete = (id) => {
+    setCourseToDelete(id);
+    setDeleteConfirmOpen(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!courseToDelete) return;
+    try {
+      await api.delete(`/api/v1/courses/${courseToDelete}`);
       getCourses();
+      setDeleteConfirmOpen(false);
+      setCourseToDelete(null);
+    } catch (e) {
+      alert('Xatolik: ' + (e.response?.data?.message || 'O\'chirib bo\'lmadi'));
+    }
+  };
+
+  async function restoreCourse(id) {
+    try {
+      await api.put(`/api/v1/courses/${id}`, { status: 'active' });
+      getCourses();
+    } catch (e) {
+      alert('Xatolik: ' + (e.response?.data?.message || 'Qaytarib bo\'lmadi'));
+    }
   }
 
 
@@ -137,6 +162,26 @@ export default function Courses() {
 
 
 
+        {/* Tabs */}
+        <Box sx={{ display: 'flex', gap: 1, mb: 3 }}>
+          {[
+            { key: 'active', label: "Kurslar" },
+            { key: 'inactive', label: "Arxiv", icon: <CalendarMonthIcon sx={{ fontSize: 16 }} /> }
+          ].map(tab => (
+            <Button key={tab.key} startIcon={tab.icon}
+              onClick={() => setActiveTab(tab.key)}
+              sx={{
+                textTransform: 'none', borderRadius: '8px', fontWeight: 600, px: 2,
+                color: activeTab === tab.key ? '#7b61ff' : '#6b7280',
+                borderBottom: activeTab === tab.key ? '2px solid #7b61ff' : '2px solid transparent',
+                '&:hover': { backgroundColor: 'transparent', color: '#7b61ff' }
+              }}
+            >
+              {tab.label}
+            </Button>
+          ))}
+        </Box>
+
         {/* Course cards — har doim 4 ta qatorda */}
         <Box sx={{
           display: 'grid',
@@ -160,12 +205,22 @@ export default function Courses() {
                     {course.name}
                   </Typography>
                   <Stack direction="row" spacing={0} sx={{ flexShrink: 0, ml: 1, mt: -0.5 }}>
-                    <IconButton size="small" onClick={() => deleteCourse(course.id)} sx={{ color: '#9ca3af', '&:hover': { color: '#ef4444' }, p: 0.5 }}>
-                      <DeleteIcon sx={{ fontSize: 16 }} />
-                    </IconButton>
-                    <IconButton size="small" onClick={() => openEditDrawer(course)} sx={{ color: '#9ca3af', '&:hover': { color: '#7b61ff' }, p: 0.5 }}>
-                      <EditIcon sx={{ fontSize: 16 }} />
-                    </IconButton>
+                    {activeTab === 'inactive' ? (
+                      <Tooltip title="Arxivdan chiqarish">
+                        <IconButton size="small" onClick={() => restoreCourse(course.id)} sx={{ color: '#10b981', '&:hover': { color: '#059669' }, p: 0.5 }}>
+                          <RefreshIcon sx={{ fontSize: 16 }} />
+                        </IconButton>
+                      </Tooltip>
+                    ) : (
+                      <>
+                        <IconButton size="small" onClick={() => triggerDelete(course.id)} sx={{ color: '#9ca3af', '&:hover': { color: '#ef4444' }, p: 0.5 }}>
+                          <DeleteIcon sx={{ fontSize: 16 }} />
+                        </IconButton>
+                        <IconButton size="small" onClick={() => openEditDrawer(course)} sx={{ color: '#9ca3af', '&:hover': { color: '#7b61ff' }, p: 0.5 }}>
+                          <EditIcon sx={{ fontSize: 16 }} />
+                        </IconButton>
+                      </>
+                    )}
                   </Stack>
                 </Box>
 
@@ -328,6 +383,77 @@ export default function Courses() {
           </Stack>
         </Box>
       </Drawer>
+
+      {/* ─── O'chirishni Tasdiqlash Modali (Beautiful Premium UI) ─── */}
+      <Dialog
+        open={deleteConfirmOpen}
+        onClose={() => setDeleteConfirmOpen(false)}
+        PaperProps={{
+          sx: {
+            borderRadius: '20px',
+            width: '420px',
+            maxWidth: '90vw',
+            boxShadow: '0 25px 50px -12px rgba(0,0,0,0.15)'
+          }
+        }}
+      >
+        <DialogContent sx={{ p: 4 }}>
+          <Box sx={{ textAlign: 'center' }}>
+            <Box sx={{
+              width: 64, height: 64,
+              borderRadius: '50%',
+              background: '#fef2f2',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              mx: 'auto', mb: 3
+            }}>
+              <DeleteOutlineIcon sx={{ fontSize: 32, color: '#ef4444' }} />
+            </Box>
+
+            <Typography sx={{ fontWeight: 700, fontSize: '1.2rem', color: '#111827', mb: 1.5 }}>
+              Kursni arxivlash
+            </Typography>
+
+            <Typography sx={{ fontSize: '0.875rem', color: '#6b7280', lineHeight: 1.5, mb: 4 }}>
+              Haqiqatan ham ushbu kursni arxivga ko'chirmoqchimisiz? Uni keyinchalik arxiv bo'limidan yana faollashtirishingiz mumkin.
+            </Typography>
+
+            <Stack direction="row" spacing={2} sx={{ justifyContent: 'center' }}>
+              <Button
+                onClick={() => setDeleteConfirmOpen(false)}
+                variant="outlined"
+                sx={{
+                  borderRadius: '12px',
+                  textTransform: 'none',
+                  fontWeight: 600,
+                  borderColor: '#e5e7eb',
+                  color: '#374151',
+                  px: 3, py: 1.2,
+                  '&:hover': { borderColor: '#d1d5db', backgroundColor: '#f9fafb' }
+                }}
+              >
+                Bekor qilish
+              </Button>
+              <Button
+                onClick={handleConfirmDelete}
+                variant="contained"
+                sx={{
+                  borderRadius: '12px',
+                  textTransform: 'none',
+                  fontWeight: 600,
+                  backgroundColor: '#ef4444',
+                  color: '#fff',
+                  px: 3, py: 1.2,
+                  '&:hover': { backgroundColor: '#dc2626' }
+                }}
+              >
+                Arxivlash
+              </Button>
+            </Stack>
+          </Box>
+        </DialogContent>
+      </Dialog>
     </Box>
   );
 }

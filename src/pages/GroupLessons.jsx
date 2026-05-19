@@ -1,4 +1,6 @@
 import { useState, useEffect } from 'react';
+import { useTheme } from '@mui/material/styles';
+import useMediaQuery from '@mui/material/useMediaQuery';
 import { useNavigate } from 'react-router-dom';
 import api from '../api/axios';
 import {
@@ -98,6 +100,10 @@ const SUB_TABS = ['Uyga vazifa', 'Videolar', 'Imtihonlar', 'Jurnal'];
 export default function GroupLessons({ groupId }) {
   const navigate = useNavigate();
   const { uploads, setUploads } = useUploads();
+
+  // Mobil ekranni aniqlash (md = 900px dan kichik bo'lsa mobil)
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
   const [subTab, setSubTab] = useState(0);
   const [homeworks, setHomeworks] = useState([]);
@@ -219,18 +225,25 @@ export default function GroupLessons({ groupId }) {
   return (
     <Box>
       {/* ── Sub-tabs row + button ── */}
+      {/* Mobilda vertikal, desktopda gorizontal joylashish */}
       <Box sx={{
-        display: 'flex', alignItems: 'center',
-        justifyContent: 'space-between', mb: 3,
+        display: 'flex',
+        alignItems: { xs: 'flex-start', sm: 'center' },
+        flexDirection: { xs: 'column', sm: 'row' },
+        justifyContent: 'space-between',
+        mb: 3, gap: 1.5,
       }}>
         {/* Sub-tab bar */}
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
           <Typography sx={{ fontWeight: 700, fontSize: '0.95rem', color: '#111827', mr: 2 }}>
             Guruh darsliklari
           </Typography>
+          {/* Mobilda gorizontal scroll bo'lsin */}
           <Tabs
             value={subTab}
             onChange={(_, v) => setSubTab(v)}
+            variant="scrollable"
+            scrollButtons="auto"
             sx={{
               minHeight: 36,
               '& .MuiTabs-indicator': {
@@ -473,8 +486,10 @@ export default function GroupLessons({ groupId }) {
             </Button>
           </Paper>
         ) : (
+          {/* Desktop jadval — mobilda yashiriladi */}
           <TableContainer component={Paper} elevation={0} sx={{
             border: '1px solid #e5e7eb', borderRadius: '16px', overflow: 'hidden',
+            display: { xs: 'none', md: 'block' },
           }}>
             <Table>
               <TableHead>
@@ -563,6 +578,62 @@ export default function GroupLessons({ groupId }) {
               </TableBody>
             </Table>
           </TableContainer>
+
+          {/* Mobil karta ko'rinishi — faqat xs va sm ekranlarda ko'rsatiladi */}
+          <Box sx={{ display: { xs: 'flex', md: 'none' }, flexDirection: 'column', gap: 1.5 }}>
+            {/* Yuklanayotgan videolar */}
+            {uploads
+              .filter(u => String(u.metadata.groupId) === String(groupId) && u.metadata.type === 'video' && u.status !== 'completed')
+              .map(u => (
+                <Paper key={u.id} elevation={0} sx={{ border: '1px solid #e5e7eb', borderRadius: '12px', p: 2, backgroundColor: u.status === 'error' ? '#fef2f2' : '#eff6ff' }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <Typography sx={{ fontWeight: 600, fontSize: '0.85rem', color: u.status === 'error' ? '#991b1b' : '#3b82f6' }}>
+                      {u.metadata.title}
+                    </Typography>
+                    <Chip
+                      label={u.status === 'error' ? 'Xato' : `${u.progress || 0}%`}
+                      size="small"
+                      sx={{ height: 22, fontSize: '0.72rem', fontWeight: 700,
+                        color: u.status === 'error' ? '#fff' : '#3b82f6',
+                        background: u.status === 'error' ? '#ef4444' : '#eff6ff',
+                        border: u.status === 'error' ? 'none' : '1px solid #3b82f6'
+                      }}
+                    />
+                  </Box>
+                </Paper>
+              ))
+            }
+            {/* Yuklangan videolar */}
+            {videos.map((vid) => (
+              <Paper
+                key={vid.id}
+                elevation={0}
+                onClick={() => setPreviewVid(vid)}
+                sx={{ border: '1px solid #e5e7eb', borderRadius: '12px', p: 2, cursor: 'pointer', '&:hover': { backgroundColor: '#f9fafb' } }}
+              >
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 1 }}>
+                  <PlayCircleIcon sx={{ fontSize: 28, color: '#10b981', flexShrink: 0 }} />
+                  <Box sx={{ flex: 1, minWidth: 0 }}>
+                    <Typography sx={{ fontWeight: 700, color: '#111827', fontSize: '0.9rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      {vid.title}
+                    </Typography>
+                    <Typography sx={{ fontSize: '0.75rem', color: '#6b7280' }}>
+                      {vid.lessons?.topic || '—'}
+                    </Typography>
+                  </Box>
+                  <Chip label="Tayyor" size="small" sx={{ background: '#f0fdf4', color: '#10b981', fontWeight: 700, height: 24, fontSize: '0.72rem', flexShrink: 0 }} />
+                </Box>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <Typography sx={{ fontSize: '0.75rem', color: '#9ca3af' }}>
+                    {fmtDate(vid.created_at)} · {fmtFileSize(vid.file_size)}
+                  </Typography>
+                  <IconButton size="small" onClick={(e) => { e.stopPropagation(); handleVidMenuOpen(e, vid); }} sx={{ color: '#9ca3af' }}>
+                    <MoreVertIcon fontSize="small" />
+                  </IconButton>
+                </Box>
+              </Paper>
+            ))}
+          </Box>
         )
       )}
 
@@ -574,15 +645,17 @@ export default function GroupLessons({ groupId }) {
       {subTab === 3 && <EmptyTab label="Jurnal" />}
 
       {/* ── Video Preview Modal ── */}
+      {/* Video preview — mobilda to'liq ekran, desktopda modal */}
       <Dialog
         open={Boolean(previewVid)}
         onClose={() => setPreviewVid(null)}
         fullWidth
+        fullScreen={isMobile}
         PaperProps={{
           sx: {
-            borderRadius: '25px',
+            borderRadius: isMobile ? 0 : '25px',
             backgroundColor: '#ffffff',
-            maxWidth: '550px',
+            maxWidth: isMobile ? '100%' : '550px',
             overflow: 'hidden',
           }
         }}

@@ -5,41 +5,63 @@ import DarkModeIcon from '@mui/icons-material/DarkMode';
 import AddIcon from '@mui/icons-material/Add';
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
+// Mobil hamburger menyu uchun icon
+import MenuIcon from '@mui/icons-material/Menu';
 
-export default function Header({ isSidebarCollapsed, setIsSidebarCollapsed, isManagementActive }) {
+export default function Header({ isSidebarCollapsed, setIsSidebarCollapsed, isManagementActive, onMenuToggle }) {
   return (
     <Box
       sx={{
-        height: 90,
+        height: { xs: 64, sm: 90 },
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
-        padding: '0 25px',
+        padding: { xs: '0 12px', sm: '0 25px' },
         position: 'relative',
         zIndex: 1000,
         backgroundColor: 'transparent',
       }}
     >
-      {/* Left: Actions and Search */}
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-        {/* Calendar Icon */}
-        <IconButton sx={{ backgroundColor: '#fff', border: '1px solid #e5e7eb', borderRadius: '12px', p: 1.2 }}>
+      {/* Chap: Hamburger (mobil) + Harakatlar + Qidiruv */}
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+
+        {/* Hamburger tugmasi — faqat mobilda ko'rinadi */}
+        <IconButton
+          onClick={onMenuToggle}
+          sx={{
+            display: { xs: 'flex', md: 'none' },
+            backgroundColor: '#fff',
+            border: '1px solid #e5e7eb',
+            borderRadius: '12px',
+            p: 1,
+          }}
+        >
+          <MenuIcon sx={{ fontSize: 20, color: '#4b5563' }} />
+        </IconButton>
+
+        {/* Calendar Icon — desktopda ko'rsatiladi */}
+        <IconButton sx={{
+          display: { xs: 'none', sm: 'flex' },
+          backgroundColor: '#fff', border: '1px solid #e5e7eb', borderRadius: '12px', p: 1.2
+        }}>
           <CalendarTodayIcon sx={{ fontSize: 18, color: '#4b5563' }} />
         </IconButton>
 
+        {/* Qo'shish tugmasi va Qidiruv */}
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-          {/* Add Button */}
+          {/* Qo'shish tugmasi */}
           <Button 
             variant="contained"
             startIcon={<AddIcon />}
-            endIcon={<KeyboardArrowDownIcon />}
+            endIcon={<KeyboardArrowDownIcon sx={{ display: { xs: 'none', sm: 'block' } }} />}
             sx={{ 
               backgroundColor: '#7b61ff', 
               color: 'white', 
               borderRadius: '12px', 
               textTransform: 'none',
               fontWeight: 700,
-              padding: '8px 24px',
+              padding: { xs: '6px 14px', sm: '8px 24px' },
+              fontSize: { xs: '0.8rem', sm: '0.875rem' },
               '&:hover': { backgroundColor: '#6a50e8' },
               boxShadow: '0 4px 10px rgba(123, 97, 255, 0.2)'
             }}
@@ -47,15 +69,15 @@ export default function Header({ isSidebarCollapsed, setIsSidebarCollapsed, isMa
             Qo'shish
           </Button>
 
-          {/* Search Bar */}
+          {/* Qidiruv satri — kichik ekranlarda yashiriladi */}
           <Box
             sx={{
-              display: 'flex',
+              display: { xs: 'none', sm: 'flex' },
               alignItems: 'center',
               backgroundColor: '#f9fafb',
               borderRadius: '12px',
               padding: '8px 16px',
-              width: '250px',
+              width: { sm: '180px', md: '250px' },
               border: '1px solid #e5e7eb',
               '&:focus-within': {
                 borderColor: '#7b61ff',
@@ -72,24 +94,22 @@ export default function Header({ isSidebarCollapsed, setIsSidebarCollapsed, isMa
                 flex: 1,
                 fontSize: '0.95rem',
                 fontWeight: 500,
-                '& input::placeholder': {
-                  color: '#9ca3af',
-                  opacity: 1
-                }
+                '& input::placeholder': { color: '#9ca3af', opacity: 1 }
               }}
             />
           </Box>
         </Box>
       </Box>
 
-      {/* Right Actions */}
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-        {/* Language Selector */}
+      {/* O'ng: Til, Bildirishnoma, Dark mode, Avatar */}
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 0.5, sm: 2 } }}>
+        {/* Til tanlash — faqat sm+ da ko'rsatiladi */}
         <Select
           value="uz"
           size="small"
           IconComponent={KeyboardArrowDownIcon}
           sx={{
+            display: { xs: 'none', sm: 'flex' },
             boxShadow: 'none',
             '.MuiOutlinedInput-notchedOutline': { border: 0 },
             backgroundColor: '#f9fafb',
@@ -103,17 +123,24 @@ export default function Header({ isSidebarCollapsed, setIsSidebarCollapsed, isMa
           <MenuItem value="ru">Русский</MenuItem>
         </Select>
 
+        {/* Bildirishnomalar */}
         <IconButton sx={{ border: '1px solid #e5e7eb', borderRadius: '10px' }}>
           <Badge badgeContent={1} color="error">
             <NotificationsNoneIcon sx={{ color: '#4b5563', fontSize: 20 }} />
           </Badge>
         </IconButton>
 
-        <IconButton sx={{ backgroundColor: '#1e293b', color: 'white', borderRadius: '10px', '&:hover': { backgroundColor: '#0f172a' } }}>
+        {/* Dark mode — faqat sm+ da */}
+        <IconButton sx={{
+          display: { xs: 'none', sm: 'flex' },
+          backgroundColor: '#1e293b', color: 'white', borderRadius: '10px',
+          '&:hover': { backgroundColor: '#0f172a' }
+        }}>
           <DarkModeIcon sx={{ fontSize: 20 }} />
         </IconButton>
 
-        <Avatar sx={{ width: 36, height: 36, ml: 1, bgcolor: '#fca5a5' }} src="/avatar.jpg">
+        {/* Avatar */}
+        <Avatar sx={{ width: { xs: 32, sm: 36 }, height: { xs: 32, sm: 36 }, ml: 0.5, bgcolor: '#fca5a5' }} src="/avatar.jpg">
           A
         </Avatar>
       </Box>

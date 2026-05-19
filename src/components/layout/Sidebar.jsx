@@ -26,13 +26,18 @@ const menuItems = [
   { text: 'Boshqarish', icon: <SettingsIcon />, path: '/management' },
 ];
 
-export default function Sidebar({ openSettings, setOpenSettings, isSidebarCollapsed, setIsSidebarCollapsed, isManagementMenuOpen, setIsManagementMenuOpen }) {
+export default function Sidebar({ openSettings, setOpenSettings, isSidebarCollapsed, setIsSidebarCollapsed, isManagementMenuOpen, setIsManagementMenuOpen, onMobileClose }) {
   const location = useLocation();
   const navigate = useNavigate();
 
   const handleLogout = () => {
     localStorage.removeItem('token');
     navigate('/login');
+  };
+
+  // Mobil Drawer yopish uchun yordamchi funksiya
+  const closeMobileIfNeeded = () => {
+    if (onMobileClose) onMobileClose();
   };
 
   const activeStyles = {
@@ -105,6 +110,8 @@ export default function Sidebar({ openSettings, setOpenSettings, isSidebarCollap
                   e.preventDefault();
                   setIsManagementMenuOpen(!isManagementMenuOpen);
                 }
+                // Mobil Drawer yopilsin
+                closeMobileIfNeeded();
               };
 
               return (

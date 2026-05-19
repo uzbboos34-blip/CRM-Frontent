@@ -1,5 +1,6 @@
-import { useState, useEffect } from 'react';
-import { Box, Typography, List, ListItem, ListItemButton, ListItemIcon, ListItemText, IconButton } from '@mui/material';
+import { useState } from 'react';
+import { Box, Typography, List, ListItem, ListItemButton, ListItemIcon, ListItemText, IconButton, Drawer, useMediaQuery } from '@mui/material';
+import { useTheme } from '@mui/material/styles';
 import { keyframes } from '@mui/system';
 import { Outlet, useLocation, NavLink } from 'react-router-dom';
 
@@ -13,8 +14,6 @@ import ManageAccountsIcon from '@mui/icons-material/ManageAccounts';
 import TollIcon from '@mui/icons-material/Toll';
 import SendIcon from '@mui/icons-material/Send';
 import VerifiedUserIcon from '@mui/icons-material/VerifiedUser';
-import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
-import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
 
 import Sidebar from './Sidebar';
 import Header from './Header';
@@ -40,30 +39,53 @@ export default function DashboardLayout() {
   const [openSettings, setOpenSettings] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [isManagementMenuOpen, setIsManagementMenuOpen] = useState(false);
+  // Mobil uchun Drawer holati
+  const [mobileOpen, setMobileOpen] = useState(false);
   const location = useLocation();
+
+  // Mobil ekranni aniqlash
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
   const isManagementActive = location.pathname.startsWith('/management');
 
-
+  // Shared Sidebar props
+  const sidebarProps = {
+    openSettings, setOpenSettings,
+    isSidebarCollapsed, setIsSidebarCollapsed,
+    isManagementMenuOpen, setIsManagementMenuOpen,
+    // Mobil menudan bosilganda Drawer yopilsin
+    onMobileClose: () => setMobileOpen(false),
+  };
 
   return (
     <Box sx={{ display: 'flex', height: '100vh', backgroundColor: '#f5f6fa', overflow: 'hidden' }}>
-      {/* 1. Main Purple Sidebar */}
-      <Sidebar
-        openSettings={openSettings}
-        setOpenSettings={setOpenSettings}
-        isSidebarCollapsed={isSidebarCollapsed}
-        setIsSidebarCollapsed={setIsSidebarCollapsed}
-        isManagementMenuOpen={isManagementMenuOpen}
-        setIsManagementMenuOpen={setIsManagementMenuOpen}
-      />
 
-      {/* 2. Management Sub-Sidebar (White Column) - Toggleable */}
-      {isManagementMenuOpen && (
+      {/* Desktop Sidebar — mobilda yashiriladi */}
+      <Box sx={{ display: { xs: 'none', md: 'block' }, flexShrink: 0 }}>
+        <Sidebar {...sidebarProps} />
+      </Box>
+
+      {/* Mobil Drawer — faqat xs va sm ekranlarda ishlaydi */}
+      <Drawer
+        anchor="left"
+        open={mobileOpen}
+        onClose={() => setMobileOpen(false)}
+        ModalProps={{ keepMounted: true }}
+        sx={{
+          display: { xs: 'block', md: 'none' },
+          '& .MuiDrawer-paper': { boxSizing: 'border-box', width: 260 },
+        }}
+      >
+        <Sidebar {...sidebarProps} />
+      </Drawer>
+
+      {/* Management Sub-Sidebar — desktopda */}
+      {isManagementMenuOpen && !isMobile && (
         <Box sx={{ 
-          width: isManagementMenuOpen ? 260 : 0, 
+          width: 260,
           flexShrink: 0, 
-          borderRight: isManagementMenuOpen ? '1px solid #e5e7eb' : 'none', 
+          borderRight: '1px solid #e5e7eb',
           backgroundColor: '#fff', 
           display: 'flex', 
           flexDirection: 'column', 
@@ -71,25 +93,21 @@ export default function DashboardLayout() {
           position: 'absolute',
           left: isSidebarCollapsed ? 80 : 260,
           zIndex: 1200, 
-          boxShadow: isManagementMenuOpen ? '4px 0 15px rgba(0,0,0,0.03)' : 'none',
+          boxShadow: '4px 0 15px rgba(0,0,0,0.03)',
           transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
-          overflow: 'hidden',
-          opacity: isManagementMenuOpen ? 1 : 0,
-          visibility: isManagementMenuOpen ? 'visible' : 'hidden'
         }}>
           <Box sx={{ p: 3, pt: 4, pb: 2 }}>
             <Typography sx={{ fontWeight: 800, color: '#111827', fontSize: '1.2rem' }}>Menu</Typography>
           </Box>
           <List sx={{ px: 2, flexGrow: 1, overflowY: 'auto' }}>
             {managementMenuItems.map((item) => {
-              // Kurslar: active for both /management and /management/courses
               const isActive = item.path === '/management'
                 ? (location.pathname === '/management' || location.pathname === '/management/courses')
                 : location.pathname === item.path;
               return (
                 <ListItem key={item.text} disablePadding sx={{ mb: 1 }}>
                   <ListItemButton 
-                    component={item.path ? NavLink : 'div'}
+                    component={NavLink}
                     to={item.path}
                     onClick={() => setIsManagementMenuOpen(false)}
                     sx={{ 
@@ -97,20 +115,13 @@ export default function DashboardLayout() {
                       backgroundColor: isActive ? '#7b61ff' : 'transparent',
                       color: isActive ? '#fff' : '#6b7280',
                       '&:hover': { backgroundColor: isActive ? '#6a50e8' : '#f9fafb' },
-                      px: 2.5,
-                      py: 1.5
+                      px: 2.5, py: 1.5
                     }}
                   >
-                    <ListItemIcon sx={{ minWidth: 36, color: 'inherit' }}>
-                      {item.icon}
-                    </ListItemIcon>
+                    <ListItemIcon sx={{ minWidth: 36, color: 'inherit' }}>{item.icon}</ListItemIcon>
                     <ListItemText 
                       primary={
-                        <Typography sx={{ 
-                          fontSize: '1rem', 
-                          fontWeight: isActive ? 700 : 600,
-                          color: 'inherit'
-                        }}>
+                        <Typography sx={{ fontSize: '1rem', fontWeight: isActive ? 700 : 600, color: 'inherit' }}>
                           {item.text}
                         </Typography>
                       }
@@ -123,7 +134,7 @@ export default function DashboardLayout() {
         </Box>
       )}
 
-      {/* 3. Main Content Wrapper */}
+      {/* Asosiy kontent maydoni */}
       <Box 
         onClick={() => isManagementMenuOpen && setIsManagementMenuOpen(false)}
         sx={{ 
@@ -131,7 +142,7 @@ export default function DashboardLayout() {
           display: 'flex', 
           flexDirection: 'column', 
           animation: `${fadeIn} 0.5s ease-out`,
-          minWidth: 0 // Prevent flex overflow
+          minWidth: 0,
         }}
       >
         <Box sx={{ flexShrink: 0 }}>
@@ -139,10 +150,12 @@ export default function DashboardLayout() {
             isSidebarCollapsed={isSidebarCollapsed}
             setIsSidebarCollapsed={setIsSidebarCollapsed}
             isManagementActive={isManagementActive}
+            // Hamburger bosilganda Drawer ochilsin
+            onMenuToggle={() => setMobileOpen(true)}
           />
         </Box>
         <Box sx={{ 
-          p: isManagementActive ? 4 : 3, 
+          p: { xs: 2, sm: isManagementActive ? 4 : 3 }, 
           flexGrow: 1, 
           overflowY: 'auto',
           backgroundColor: isManagementActive ? '#f9fafb' : '#f5f6fa'

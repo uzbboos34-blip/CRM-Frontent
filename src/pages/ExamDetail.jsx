@@ -225,7 +225,6 @@ export default function ExamDetail() {
                 {currentTabKey !== 'NOT_SUBMITTED' && <TableCell sx={thSx}>Topshirilgan vaqti</TableCell>}
                 {(currentTabKey === 'ACCEPTED' || currentTabKey === 'RETURNED') && <TableCell sx={thSx}>Tekshirilgan vaqti</TableCell>}
                 {currentTabKey !== 'NOT_SUBMITTED' && <TableCell sx={thSx}>Ball</TableCell>}
-                <TableCell sx={{ ...thSx, width: 80 }} />
               </TableRow>
             </TableHead>
             <TableBody>
@@ -274,14 +273,6 @@ export default function ExamDetail() {
                         />
                       </TableCell>
                     )}
-                    <TableCell sx={{ ...tdSx, textAlign: 'right' }}>
-                       <IconButton
-                         onClick={() => navigate(`/group/${groupId}/exam/${examId}/student/${item.student_id}`)}
-                         sx={{ color: '#6b7280', '&:hover': { color: '#10b981' } }}
-                       >
-                          <ChevronRightIcon />
-                       </IconButton>
-                    </TableCell>
                   </TableRow>
               ))}
             </TableBody>

@@ -1014,34 +1014,54 @@ export default function GroupLessons({ groupId }) {
         open={deleteConfirmOpen}
         onClose={() => setDeleteConfirmOpen(false)}
         PaperProps={{
-          sx: { borderRadius: '20px', padding: 3, maxWidth: 380, width: '100%' }
+          sx: {
+            borderRadius: '16px',
+            padding: '24px 20px',
+            maxWidth: 330,
+            width: '90%',
+            mx: 'auto',
+            border: '1px solid #f3f4f6',
+            boxShadow: '0 20px 25px -5px rgba(0,0,0,0.08), 0 10px 10px -5px rgba(0,0,0,0.03)'
+          }
         }}
       >
         <Box sx={{ textAlign: 'center' }}>
           {/* Warning Icon Container */}
           <Box sx={{
-            width: 60, height: 60, borderRadius: '50%',
-            background: '#fee2e2', color: '#ef4444',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            mx: 'auto', mb: 2.5
+            width: 48,
+            height: 48,
+            borderRadius: '50%',
+            background: '#fef2f2',
+            color: '#ef4444',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            mx: 'auto',
+            mb: 2
           }}>
-            <DeleteOutlineIcon sx={{ fontSize: 32 }} />
+            <DeleteOutlineIcon sx={{ fontSize: 24 }} />
           </Box>
 
-          <Typography variant="h6" sx={{ fontWeight: 800, color: '#111827', mb: 1, fontSize: '1.15rem' }}>
+          <Typography sx={{ fontWeight: 800, color: '#111827', mb: 1, fontSize: '1rem' }}>
             Imtihonni o'chirish
           </Typography>
 
-          <Typography sx={{ fontSize: '0.85rem', color: '#6b7280', px: 1, mb: 3.5, lineHeight: 1.5 }}>
-            Haqiqatan ham ushbu imtihonni o'chirmoqchimisiz? Loyihaga bog'liq barcha talabalar baholari va natijalari butunlay o'chib ketadi. Buni ortga qaytarib bo'lmaydi.
+          <Typography sx={{ fontSize: '0.78rem', color: '#4b5563', px: 0.5, mb: 3, lineHeight: 1.5 }}>
+            Ushbu imtihonni o'chirmoqchimisiz? Loyihaga bog'liq barcha talabalar baholari va natijalari butunlay o'chib ketadi.
           </Typography>
 
-          <Box sx={{ display: 'flex', gap: 1.5, justifyContent: 'center' }}>
+          <Box sx={{ display: 'flex', gap: 1, justifyContent: 'center' }}>
             <Button
               onClick={() => setDeleteConfirmOpen(false)}
               sx={{
-                textTransform: 'none', fontWeight: 700, flex: 1, py: 1.2,
-                borderRadius: '12px', border: '1.5px solid #e5e7eb', color: '#374151', fontSize: '0.85rem',
+                textTransform: 'none',
+                fontWeight: 700,
+                flex: 1,
+                py: 1,
+                borderRadius: '8px',
+                border: '1.5px solid #e5e7eb',
+                color: '#374151',
+                fontSize: '0.78rem',
                 '&:hover': { background: '#f9fafb', borderColor: '#d1d5db' }
               }}
             >
@@ -1054,11 +1074,17 @@ export default function GroupLessons({ groupId }) {
               }}
               variant="contained"
               sx={{
-                textTransform: 'none', fontWeight: 700, flex: 1, py: 1.2,
-                borderRadius: '12px', background: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)',
-                boxShadow: '0 4px 12px rgba(239, 68, 68, 0.25)', fontSize: '0.85rem',
+                textTransform: 'none',
+                fontWeight: 700,
+                flex: 1,
+                py: 1,
+                borderRadius: '8px',
+                backgroundColor: '#ef4444',
+                boxShadow: 'none',
+                fontSize: '0.78rem',
                 '&:hover': {
-                  background: 'linear-gradient(135deg, #dc2626 0%, #b91c1c 100%)',
+                  backgroundColor: '#dc2626',
+                  boxShadow: 'none'
                 }
               }}
             >

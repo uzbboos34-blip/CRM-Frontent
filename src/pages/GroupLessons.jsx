@@ -1013,12 +1013,13 @@ export default function GroupLessons({ groupId }) {
       <Dialog
         open={deleteConfirmOpen}
         onClose={() => setDeleteConfirmOpen(false)}
+        maxWidth={false}
         PaperProps={{
           sx: {
             borderRadius: '16px',
             padding: '24px 20px',
-            maxWidth: 330,
-            width: '90%',
+            width: 320,
+            maxWidth: '95%',
             mx: 'auto',
             border: '1px solid #f3f4f6',
             boxShadow: '0 20px 25px -5px rgba(0,0,0,0.08), 0 10px 10px -5px rgba(0,0,0,0.03)'

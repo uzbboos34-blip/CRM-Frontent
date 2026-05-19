@@ -12,16 +12,18 @@ export default function Dashboard() {
     groups: 0,
     courses: 0,
     students: 0,
-    teachers: 0
+    teachers: 0,
+    rooms: 0
   });
 
   async function fetchCounts() {
     try {
-      const [groupsRes, coursesRes, studentsRes, teachersRes] = await Promise.all([
+      const [groupsRes, coursesRes, studentsRes, teachersRes, roomsRes] = await Promise.all([
         api.get('/api/v1/groups?status=active'),
         api.get('/api/v1/courses/all?status=active'),
         api.get('/api/v1/students/all?status=active'),
-        api.get('/api/v1/teachers?status=active')
+        api.get('/api/v1/teachers?status=active'),
+        api.get('/api/v1/rooms?status=active')
       ]);
 
       const getLen = (res) => {
@@ -34,7 +36,8 @@ export default function Dashboard() {
         groups: getLen(groupsRes),
         courses: getLen(coursesRes),
         students: getLen(studentsRes),
-        teachers: getLen(teachersRes)
+        teachers: getLen(teachersRes),
+        rooms: getLen(roomsRes)
       });
     } catch (e) {
       console.error("Dashboard ma'lumotlarini olishda xatolik:", e);
@@ -46,10 +49,11 @@ export default function Dashboard() {
   }, []);
 
   const stats = [
-    { title: 'Sinflar (Guruhlar)', value: counts.groups, icon: <PeopleIcon sx={{ color: '#7b61ff' }} />, bg: '#f5f3ff', border: '#ddd6fe' },
-    { title: 'Fanlar (Kurslar)', value: counts.courses, icon: <MenuBookIcon sx={{ color: '#0ea5e9' }} />, bg: '#f0f9ff', border: '#bae6fd' },
-    { title: 'Talabalar', value: counts.students, icon: <SchoolIcon sx={{ color: '#10b981' }} />, bg: '#f0fdf4', border: '#bbf7d0' },
     { title: "O'qituvchilar", value: counts.teachers, icon: <PersonIcon sx={{ color: '#f59e0b' }} />, bg: '#fffbeb', border: '#fef3c7' },
+    { title: 'Talabalar', value: counts.students, icon: <SchoolIcon sx={{ color: '#10b981' }} />, bg: '#f0fdf4', border: '#bbf7d0' },
+    { title: 'Guruhlar', value: counts.groups, icon: <PeopleIcon sx={{ color: '#7b61ff' }} />, bg: '#f5f3ff', border: '#ddd6fe' },
+    { title: 'Fanlar (Kurslar)', value: counts.courses, icon: <MenuBookIcon sx={{ color: '#0ea5e9' }} />, bg: '#f0f9ff', border: '#bae6fd' },
+    { title: 'Sinflar (Xonalar)', value: counts.rooms, icon: <PeopleIcon sx={{ color: '#6366f1' }} />, bg: '#eef2ff', border: '#c7d2fe' },
   ];
 
   return (
@@ -64,7 +68,7 @@ export default function Dashboard() {
 
         <Grid container spacing={3} sx={{ mb: 4 }}>
           {stats.map((stat, index) => (
-            <Grid item xs={12} sm={6} md={3} key={index}>
+            <Grid item xs={12} sm={6} md={4} lg={2.4} key={index}>
               <Paper
                 elevation={0}
                 sx={{

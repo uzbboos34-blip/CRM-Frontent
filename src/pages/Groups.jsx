@@ -118,7 +118,7 @@ export default function Groups() {
   }, []);
 
   const uniqueTeachers = new Set(groups.flatMap(g => (g.teachers || []).map(t => t.id))).size;
-  const totalStudents = groups.reduce((s, g) => s + (g.students || []), 0);
+  const totalStudents = groups.reduce((s, g) => s + (Number(g.students) || 0), 0);
 
   async function handleSubmit() {
     if (editingId) {

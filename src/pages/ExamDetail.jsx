@@ -42,7 +42,7 @@ const TABS = [
   { key: 'PENDING', label: 'Kutayotganlar', color: '#f59e0b', icon: <AccessTimeIcon sx={{ fontSize: 16 }} /> },
   { key: 'RETURNED', label: 'Qaytarilganlar', color: '#ef4444', icon: <CancelIcon sx={{ fontSize: 16 }} /> },
   { key: 'ACCEPTED', label: 'Qabul qilinganlar', color: '#10b981', icon: <CheckCircleIcon sx={{ fontSize: 16 }} /> },
-  { key: 'NOT_SUBMITTED', label: 'Topshirmaganlar', color: '#6b7280', icon: <CancelIcon sx={{ fontSize: 16 }} /> },
+  { key: 'NOT_SUBMITTED', label: 'Bajarilmagan', color: '#6b7280', icon: <CancelIcon sx={{ fontSize: 16 }} /> },
 ];
 
 export default function ExamDetail() {
@@ -222,8 +222,8 @@ export default function ExamDetail() {
             <TableHead>
               <TableRow sx={{ backgroundColor: '#f9fafb' }}>
                 <TableCell sx={thSx}>O'quvchi ismi</TableCell>
-                {currentTabKey !== 'NOT_SUBMITTED' && <TableCell sx={thSx}>Yuborilgan fayl</TableCell>}
-                {currentTabKey !== 'NOT_SUBMITTED' && <TableCell sx={thSx}>Vaqt</TableCell>}
+                {currentTabKey !== 'NOT_SUBMITTED' && <TableCell sx={thSx}>Topshirilgan vaqti</TableCell>}
+                {(currentTabKey === 'ACCEPTED' || currentTabKey === 'RETURNED') && <TableCell sx={thSx}>Tekshirilgan vaqti</TableCell>}
                 {currentTabKey !== 'NOT_SUBMITTED' && <TableCell sx={thSx}>Ball</TableCell>}
                 <TableCell sx={{ ...thSx, width: 80 }} />
               </TableRow>
@@ -232,37 +232,37 @@ export default function ExamDetail() {
               {currentList.map((item, idx) => (
                   <TableRow 
                     key={item.id} 
-                    onClick={() => navigate(`/group/${groupId}/exam/${examId}/student/${item.student_id}`)}
-                    sx={{ '&:hover': { backgroundColor: '#f8f7ff' }, borderBottom: '1px solid #f3f4f6', transition: 'background 0.15s', cursor: 'pointer' }}
+                    sx={{ borderBottom: '1px solid #f3f4f6', transition: 'background 0.15s', '&:hover': { backgroundColor: '#f8f7ff' } }}
                   >
                     <TableCell sx={tdSx}>
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
                         <Avatar sx={{ width: 36, height: 36, backgroundColor: avatarColor(idx), fontSize: '0.8rem', fontWeight: 700 }}>
                           {getInitials(item.students?.full_name || '')}
                         </Avatar>
-                        <Typography sx={{ fontWeight: 600, color: '#111827', fontSize: '0.9rem' }}>
+                        <Typography
+                          onClick={() => navigate(`/group/${groupId}/exam/${examId}/student/${item.student_id}`)}
+                          sx={{
+                            fontWeight: 600, color: '#111827', fontSize: '0.9rem',
+                            cursor: 'pointer',
+                            '&:hover': { textDecoration: 'underline', color: '#10b981' }
+                          }}
+                        >
                           {item.students?.full_name || '—'}
                         </Typography>
                       </Box>
                     </TableCell>
                     {currentTabKey !== 'NOT_SUBMITTED' && (
                       <TableCell sx={tdSx}>
-                         {item.file ? (
-                           <Typography sx={{ fontSize: '0.85rem', color: '#10b981', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                             <InsertDriveFileIcon sx={{ fontSize: 16 }} /> Fayl yuklangan
-                           </Typography>
-                         ) : (
-                           <Typography sx={{ fontSize: '0.85rem', color: '#6b7280' }}>
-                             {item.title || 'Faylsiz javob'}
-                           </Typography>
-                         )}
-                      </TableCell>
-                    )}
-                    {currentTabKey !== 'NOT_SUBMITTED' && (
-                      <TableCell sx={tdSx}>
                         <Typography sx={{ fontSize: '0.85rem', color: '#374151', fontWeight: 500 }}>
                            {fmtDate(item.created_at)}
-                        </Typography>
+                         </Typography>
+                      </TableCell>
+                    )}
+                    {(currentTabKey === 'ACCEPTED' || currentTabKey === 'RETURNED') && (
+                      <TableCell sx={tdSx}>
+                        <Typography sx={{ fontSize: '0.85rem', color: '#374151', fontWeight: 500 }}>
+                           {fmtDate(item.updated_at || item.created_at)}
+                         </Typography>
                       </TableCell>
                     )}
                     {currentTabKey !== 'NOT_SUBMITTED' && (
@@ -275,8 +275,11 @@ export default function ExamDetail() {
                       </TableCell>
                     )}
                     <TableCell sx={{ ...tdSx, textAlign: 'right' }}>
-                       <IconButton>
-                          <ChevronRightIcon sx={{ color: '#6b7280' }} />
+                       <IconButton
+                         onClick={() => navigate(`/group/${groupId}/exam/${examId}/student/${item.student_id}`)}
+                         sx={{ color: '#6b7280', '&:hover': { color: '#10b981' } }}
+                       >
+                          <ChevronRightIcon />
                        </IconButton>
                     </TableCell>
                   </TableRow>

@@ -11,6 +11,7 @@ import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import ReplayIcon from '@mui/icons-material/Replay';
 import CancelIcon from '@mui/icons-material/Cancel';
+import InsertDriveFileIcon from '@mui/icons-material/InsertDriveFile';
 
 /* ─── Helpers ──────────────────────────────────────────────────────────── */
 const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
@@ -18,6 +19,14 @@ function fmtDate(d) {
   if (!d) return '—';
   const dt = new Date(d);
   return `${dt.getDate()} ${MONTHS[dt.getMonth()]}, ${dt.getFullYear()} ${String(dt.getHours()).padStart(2,'0')}:${String(dt.getMinutes()).padStart(2,'0')}`;
+}
+
+const BASE_URL = import.meta.env.VITE_API_URL || 'https://crm-backend-l7jq.onrender.com';
+
+function getFileUrl(filename) {
+  if (!filename) return '';
+  if (filename.startsWith('http')) return filename;
+  return `${BASE_URL}/file/${filename}`;
 }
 
 function getInitials(name = '') {
@@ -187,6 +196,98 @@ export default function StudentExamDetail() {
           />
         </Box>
       </Paper>
+
+      {/* ── Student's Submission Content / Yuborilgan vazifa tafsilotlari ── */}
+      {submission.examStatus !== 'NOT_SUBMITTED' && (
+        <Paper elevation={0} sx={{ border: '1px solid #e5e7eb', borderRadius: '16px', p: 3, mb: 3 }}>
+          <Typography sx={{ fontWeight: 800, fontSize: '1rem', color: '#111827', mb: 2 }}>
+            Yuborilgan javob
+          </Typography>
+
+          <Box sx={{ background: '#f9fafb', borderRadius: '12px', p: 2.5, border: '1px solid #f3f4f6', mb: submission.file ? 2 : 0 }}>
+            {submission.title && (
+              <Typography sx={{ fontWeight: 700, color: '#374151', fontSize: '0.9rem', mb: 1 }}>
+                Mavzu/Sarlavha: <span style={{ fontWeight: 500, color: '#4b5563' }}>{submission.title}</span>
+              </Typography>
+            )}
+            
+            {submission.description ? (
+              <Typography sx={{ color: '#4b5563', fontSize: '0.88rem', lineHeight: 1.6, whiteSpace: 'pre-wrap' }}>
+                {submission.description}
+              </Typography>
+            ) : (
+              <Typography sx={{ color: '#9ca3af', fontSize: '0.85rem', fontStyle: 'italic' }}>
+                Izoh yuborilmagan
+              </Typography>
+            )}
+
+            <Typography sx={{ fontSize: '0.75rem', color: '#9ca3af', mt: 2, textAlign: 'right' }}>
+              Topshirilgan vaqt: {fmtDate(submission.created_at)}
+            </Typography>
+          </Box>
+
+          {submission.file && (
+            <Box
+              sx={{
+                border: '1.5px solid #e5e7eb',
+                borderRadius: '12px',
+                p: 2,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                background: '#fff',
+                '&:hover': { borderColor: '#10b981', boxShadow: '0 4px 12px rgba(16,185,129,0.05)' },
+                transition: 'all 0.2s',
+              }}
+            >
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                <Box
+                  sx={{
+                    width: 42,
+                    height: 42,
+                    borderRadius: '10px',
+                    backgroundColor: '#f0fdf4',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    color: '#10b981',
+                  }}
+                >
+                  <InsertDriveFileIcon />
+                </Box>
+                <Box sx={{ minWidth: 0 }}>
+                  <Typography sx={{ fontWeight: 700, fontSize: '0.88rem', color: '#111827', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    {submission.file.split('/').pop() || 'yuborilgan_fayl'}
+                  </Typography>
+                  <Typography sx={{ fontSize: '0.75rem', color: '#9ca3af' }}>
+                    Yuklangan fayl
+                  </Typography>
+                </Box>
+              </Box>
+
+              <Button
+                component="a"
+                href={getFileUrl(submission.file)}
+                target="_blank"
+                rel="noopener noreferrer"
+                variant="contained"
+                size="small"
+                sx={{
+                  backgroundColor: '#10b981',
+                  '&:hover': { backgroundColor: '#059669' },
+                  textTransform: 'none',
+                  borderRadius: '8px',
+                  fontWeight: 600,
+                  fontSize: '0.8rem',
+                  boxShadow: 'none',
+                }}
+              >
+                Faylni yuklab olish
+              </Button>
+            </Box>
+          )}
+        </Paper>
+      )}
 
       {/* ── Grading section ── */}
       <Paper elevation={0} sx={{ border: '1px solid #e5e7eb', borderRadius: '16px', p: 3 }}>

@@ -582,154 +582,155 @@ export default function GroupLessons({ groupId }) {
           </Paper>
         ) : (
           <>
-          {/* Desktop jadval — mobilda yashiriladi */}
-          <TableContainer component={Paper} elevation={0} sx={{
-            border: '1px solid #e5e7eb', borderRadius: '16px', overflow: 'hidden',
-            display: { xs: 'none', md: 'block' },
-          }}>
-            <Table>
-              <TableHead>
-                <TableRow sx={{ backgroundColor: '#f9fafb' }}>
-                  <TableCell sx={thSx}>Video nomi</TableCell>
-                  <TableCell sx={thSx}>Dars nomi</TableCell>
-                  <TableCell sx={thSx}>Status</TableCell>
-                  <TableCell sx={thSx}>Dars sanasi</TableCell>
-                  <TableCell sx={thSx}>Hajmi</TableCell>
-                  <TableCell sx={thSx}>Qo'shilgan vaqti</TableCell>
-                  <TableCell sx={{ ...thSx, width: 80, textAlign: 'center' }}>Harakatlar</TableCell>
-                </TableRow>
-              </TableHead>
+            {/* Desktop jadval — mobilda yashiriladi */}
+            <TableContainer component={Paper} elevation={0} sx={{
+              border: '1px solid #e5e7eb', borderRadius: '16px', overflow: 'hidden',
+              display: { xs: 'none', md: 'block' },
+            }}>
+              <Table>
+                <TableHead>
+                  <TableRow sx={{ backgroundColor: '#f9fafb' }}>
+                    <TableCell sx={thSx}>Video nomi</TableCell>
+                    <TableCell sx={thSx}>Dars nomi</TableCell>
+                    <TableCell sx={thSx}>Status</TableCell>
+                    <TableCell sx={thSx}>Dars sanasi</TableCell>
+                    <TableCell sx={thSx}>Hajmi</TableCell>
+                    <TableCell sx={thSx}>Qo'shilgan vaqti</TableCell>
+                    <TableCell sx={{ ...thSx, width: 80, textAlign: 'center' }}>Harakatlar</TableCell>
+                  </TableRow>
+                </TableHead>
 
-              <TableBody>
-                {/* Background Uploads in progress */}
-                {uploads
-                  .filter(u => String(u.metadata.groupId) === String(groupId) && u.metadata.type === 'video' && u.status !== 'completed')
-                  .map(u => (
-                    <TableRow key={u.id} sx={{ backgroundColor: u.status === 'error' ? '#fef2f2' : '#eff6ff' }}>
-                      <TableCell sx={{ ...tdSx, color: u.status === 'error' ? '#991b1b' : '#3b82f6', fontWeight: 600 }}>
-                        {u.metadata.title}
+                <TableBody>
+                  {/* Background Uploads in progress */}
+                  {uploads
+                    .filter(u => String(u.metadata.groupId) === String(groupId) && u.metadata.type === 'video' && u.status !== 'completed')
+                    .map(u => (
+                      <TableRow key={u.id} sx={{ backgroundColor: u.status === 'error' ? '#fef2f2' : '#eff6ff' }}>
+                        <TableCell sx={{ ...tdSx, color: u.status === 'error' ? '#991b1b' : '#3b82f6', fontWeight: 600 }}>
+                          {u.metadata.title}
+                        </TableCell>
+                        <TableCell sx={tdSx}>{u.metadata.lessonTopic || '—'}</TableCell>
+                        <TableCell sx={tdSx}>
+                          {u.status === 'error' ? (
+                            <Chip label="Xato" size="small" sx={{ height: 22, fontSize: '0.72rem', fontWeight: 700, color: '#fff', background: '#ef4444' }} />
+                          ) : (
+                            <Chip
+                              label={`Yuklanyapti ${u.progress || 0}%`}
+                              size="small"
+                              variant="outlined"
+                              sx={{ height: 22, fontSize: '0.72rem', fontWeight: 700, color: '#3b82f6', borderColor: '#3b82f6', background: '#eff6ff' }}
+                            />
+                          )}
+                        </TableCell>
+                        <TableCell sx={tdSx}>—</TableCell>
+                        <TableCell sx={tdSx}>—</TableCell>
+                        <TableCell sx={tdSx}>Bugun</TableCell>
+                        <TableCell sx={{ ...tdSx, textAlign: 'center' }}>
+                          {u.status === 'error' ? (
+                            <Button size="small" color="error" sx={{ fontSize: '0.65rem' }} onClick={() => setUploads(prev => prev.filter(x => x.id !== u.id))}>Tozalash</Button>
+                          ) : (
+                            <IconButton size="small" sx={{ color: '#ef4444' }} onClick={() => setUploads(prev => prev.filter(x => x.id !== u.id))}>
+                              <DeleteOutlineIcon fontSize="small" />
+                            </IconButton>
+                          )}
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  }
+
+                  {/* Finished videos */}
+                  {videos.map((vid) => (
+                    <TableRow
+                      key={vid.id}
+                      onClick={() => setPreviewVid(vid)}
+                      sx={{ cursor: 'pointer', '&:hover': { backgroundColor: '#f9fafb' } }}
+                    >
+                      <TableCell sx={{ ...tdSx }}>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                          <PlayCircleIcon sx={{ fontSize: 20, color: '#10b981', flexShrink: 0 }} />
+                          <Typography sx={{ fontWeight: 600, color: '#111827', fontSize: '0.85rem' }}>
+                            {vid.title}
+                          </Typography>
+                        </Box>
                       </TableCell>
-                      <TableCell sx={tdSx}>{u.metadata.lessonTopic || '—'}</TableCell>
+                      <TableCell sx={tdSx}>{vid.lessons?.topic || '—'}</TableCell>
                       <TableCell sx={tdSx}>
-                        {u.status === 'error' ? (
-                          <Chip label="Xato" size="small" sx={{ height: 22, fontSize: '0.72rem', fontWeight: 700, color: '#fff', background: '#ef4444' }} />
-                        ) : (
-                          <Chip
-                            label={`Yuklanyapti ${u.progress || 0}%`}
-                            size="small"
-                            variant="outlined"
-                            sx={{ height: 22, fontSize: '0.72rem', fontWeight: 700, color: '#3b82f6', borderColor: '#3b82f6', background: '#eff6ff' }}
-                          />
-                        )}
+                        <Chip label="Tayyor" size="small" sx={{ background: '#f0fdf4', color: '#10b981', fontWeight: 700, height: 24, fontSize: '0.75rem' }} />
                       </TableCell>
-                      <TableCell sx={tdSx}>—</TableCell>
-                      <TableCell sx={tdSx}>—</TableCell>
-                      <TableCell sx={tdSx}>Bugun</TableCell>
+                      <TableCell sx={tdSx}>{fmtDate(vid.lessons?.date || vid.created_at)}</TableCell>
+                      <TableCell sx={tdSx}>{fmtFileSize(vid.file_size)}</TableCell>
+                      <TableCell sx={tdSx}>{fmtDate(vid.created_at)}</TableCell>
                       <TableCell sx={{ ...tdSx, textAlign: 'center' }}>
-                        {u.status === 'error' ? (
-                          <Button size="small" color="error" sx={{ fontSize: '0.65rem' }} onClick={() => setUploads(prev => prev.filter(x => x.id !== u.id))}>Tozalash</Button>
-                        ) : (
-                          <IconButton size="small" sx={{ color: '#ef4444' }} onClick={() => setUploads(prev => prev.filter(x => x.id !== u.id))}>
-                            <DeleteOutlineIcon fontSize="small" />
-                          </IconButton>
-                        )}
+                        <IconButton
+                          size="small"
+                          onClick={(e) => handleVidMenuOpen(e, vid)}
+                          sx={{ color: '#9ca3af', '&:hover': { color: '#374151' } }}
+                        >
+                          <MoreVertIcon fontSize="small" />
+                        </IconButton>
                       </TableCell>
                     </TableRow>
-                  ))
-                }
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
 
-                {/* Finished videos */}
-                {videos.map((vid) => (
-                  <TableRow
-                    key={vid.id}
-                    onClick={() => setPreviewVid(vid)}
-                    sx={{ cursor: 'pointer', '&:hover': { backgroundColor: '#f9fafb' } }}
-                  >
-                    <TableCell sx={{ ...tdSx }}>
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                        <PlayCircleIcon sx={{ fontSize: 20, color: '#10b981', flexShrink: 0 }} />
-                        <Typography sx={{ fontWeight: 600, color: '#111827', fontSize: '0.85rem' }}>
-                          {vid.title}
-                        </Typography>
-                      </Box>
-                    </TableCell>
-                    <TableCell sx={tdSx}>{vid.lessons?.topic || '—'}</TableCell>
-                    <TableCell sx={tdSx}>
-                      <Chip label="Tayyor" size="small" sx={{ background: '#f0fdf4', color: '#10b981', fontWeight: 700, height: 24, fontSize: '0.75rem' }} />
-                    </TableCell>
-                    <TableCell sx={tdSx}>{fmtDate(vid.lessons?.date || vid.created_at)}</TableCell>
-                    <TableCell sx={tdSx}>{fmtFileSize(vid.file_size)}</TableCell>
-                    <TableCell sx={tdSx}>{fmtDate(vid.created_at)}</TableCell>
-                    <TableCell sx={{ ...tdSx, textAlign: 'center' }}>
-                      <IconButton
+            {/* Mobil karta ko'rinishi — faqat xs va sm ekranlarda ko'rsatiladi */}
+            <Box sx={{ display: { xs: 'flex', md: 'none' }, flexDirection: 'column', gap: 1.5 }}>
+              {/* Yuklanayotgan videolar */}
+              {uploads
+                .filter(u => String(u.metadata.groupId) === String(groupId) && u.metadata.type === 'video' && u.status !== 'completed')
+                .map(u => (
+                  <Paper key={u.id} elevation={0} sx={{ border: '1px solid #e5e7eb', borderRadius: '12px', p: 2, backgroundColor: u.status === 'error' ? '#fef2f2' : '#eff6ff' }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <Typography sx={{ fontWeight: 600, fontSize: '0.85rem', color: u.status === 'error' ? '#991b1b' : '#3b82f6' }}>
+                        {u.metadata.title}
+                      </Typography>
+                      <Chip
+                        label={u.status === 'error' ? 'Xato' : `${u.progress || 0}%`}
                         size="small"
-                        onClick={(e) => handleVidMenuOpen(e, vid)}
-                        sx={{ color: '#9ca3af', '&:hover': { color: '#374151' } }}
-                      >
-                        <MoreVertIcon fontSize="small" />
-                      </IconButton>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </TableContainer>
-
-          {/* Mobil karta ko'rinishi — faqat xs va sm ekranlarda ko'rsatiladi */}
-          <Box sx={{ display: { xs: 'flex', md: 'none' }, flexDirection: 'column', gap: 1.5 }}>
-            {/* Yuklanayotgan videolar */}
-            {uploads
-              .filter(u => String(u.metadata.groupId) === String(groupId) && u.metadata.type === 'video' && u.status !== 'completed')
-              .map(u => (
-                <Paper key={u.id} elevation={0} sx={{ border: '1px solid #e5e7eb', borderRadius: '12px', p: 2, backgroundColor: u.status === 'error' ? '#fef2f2' : '#eff6ff' }}>
-                  <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                    <Typography sx={{ fontWeight: 600, fontSize: '0.85rem', color: u.status === 'error' ? '#991b1b' : '#3b82f6' }}>
-                      {u.metadata.title}
+                        sx={{
+                          height: 22, fontSize: '0.72rem', fontWeight: 700,
+                          color: u.status === 'error' ? '#fff' : '#3b82f6',
+                          background: u.status === 'error' ? '#ef4444' : '#eff6ff',
+                          border: u.status === 'error' ? 'none' : '1px solid #3b82f6'
+                        }}
+                      />
+                    </Box>
+                  </Paper>
+                ))
+              }
+              {/* Yuklangan videolar */}
+              {videos.map((vid) => (
+                <Paper
+                  key={vid.id}
+                  elevation={0}
+                  onClick={() => setPreviewVid(vid)}
+                  sx={{ border: '1px solid #e5e7eb', borderRadius: '12px', p: 2, cursor: 'pointer', '&:hover': { backgroundColor: '#f9fafb' } }}
+                >
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 1 }}>
+                    <PlayCircleIcon sx={{ fontSize: 28, color: '#10b981', flexShrink: 0 }} />
+                    <Box sx={{ flex: 1, minWidth: 0 }}>
+                      <Typography sx={{ fontWeight: 700, color: '#111827', fontSize: '0.9rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        {vid.title}
+                      </Typography>
+                      <Typography sx={{ fontSize: '0.75rem', color: '#6b7280' }}>
+                        {vid.lessons?.topic || '—'}
+                      </Typography>
+                    </Box>
+                    <Chip label="Tayyor" size="small" sx={{ background: '#f0fdf4', color: '#10b981', fontWeight: 700, height: 24, fontSize: '0.72rem', flexShrink: 0 }} />
+                  </Box>
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <Typography sx={{ fontSize: '0.75rem', color: '#9ca3af' }}>
+                      {fmtDate(vid.created_at)} · {fmtFileSize(vid.file_size)}
                     </Typography>
-                    <Chip
-                      label={u.status === 'error' ? 'Xato' : `${u.progress || 0}%`}
-                      size="small"
-                      sx={{ height: 22, fontSize: '0.72rem', fontWeight: 700,
-                        color: u.status === 'error' ? '#fff' : '#3b82f6',
-                        background: u.status === 'error' ? '#ef4444' : '#eff6ff',
-                        border: u.status === 'error' ? 'none' : '1px solid #3b82f6'
-                      }}
-                    />
+                    <IconButton size="small" onClick={(e) => { e.stopPropagation(); handleVidMenuOpen(e, vid); }} sx={{ color: '#9ca3af' }}>
+                      <MoreVertIcon fontSize="small" />
+                    </IconButton>
                   </Box>
                 </Paper>
-              ))
-            }
-            {/* Yuklangan videolar */}
-            {videos.map((vid) => (
-              <Paper
-                key={vid.id}
-                elevation={0}
-                onClick={() => setPreviewVid(vid)}
-                sx={{ border: '1px solid #e5e7eb', borderRadius: '12px', p: 2, cursor: 'pointer', '&:hover': { backgroundColor: '#f9fafb' } }}
-              >
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 1 }}>
-                  <PlayCircleIcon sx={{ fontSize: 28, color: '#10b981', flexShrink: 0 }} />
-                  <Box sx={{ flex: 1, minWidth: 0 }}>
-                    <Typography sx={{ fontWeight: 700, color: '#111827', fontSize: '0.9rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                      {vid.title}
-                    </Typography>
-                    <Typography sx={{ fontSize: '0.75rem', color: '#6b7280' }}>
-                      {vid.lessons?.topic || '—'}
-                    </Typography>
-                  </Box>
-                  <Chip label="Tayyor" size="small" sx={{ background: '#f0fdf4', color: '#10b981', fontWeight: 700, height: 24, fontSize: '0.72rem', flexShrink: 0 }} />
-                </Box>
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <Typography sx={{ fontSize: '0.75rem', color: '#9ca3af' }}>
-                    {fmtDate(vid.created_at)} · {fmtFileSize(vid.file_size)}
-                  </Typography>
-                  <IconButton size="small" onClick={(e) => { e.stopPropagation(); handleVidMenuOpen(e, vid); }} sx={{ color: '#9ca3af' }}>
-                    <MoreVertIcon fontSize="small" />
-                  </IconButton>
-                </Box>
-              </Paper>
-            ))}
-          </Box>
+              ))}
+            </Box>
           </>
         )
       )}
@@ -818,21 +819,21 @@ export default function GroupLessons({ groupId }) {
                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5, pt: 1 }}>
                   <Box>
                     <Typography sx={{ fontSize: '0.85rem', fontWeight: 600, color: '#374151', mb: 0.5 }}>Mavzu *</Typography>
-                    <input required value={examForm.title} onChange={e=>setExamForm({...examForm, title: e.target.value})} style={{ width: '100%', padding: '12px', borderRadius: '10px', border: '1px solid #d1d5db', outline: 'none', fontSize: '0.95rem' }} placeholder="Masalan: Examination" />
+                    <input required value={examForm.title} onChange={e => setExamForm({ ...examForm, title: e.target.value })} style={{ width: '100%', padding: '12px', borderRadius: '10px', border: '1px solid #d1d5db', outline: 'none', fontSize: '0.95rem' }} placeholder="Masalan: Examination" />
                   </Box>
                   <Box sx={{ display: 'flex', gap: 2 }}>
                     <Box sx={{ flex: 1 }}>
                       <Typography sx={{ fontSize: '0.85rem', fontWeight: 600, color: '#374151', mb: 0.5 }}>Boshlanish vaqti</Typography>
-                      <input type="datetime-local" value={examForm.start_date} onChange={e=>setExamForm({...examForm, start_date: e.target.value})} style={{ width: '100%', padding: '12px', borderRadius: '10px', border: '1px solid #d1d5db', outline: 'none', fontSize: '0.95rem' }} />
+                      <input type="datetime-local" value={examForm.start_date} onChange={e => setExamForm({ ...examForm, start_date: e.target.value })} style={{ width: '100%', padding: '12px', borderRadius: '10px', border: '1px solid #d1d5db', outline: 'none', fontSize: '0.95rem' }} />
                     </Box>
                     <Box sx={{ flex: 1 }}>
                       <Typography sx={{ fontSize: '0.85rem', fontWeight: 600, color: '#374151', mb: 0.5 }}>Tugash vaqti</Typography>
-                      <input type="datetime-local" value={examForm.end_date} onChange={e=>setExamForm({...examForm, end_date: e.target.value})} style={{ width: '100%', padding: '12px', borderRadius: '10px', border: '1px solid #d1d5db', outline: 'none', fontSize: '0.95rem' }} />
+                      <input type="datetime-local" value={examForm.end_date} onChange={e => setExamForm({ ...examForm, end_date: e.target.value })} style={{ width: '100%', padding: '12px', borderRadius: '10px', border: '1px solid #d1d5db', outline: 'none', fontSize: '0.95rem' }} />
                     </Box>
                   </Box>
                   <Box>
                     <Typography sx={{ fontSize: '0.85rem', fontWeight: 600, color: '#374151', mb: 0.5 }}>Imtihon shartlari (Izoh)</Typography>
-                    <textarea rows={4} value={examForm.description} onChange={e=>setExamForm({...examForm, description: e.target.value})} style={{ width: '100%', padding: '12px', borderRadius: '10px', border: '1px solid #d1d5db', outline: 'none', resize: 'vertical', fontSize: '0.95rem' }} placeholder="Linklar va vazifalar..." />
+                    <textarea rows={4} value={examForm.description} onChange={e => setExamForm({ ...examForm, description: e.target.value })} style={{ width: '100%', padding: '12px', borderRadius: '10px', border: '1px solid #d1d5db', outline: 'none', resize: 'vertical', fontSize: '0.95rem' }} placeholder="Linklar va vazifalar..." />
                   </Box>
                   <Box>
                     <Typography sx={{ fontSize: '0.85rem', fontWeight: 600, color: '#374151', mb: 0.5 }}>Fayl yuklash (Zarur bo'lsa)</Typography>
@@ -1013,76 +1014,86 @@ export default function GroupLessons({ groupId }) {
       <Dialog
         open={deleteConfirmOpen}
         onClose={() => setDeleteConfirmOpen(false)}
-        fullWidth
         PaperProps={{
           sx: {
-            borderRadius: '16px',
-            padding: '24px 20px',
-            maxWidth: '320px',
-            mx: 'auto',
-            backgroundColor: '#ffffff',
-            border: '1px solid #f3f4f6',
-            boxShadow: '0 20px 25px -5px rgba(0,0,0,0.08), 0 10px 10px -5px rgba(0,0,0,0.03)'
+            borderRadius: '20px',
+            padding: '32px',
+            width: '420px',
+            maxWidth: '90vw',
+            boxShadow: '0 25px 50px -12px rgba(0,0,0,0.15)'
           }
         }}
       >
         <Box sx={{ textAlign: 'center' }}>
-          {/* Warning Icon Container */}
+          {/* Icon */}
           <Box sx={{
-            width: 48,
-            height: 48,
+            width: 64,
+            height: 64,
             borderRadius: '50%',
             background: '#fef2f2',
-            color: '#ef4444',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
             mx: 'auto',
-            mb: 2
+            mb: 3
           }}>
-            <DeleteOutlineIcon sx={{ fontSize: 24 }} />
+            <DeleteOutlineIcon sx={{ fontSize: 32, color: '#ef4444' }} />
           </Box>
 
-          <Typography sx={{ fontWeight: 800, color: '#111827', mb: 1, fontSize: '1rem' }}>
+          {/* Title */}
+          <Typography sx={{
+            fontWeight: 700,
+            fontSize: '1.2rem',
+            color: '#111827',
+            mb: 1.5
+          }}>
             Imtihonni o'chirish
           </Typography>
 
-          <Typography sx={{ fontSize: '0.78rem', color: '#4b5563', px: 0.5, mb: 3, lineHeight: 1.5 }}>
+          {/* Description */}
+          <Typography sx={{
+            fontSize: '0.875rem',
+            color: '#6b7280',
+            lineHeight: 1.6,
+            mb: 4,
+            px: 2
+          }}>
             Ushbu imtihonni o'chirmoqchimisiz? Loyihaga bog'liq barcha talabalar baholari va natijalari butunlay o'chib ketadi.
           </Typography>
 
-          <Box sx={{ display: 'flex', gap: 1, justifyContent: 'center' }}>
+          {/* Buttons */}
+          <Box sx={{ display: 'flex', gap: 2 }}>
             <Button
+              fullWidth
               onClick={() => setDeleteConfirmOpen(false)}
               sx={{
                 textTransform: 'none',
-                fontWeight: 700,
-                flex: 1,
-                py: 1,
-                borderRadius: '8px',
+                fontWeight: 600,
+                py: 1.5,
+                borderRadius: '10px',
                 border: '1.5px solid #e5e7eb',
                 color: '#374151',
-                fontSize: '0.78rem',
-                '&:hover': { background: '#f9fafb', borderColor: '#d1d5db' }
+                fontSize: '0.9rem',
+                '&:hover': { background: '#f9fafb' }
               }}
             >
               Bekor qilish
             </Button>
             <Button
+              fullWidth
+              variant="contained"
               onClick={() => {
                 setDeleteConfirmOpen(false);
                 confirmDeleteExam(examToDelete);
               }}
-              variant="contained"
               sx={{
                 textTransform: 'none',
-                fontWeight: 700,
-                flex: 1,
-                py: 1,
-                borderRadius: '8px',
+                fontWeight: 600,
+                py: 1.5,
+                borderRadius: '10px',
                 backgroundColor: '#ef4444',
                 boxShadow: 'none',
-                fontSize: '0.78rem',
+                fontSize: '0.9rem',
                 '&:hover': {
                   backgroundColor: '#dc2626',
                   boxShadow: 'none'

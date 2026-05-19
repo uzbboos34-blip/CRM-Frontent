@@ -124,6 +124,10 @@ export default function GroupLessons({ groupId }) {
   // Video menu (separate to avoid state confusion)
   const [vidAnchorEl, setVidAnchorEl] = useState(null);
   const [menuVid, setMenuVid] = useState(null);
+  // Exam menu
+  const [examAnchorEl, setExamAnchorEl] = useState(null);
+  const [menuExam, setMenuExam] = useState(null);
+  const [editingExamId, setEditingExamId] = useState(null);
   // Video preview modal
   const [previewVid, setPreviewVid] = useState(null);
   const [uploadModalOpen, setUploadModalOpen] = useState(false);
@@ -170,17 +174,49 @@ export default function GroupLessons({ groupId }) {
       if (examForm.end_date) formData.append('end_date', examForm.end_date);
       if (file) formData.append('file', file);
 
-      await api.post('/api/v1/exams', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' }
-      });
-      setSnackbar({ open: true, msg: "Imtihon muvaffaqiyatli yaratildi", sev: 'success' });
+      if (editingExamId) {
+        await api.put(`/api/v1/exams/${editingExamId}`, formData, {
+          headers: { 'Content-Type': 'multipart/form-data' }
+        });
+        setSnackbar({ open: true, msg: "Imtihon muvaffaqiyatli tahrirlandi", sev: 'success' });
+      } else {
+        await api.post('/api/v1/exams', formData, {
+          headers: { 'Content-Type': 'multipart/form-data' }
+        });
+        setSnackbar({ open: true, msg: "Imtihon muvaffaqiyatli yaratildi", sev: 'success' });
+      }
+
       setCreateExamModalOpen(false);
       setExamForm({ title: '', description: '', start_date: '', end_date: '' });
+      setEditingExamId(null);
       setFile(null);
       fetchExams();
     } catch (e) {
       setSnackbar({ open: true, msg: e.response?.data?.message || 'Xatolik', sev: 'error' });
     }
+  }
+
+  async function handleDeleteExam(id) {
+    if (!window.confirm("Haqiqatan ham ushbu imtihonni o'chirmoqchimisiz? Undagi barcha talaba natijalari ham o'chib ketadi.")) return;
+    handleExamMenuClose();
+    try {
+      await api.delete(`/api/v1/exams/${id}`);
+      setSnackbar({ open: true, msg: "Imtihon muvaffaqiyatli o'chirildi", sev: 'success' });
+      fetchExams();
+    } catch (e) {
+      setSnackbar({ open: true, msg: e.response?.data?.message || 'Xatolik', sev: 'error' });
+    }
+  }
+
+  function handleExamMenuOpen(e, exam) {
+    e.stopPropagation();
+    setExamAnchorEl(e.currentTarget);
+    setMenuExam(exam);
+  }
+
+  function handleExamMenuClose() {
+    setExamAnchorEl(null);
+    setMenuExam(null);
   }
 
   /* ── auto-refresh when background upload completes ── */
@@ -749,7 +785,13 @@ export default function GroupLessons({ groupId }) {
                         <TableCell sx={tdSx}>{fmtDateTime(ex.created_at)}</TableCell>
                         <TableCell sx={tdSx}>{fmtDateTime(ex.published_at)}</TableCell>
                         <TableCell sx={tdSx}>
-                          <IconButton size="small" onClick={(e) => { e.stopPropagation(); }}><MoreVertIcon fontSize="small" /></IconButton>
+                          <IconButton
+                            size="small"
+                            onClick={(e) => handleExamMenuOpen(e, ex)}
+                            sx={{ color: '#9ca3af', '&:hover': { color: '#374151' } }}
+                          >
+                            <MoreVertIcon fontSize="small" />
+                          </IconButton>
                         </TableCell>
                       </TableRow>
                     );
@@ -760,8 +802,8 @@ export default function GroupLessons({ groupId }) {
           )}
 
           {/* Create Exam Modal */}
-          <Dialog open={createExamModalOpen} onClose={() => setCreateExamModalOpen(false)} fullWidth maxWidth="sm" PaperProps={{ sx: { borderRadius: '16px', padding: 1 } }}>
-            <DialogTitle sx={{ fontWeight: 800, fontSize: '1.2rem', pb: 1 }}>Yangi imtihon e'lon qilish</DialogTitle>
+          <Dialog open={createExamModalOpen} onClose={() => { setCreateExamModalOpen(false); setEditingExamId(null); setExamForm({ title: '', description: '', start_date: '', end_date: '' }); setFile(null); }} fullWidth maxWidth="sm" PaperProps={{ sx: { borderRadius: '16px', padding: 1 } }}>
+            <DialogTitle sx={{ fontWeight: 800, fontSize: '1.2rem', pb: 1 }}>{editingExamId ? "Imtihonni tahrirlash" : "Yangi imtihon e'lon qilish"}</DialogTitle>
             <DialogContent>
               <form onSubmit={handleCreateExam}>
                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5, pt: 1 }}>
@@ -798,8 +840,8 @@ export default function GroupLessons({ groupId }) {
                     </Box>
                   </Box>
                   <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1.5, mt: 1 }}>
-                    <Button onClick={() => { setCreateExamModalOpen(false); setFile(null); }} sx={{ color: '#6b7280', textTransform: 'none', fontWeight: 600 }}>Bekor qilish</Button>
-                    <Button type="submit" variant="contained" sx={{ backgroundColor: '#10b981', '&:hover': { backgroundColor: '#059669' }, textTransform: 'none', borderRadius: '10px', px: 3, fontWeight: 600 }}>Yaratish</Button>
+                    <Button onClick={() => { setCreateExamModalOpen(false); setEditingExamId(null); setExamForm({ title: '', description: '', start_date: '', end_date: '' }); setFile(null); }} sx={{ color: '#6b7280', textTransform: 'none', fontWeight: 600 }}>Bekor qilish</Button>
+                    <Button type="submit" variant="contained" sx={{ backgroundColor: '#10b981', '&:hover': { backgroundColor: '#059669' }, textTransform: 'none', borderRadius: '10px', px: 3, fontWeight: 600 }}>{editingExamId ? "Saqlash" : "Yaratish"}</Button>
                   </Box>
                 </Box>
               </form>
@@ -915,6 +957,42 @@ export default function GroupLessons({ groupId }) {
         </MenuItem>
         <MenuItem
           onClick={() => handleDeleteVideo(menuVid?.id)}
+          sx={{ gap: 1.5, fontSize: '0.85rem', fontWeight: 600, color: '#ef4444' }}
+        >
+          <DeleteOutlineIcon fontSize="small" />
+          O'chirish
+        </MenuItem>
+      </Menu>
+
+      {/* ── Exam Context menu ── */}
+      <Menu
+        anchorEl={examAnchorEl}
+        open={Boolean(examAnchorEl)}
+        onClose={handleExamMenuClose}
+        PaperProps={{
+          elevation: 3,
+          sx: { borderRadius: '12px', minWidth: 160, py: 0.5 },
+        }}
+      >
+        <MenuItem
+          onClick={() => {
+            handleExamMenuClose();
+            setEditingExamId(menuExam?.id);
+            setExamForm({
+              title: menuExam?.title || '',
+              description: menuExam?.description || '',
+              start_date: menuExam?.start_date ? menuExam.start_date.substring(0, 16) : '',
+              end_date: menuExam?.end_date ? menuExam.end_date.substring(0, 16) : '',
+            });
+            setCreateExamModalOpen(true);
+          }}
+          sx={{ gap: 1.5, fontSize: '0.85rem', fontWeight: 600, color: '#374151' }}
+        >
+          <EditOutlinedIcon fontSize="small" sx={{ color: '#6b7280' }} />
+          Tahrirlash
+        </MenuItem>
+        <MenuItem
+          onClick={() => handleDeleteExam(menuExam?.id)}
           sx={{ gap: 1.5, fontSize: '0.85rem', fontWeight: 600, color: '#ef4444' }}
         >
           <DeleteOutlineIcon fontSize="small" />

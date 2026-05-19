@@ -1016,13 +1016,13 @@ export default function GroupLessons({ groupId }) {
         fullWidth
         maxWidth={false}
         PaperProps={{
-          style: {
-            borderRadius: '16px',
-            padding: '24px 20px',
-            width: '320px',
-            maxWidth: '95%',
-            marginLeft: 'auto',
-            marginRight: 'auto',
+          sx: {
+            borderRadius: '16px !important',
+            padding: '24px 20px !important',
+            width: '320px !important',
+            minWidth: '320px !important',
+            maxWidth: '95% !important',
+            mx: 'auto !important',
             border: '1px solid #f3f4f6',
             boxShadow: '0 20px 25px -5px rgba(0,0,0,0.08), 0 10px 10px -5px rgba(0,0,0,0.03)'
           }

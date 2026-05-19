@@ -128,6 +128,8 @@ export default function GroupLessons({ groupId }) {
   const [examAnchorEl, setExamAnchorEl] = useState(null);
   const [menuExam, setMenuExam] = useState(null);
   const [editingExamId, setEditingExamId] = useState(null);
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [examToDelete, setExamToDelete] = useState(null);
   // Video preview modal
   const [previewVid, setPreviewVid] = useState(null);
   const [uploadModalOpen, setUploadModalOpen] = useState(false);
@@ -196,15 +198,22 @@ export default function GroupLessons({ groupId }) {
     }
   }
 
-  async function handleDeleteExam(id) {
-    if (!window.confirm("Haqiqatan ham ushbu imtihonni o'chirmoqchimisiz? Undagi barcha talaba natijalari ham o'chib ketadi.")) return;
+  function handleDeleteExam(id) {
     handleExamMenuClose();
+    setExamToDelete(id);
+    setDeleteConfirmOpen(true);
+  }
+
+  async function confirmDeleteExam(id) {
+    if (!id) return;
     try {
       await api.delete(`/api/v1/exams/${id}`);
       setSnackbar({ open: true, msg: "Imtihon muvaffaqiyatli o'chirildi", sev: 'success' });
       fetchExams();
     } catch (e) {
       setSnackbar({ open: true, msg: e.response?.data?.message || 'Xatolik', sev: 'error' });
+    } finally {
+      setExamToDelete(null);
     }
   }
 
@@ -999,6 +1008,65 @@ export default function GroupLessons({ groupId }) {
           O'chirish
         </MenuItem>
       </Menu>
+
+      {/* ── Beautiful Delete Confirmation Dialog ── */}
+      <Dialog
+        open={deleteConfirmOpen}
+        onClose={() => setDeleteConfirmOpen(false)}
+        PaperProps={{
+          sx: { borderRadius: '20px', padding: 3, maxWidth: 380, width: '100%' }
+        }}
+      >
+        <Box sx={{ textAlign: 'center' }}>
+          {/* Warning Icon Container */}
+          <Box sx={{
+            width: 60, height: 60, borderRadius: '50%',
+            background: '#fee2e2', color: '#ef4444',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            mx: 'auto', mb: 2.5
+          }}>
+            <DeleteOutlineIcon sx={{ fontSize: 32 }} />
+          </Box>
+
+          <Typography variant="h6" sx={{ fontWeight: 800, color: '#111827', mb: 1, fontSize: '1.15rem' }}>
+            Imtihonni o'chirish
+          </Typography>
+
+          <Typography sx={{ fontSize: '0.85rem', color: '#6b7280', px: 1, mb: 3.5, lineHeight: 1.5 }}>
+            Haqiqatan ham ushbu imtihonni o'chirmoqchimisiz? Loyihaga bog'liq barcha talabalar baholari va natijalari butunlay o'chib ketadi. Buni ortga qaytarib bo'lmaydi.
+          </Typography>
+
+          <Box sx={{ display: 'flex', gap: 1.5, justifyContent: 'center' }}>
+            <Button
+              onClick={() => setDeleteConfirmOpen(false)}
+              sx={{
+                textTransform: 'none', fontWeight: 700, flex: 1, py: 1.2,
+                borderRadius: '12px', border: '1.5px solid #e5e7eb', color: '#374151', fontSize: '0.85rem',
+                '&:hover': { background: '#f9fafb', borderColor: '#d1d5db' }
+              }}
+            >
+              Bekor qilish
+            </Button>
+            <Button
+              onClick={() => {
+                setDeleteConfirmOpen(false);
+                confirmDeleteExam(examToDelete);
+              }}
+              variant="contained"
+              sx={{
+                textTransform: 'none', fontWeight: 700, flex: 1, py: 1.2,
+                borderRadius: '12px', background: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)',
+                boxShadow: '0 4px 12px rgba(239, 68, 68, 0.25)', fontSize: '0.85rem',
+                '&:hover': {
+                  background: 'linear-gradient(135deg, #dc2626 0%, #b91c1c 100%)',
+                }
+              }}
+            >
+              O'chirish
+            </Button>
+          </Box>
+        </Box>
+      </Dialog>
 
       {/* ── Snackbar ── */}
       <Snackbar

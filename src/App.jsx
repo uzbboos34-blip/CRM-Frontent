@@ -12,6 +12,7 @@ import CreateHomeWork from './pages/CreateHomeWork';
 import CreateVideo from './pages/CreateVideo';
 import HomeworkDetail from './pages/HomeworkDetail';
 import StudentHomeworkDetail from './pages/StudentHomeworkDetail';
+import ExamDetail from './pages/ExamDetail';
 
 import { UploadProvider } from './context/UploadContext';
 
@@ -49,6 +50,9 @@ function App() {
             <Route path="group/:groupId/homework/:hwId" element={<HomeworkDetail />} />
             {/* 2nd+3rd screenshot: specific student submission + grading */}
             <Route path="group/:groupId/homework/:hwId/student/:studentId" element={<StudentHomeworkDetail />} />
+
+            {/* ── Exam routes ── */}
+            <Route path="group/:groupId/exam/:examId" element={<ExamDetail />} />
 
             {/* ── Video routes ── */}
             <Route path="group/:id/video/create" element={<CreateVideo />} />

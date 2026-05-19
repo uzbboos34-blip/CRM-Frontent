@@ -108,6 +108,9 @@ export default function GroupLessons({ groupId }) {
   const [subTab, setSubTab] = useState(0);
   const [homeworks, setHomeworks] = useState([]);
   const [videos, setVideos] = useState([]);
+  const [exams, setExams] = useState([]);
+  const [createExamModalOpen, setCreateExamModalOpen] = useState(false);
+  const [examForm, setExamForm] = useState({ title: '', description: '', start_date: '', end_date: '' });
   const [loading, setLoading] = useState(false);
   // Homework menu
   const [anchorEl, setAnchorEl] = useState(null);
@@ -134,7 +137,34 @@ export default function GroupLessons({ groupId }) {
     if (!groupId) return;
     if (subTab === 0) fetchHomeworks();
     if (subTab === 1) fetchVideos();
+    if (subTab === 2) fetchExams();
   }, [subTab, groupId]);
+
+  async function fetchExams() {
+    setLoading(true);
+    try {
+      const res = await api.get(`/api/v1/exams/group/${groupId}`);
+      setExams(res.data?.data || res.data || []);
+    } catch (e) {
+      console.error('Exams fetch error:', e);
+      setExams([]);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function handleCreateExam(e) {
+    e.preventDefault();
+    try {
+      await api.post('/api/v1/exams', { ...examForm, group_id: Number(groupId) });
+      setSnackbar({ open: true, msg: "Imtihon muvaffaqiyatli yaratildi", sev: 'success' });
+      setCreateExamModalOpen(false);
+      setExamForm({ title: '', description: '', start_date: '', end_date: '' });
+      fetchExams();
+    } catch (e) {
+      setSnackbar({ open: true, msg: e.response?.data?.message || 'Xatolik', sev: 'error' });
+    }
+  }
 
   /* ── auto-refresh when background upload completes ── */
   useEffect(() => {
@@ -641,7 +671,108 @@ export default function GroupLessons({ groupId }) {
 
 
       {/* ══ Tab 2: Imtihonlar ══════════════════════════════ */}
-      {subTab === 2 && <EmptyTab label="Imtihonlar" />}
+      {subTab === 2 && (
+        <Box sx={{ animation: 'fadeIn 0.3s ease-out' }}>
+          <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 2 }}>
+            <Button
+              variant="contained"
+              startIcon={<AddIcon />}
+              onClick={() => setCreateExamModalOpen(true)}
+              sx={{ backgroundColor: '#10b981', '&:hover': { backgroundColor: '#059669' }, textTransform: 'none', borderRadius: '10px', px: 3, fontWeight: 600 }}
+            >
+              Yangi imtihon
+            </Button>
+          </Box>
+          {loading ? (
+            <Box sx={{ display: 'flex', justifyContent: 'center', py: 5 }}>
+              <CircularProgress sx={{ color: '#10b981' }} />
+            </Box>
+          ) : exams.length === 0 ? (
+            <Paper elevation={0} sx={{ border: '1px solid #e5e7eb', borderRadius: '16px', py: 8, textAlign: 'center' }}>
+              <Typography sx={{ color: '#9ca3af', fontWeight: 500 }}>
+                Imtihonlar ro'yxati bo'sh
+              </Typography>
+            </Paper>
+          ) : (
+            <TableContainer component={Paper} elevation={0} sx={{ border: '1px solid #e5e7eb', borderRadius: '16px', overflow: 'hidden' }}>
+              <Table>
+                <TableHead>
+                  <TableRow sx={{ backgroundColor: '#f9fafb' }}>
+                    <TableCell sx={thSx}>#</TableCell>
+                    <TableCell sx={thSx}>Mavzu</TableCell>
+                    <TableCell sx={{ ...thSx, textAlign: 'center' }}><PersonOutlineIcon sx={{ fontSize: 18 }} /></TableCell>
+                    <TableCell sx={{ ...thSx, textAlign: 'center' }}><CloseIcon sx={{ fontSize: 18, color: '#ef4444' }} /></TableCell>
+                    <TableCell sx={thSx}>Status</TableCell>
+                    <TableCell sx={thSx}>Dars vaqti</TableCell>
+                    <TableCell sx={thSx}>Berilgan vaqt</TableCell>
+                    <TableCell sx={thSx}>E'lon qilingan vaqti</TableCell>
+                    <TableCell sx={thSx}></TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {exams.map((ex, idx) => {
+                    const isEnded = ex.end_date && new Date(ex.end_date) < new Date();
+                    return (
+                      <TableRow
+                        key={ex.id}
+                        onClick={() => navigate(`/group/${groupId}/exam/${ex.id}`)}
+                        sx={{ cursor: 'pointer', '&:hover': { backgroundColor: '#f8f7ff' }, borderBottom: '1px solid #f3f4f6' }}
+                      >
+                        <TableCell sx={tdSx}>{exams.length - idx}</TableCell>
+                        <TableCell sx={{ ...tdSx, fontWeight: 600, color: '#3b82f6' }}>{ex.title}</TableCell>
+                        <TableCell sx={{ ...tdSx, textAlign: 'center' }}>{ex._count?.examAnswers || 0}</TableCell>
+                        <TableCell sx={{ ...tdSx, textAlign: 'center' }}>0</TableCell>
+                        <TableCell sx={tdSx}>
+                          <Chip label={isEnded ? "Tugagan" : "Jarayonda"} size="small" sx={{ borderRadius: '8px', backgroundColor: '#f3f4f6', color: '#6b7280', fontWeight: 600 }} />
+                        </TableCell>
+                        <TableCell sx={tdSx}>{fmtDateTime(ex.start_date)}</TableCell>
+                        <TableCell sx={tdSx}>{fmtDateTime(ex.created_at)}</TableCell>
+                        <TableCell sx={tdSx}>{fmtDateTime(ex.published_at)}</TableCell>
+                        <TableCell sx={tdSx}>
+                          <IconButton size="small" onClick={(e) => { e.stopPropagation(); }}><MoreVertIcon fontSize="small" /></IconButton>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          )}
+
+          {/* Create Exam Modal */}
+          <Dialog open={createExamModalOpen} onClose={() => setCreateExamModalOpen(false)} fullWidth maxWidth="sm" PaperProps={{ sx: { borderRadius: '16px', padding: 1 } }}>
+            <DialogTitle sx={{ fontWeight: 800, fontSize: '1.2rem', pb: 1 }}>Yangi imtihon e'lon qilish</DialogTitle>
+            <DialogContent>
+              <form onSubmit={handleCreateExam}>
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5, pt: 1 }}>
+                  <Box>
+                    <Typography sx={{ fontSize: '0.85rem', fontWeight: 600, color: '#374151', mb: 0.5 }}>Mavzu *</Typography>
+                    <input required value={examForm.title} onChange={e=>setExamForm({...examForm, title: e.target.value})} style={{ width: '100%', padding: '12px', borderRadius: '10px', border: '1px solid #d1d5db', outline: 'none', fontSize: '0.95rem' }} placeholder="Masalan: Examination" />
+                  </Box>
+                  <Box sx={{ display: 'flex', gap: 2 }}>
+                    <Box sx={{ flex: 1 }}>
+                      <Typography sx={{ fontSize: '0.85rem', fontWeight: 600, color: '#374151', mb: 0.5 }}>Boshlanish vaqti</Typography>
+                      <input type="datetime-local" value={examForm.start_date} onChange={e=>setExamForm({...examForm, start_date: e.target.value})} style={{ width: '100%', padding: '12px', borderRadius: '10px', border: '1px solid #d1d5db', outline: 'none', fontSize: '0.95rem' }} />
+                    </Box>
+                    <Box sx={{ flex: 1 }}>
+                      <Typography sx={{ fontSize: '0.85rem', fontWeight: 600, color: '#374151', mb: 0.5 }}>Tugash vaqti</Typography>
+                      <input type="datetime-local" value={examForm.end_date} onChange={e=>setExamForm({...examForm, end_date: e.target.value})} style={{ width: '100%', padding: '12px', borderRadius: '10px', border: '1px solid #d1d5db', outline: 'none', fontSize: '0.95rem' }} />
+                    </Box>
+                  </Box>
+                  <Box>
+                    <Typography sx={{ fontSize: '0.85rem', fontWeight: 600, color: '#374151', mb: 0.5 }}>Imtihon shartlari (Izoh)</Typography>
+                    <textarea rows={4} value={examForm.description} onChange={e=>setExamForm({...examForm, description: e.target.value})} style={{ width: '100%', padding: '12px', borderRadius: '10px', border: '1px solid #d1d5db', outline: 'none', resize: 'vertical', fontSize: '0.95rem' }} placeholder="Linklar va vazifalar..." />
+                  </Box>
+                  <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1.5, mt: 1 }}>
+                    <Button onClick={() => setCreateExamModalOpen(false)} sx={{ color: '#6b7280', textTransform: 'none', fontWeight: 600 }}>Bekor qilish</Button>
+                    <Button type="submit" variant="contained" sx={{ backgroundColor: '#10b981', '&:hover': { backgroundColor: '#059669' }, textTransform: 'none', borderRadius: '10px', px: 3, fontWeight: 600 }}>Yaratish</Button>
+                  </Box>
+                </Box>
+              </form>
+            </DialogContent>
+          </Dialog>
+        </Box>
+      )}
 
       {/* ══ Tab 3: Jurnal ══════════════════════════════════ */}
       {subTab === 3 && <EmptyTab label="Jurnal" />}

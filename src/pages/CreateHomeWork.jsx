@@ -81,7 +81,7 @@ function RichEditor({ value, onChange }) {
 }
 
 export default function CreateHomeWork() {
-  const { id: groupId, hwId } = useParams();
+  const { groupId, hwId } = useParams();
   const navigate = useNavigate();
   const { startUpload } = useUploads();
 

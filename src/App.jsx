@@ -13,6 +13,7 @@ import CreateVideo from './pages/CreateVideo';
 import HomeworkDetail from './pages/HomeworkDetail';
 import StudentHomeworkDetail from './pages/StudentHomeworkDetail';
 import ExamDetail from './pages/ExamDetail';
+import StudentExamDetail from './pages/StudentExamDetail';
 
 import { UploadProvider } from './context/UploadContext';
 
@@ -53,6 +54,7 @@ function App() {
 
             {/* ── Exam routes ── */}
             <Route path="group/:groupId/exam/:examId" element={<ExamDetail />} />
+            <Route path="group/:groupId/exam/:examId/student/:studentId" element={<StudentExamDetail />} />
 
             {/* ── Video routes ── */}
             <Route path="group/:id/video/create" element={<CreateVideo />} />

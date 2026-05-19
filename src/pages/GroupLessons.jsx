@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useTheme } from '@mui/material/styles';
 import useMediaQuery from '@mui/material/useMediaQuery';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import api from '../api/axios';
 import {
   Box, Typography, Button, Tab, Tabs, Table, TableBody,
@@ -105,12 +105,18 @@ export default function GroupLessons({ groupId }) {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
-  const [subTab, setSubTab] = useState(0);
+  const location = useLocation();
+  const [subTab, setSubTab] = useState(() => {
+    const params = new URLSearchParams(window.location.search);
+    return parseInt(params.get('subTab') || '0', 10);
+  });
   const [homeworks, setHomeworks] = useState([]);
   const [videos, setVideos] = useState([]);
   const [exams, setExams] = useState([]);
   const [createExamModalOpen, setCreateExamModalOpen] = useState(false);
   const [examForm, setExamForm] = useState({ title: '', description: '', start_date: '', end_date: '' });
+  const [file, setFile] = useState(null);
+  const fileInputRef = useRef(null);
   const [loading, setLoading] = useState(false);
   // Homework menu
   const [anchorEl, setAnchorEl] = useState(null);
@@ -123,14 +129,14 @@ export default function GroupLessons({ groupId }) {
   const [uploadModalOpen, setUploadModalOpen] = useState(false);
   const [snackbar, setSnackbar] = useState({ open: false, msg: '', sev: 'success' });
 
-  /* ── read subTab from URL on mount ── */
+  /* ── read subTab from URL on mount & URL changes ── */
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
+    const params = new URLSearchParams(location.search);
     const sub = params.get('subTab');
     if (sub !== null) {
       setSubTab(parseInt(sub));
     }
-  }, []);
+  }, [location.search]);
 
   /* ── fetch data based on tab ── */
   useEffect(() => {
@@ -156,10 +162,21 @@ export default function GroupLessons({ groupId }) {
   async function handleCreateExam(e) {
     e.preventDefault();
     try {
-      await api.post('/api/v1/exams', { ...examForm, group_id: Number(groupId) });
+      const formData = new FormData();
+      formData.append('title', examForm.title);
+      formData.append('description', examForm.description);
+      formData.append('group_id', String(groupId));
+      if (examForm.start_date) formData.append('start_date', examForm.start_date);
+      if (examForm.end_date) formData.append('end_date', examForm.end_date);
+      if (file) formData.append('file', file);
+
+      await api.post('/api/v1/exams', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
       setSnackbar({ open: true, msg: "Imtihon muvaffaqiyatli yaratildi", sev: 'success' });
       setCreateExamModalOpen(false);
       setExamForm({ title: '', description: '', start_date: '', end_date: '' });
+      setFile(null);
       fetchExams();
     } catch (e) {
       setSnackbar({ open: true, msg: e.response?.data?.message || 'Xatolik', sev: 'error' });
@@ -271,7 +288,10 @@ export default function GroupLessons({ groupId }) {
           {/* Mobilda gorizontal scroll bo'lsin */}
           <Tabs
             value={subTab}
-            onChange={(_, v) => setSubTab(v)}
+            onChange={(_, v) => {
+              setSubTab(v);
+              navigate(`?tab=1&subTab=${v}`, { replace: true });
+            }}
             variant="scrollable"
             scrollButtons="auto"
             sx={{
@@ -763,8 +783,22 @@ export default function GroupLessons({ groupId }) {
                     <Typography sx={{ fontSize: '0.85rem', fontWeight: 600, color: '#374151', mb: 0.5 }}>Imtihon shartlari (Izoh)</Typography>
                     <textarea rows={4} value={examForm.description} onChange={e=>setExamForm({...examForm, description: e.target.value})} style={{ width: '100%', padding: '12px', borderRadius: '10px', border: '1px solid #d1d5db', outline: 'none', resize: 'vertical', fontSize: '0.95rem' }} placeholder="Linklar va vazifalar..." />
                   </Box>
+                  <Box>
+                    <Typography sx={{ fontSize: '0.85rem', fontWeight: 600, color: '#374151', mb: 0.5 }}>Fayl yuklash (Zarur bo'lsa)</Typography>
+                    <Box
+                      onClick={() => fileInputRef.current?.click()}
+                      sx={{
+                        border: '1px dashed #d1d5db', borderRadius: '10px', p: 1.5,
+                        display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1.5,
+                        cursor: 'pointer', '&:hover': { borderColor: '#10b981', background: '#f9fafb' }
+                      }}
+                    >
+                      <input type="file" hidden ref={fileInputRef} onChange={e => setFile(e.target.files[0])} />
+                      <Typography sx={{ fontSize: '0.85rem', color: '#9ca3af' }}>{file ? file.name : "Faylni yuklash uchun bosing..."}</Typography>
+                    </Box>
+                  </Box>
                   <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1.5, mt: 1 }}>
-                    <Button onClick={() => setCreateExamModalOpen(false)} sx={{ color: '#6b7280', textTransform: 'none', fontWeight: 600 }}>Bekor qilish</Button>
+                    <Button onClick={() => { setCreateExamModalOpen(false); setFile(null); }} sx={{ color: '#6b7280', textTransform: 'none', fontWeight: 600 }}>Bekor qilish</Button>
                     <Button type="submit" variant="contained" sx={{ backgroundColor: '#10b981', '&:hover': { backgroundColor: '#059669' }, textTransform: 'none', borderRadius: '10px', px: 3, fontWeight: 600 }}>Yaratish</Button>
                   </Box>
                 </Box>

@@ -107,7 +107,7 @@ export default function GroupLessons({ groupId }) {
 
   const location = useLocation();
   const [subTab, setSubTab] = useState(() => {
-    const params = new URLSearchParams(window.location.search);
+    const params = new URLSearchParams(location.search);
     return parseInt(params.get('subTab') || '0', 10);
   });
   const [homeworks, setHomeworks] = useState([]);

@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import api from '../api/axios';
 import GroupLessons from './GroupLessons';
 import {
@@ -86,6 +86,7 @@ const DAY_NAMES_SHORT = ['Apr', 'Apr', 'Apr', 'May', 'May', 'May', 'May', 'May',
 export default function GroupInner() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const [group, setGroup] = useState(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState(0);
@@ -98,12 +99,12 @@ export default function GroupInner() {
 
   // Initialize active tab from URL query param
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
+    const params = new URLSearchParams(location.search);
     const tabParam = params.get('tab');
     if (tabParam !== null) {
       setActiveTab(parseInt(tabParam));
     }
-  }, []);
+  }, [location.search]);
 
   const handleDateClick = (d, isToday, isPast) => {
     const dDate = new Date(d.getFullYear(), d.getMonth(), d.getDate());

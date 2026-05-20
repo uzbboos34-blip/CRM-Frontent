@@ -144,8 +144,7 @@ export default function CreateHomeWork() {
     const method = hwId ? 'put' : 'post';
     
     // Background upload logic is in UploadContext (startUpload)
-    // Note: startUpload currently only does POST, I should update it or handle PUT
-    startUpload(url, formData, { title: autoTitle, groupId, type: 'homework' });
+    startUpload(url, formData, { title: autoTitle, groupId, type: 'homework' }, method);
     
     setSnackbar({ open: true, msg: "Yuklash boshlandi...", sev: 'success' });
     setTimeout(() => navigate(`/group/${groupId}?tab=1&subTab=0`), 600);

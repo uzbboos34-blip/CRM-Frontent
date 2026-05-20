@@ -234,7 +234,7 @@ export default function GroupInner() {
   return (
     <Box sx={{ animation: 'fadeIn 0.4s ease-out' }}>
       {/* ── Header ── */}
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+      <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, justifyContent: 'space-between', alignItems: { xs: 'flex-start', sm: 'center' }, gap: 2, mb: 3 }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
           <IconButton onClick={() => navigate('/groups')} size="small"
             sx={{ color: '#6b7280', '&:hover': { color: '#7b61ff', backgroundColor: '#f0eeff' } }}>
@@ -256,9 +256,11 @@ export default function GroupInner() {
       {/* ── Tabs ── */}
       <Box sx={{ borderBottom: '2px solid #f3f4f6', mb: 3 }}>
         <Tabs value={activeTab} onChange={(_, v) => setActiveTab(v)}
+          variant="scrollable"
+          scrollButtons="auto"
           sx={{
             '& .MuiTabs-indicator': { backgroundColor: '#7b61ff', height: 2 },
-            '& .MuiTab-root': { textTransform: 'none', fontWeight: 600, fontSize: '0.9rem', color: '#9ca3af', minWidth: 0, mr: 3, px: 0 },
+            '& .MuiTab-root': { textTransform: 'none', fontWeight: 600, fontSize: '0.9rem', color: '#9ca3af', minWidth: 0, mr: { xs: 2, sm: 3 }, px: 0 },
             '& .Mui-selected': { color: '#7b61ff !important' }
           }}>
           <Tab label="Ma'lumotlar" />
@@ -271,7 +273,7 @@ export default function GroupInner() {
       {activeTab === 0 && (
         <Box>
           {/* Top cards row: Mentorlar (left) and Parametrlar (right) */}
-          <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 3, mb: 3, alignItems: 'start' }}>
+          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 3, mb: 3, alignItems: 'start' }}>
 
             {/* Left Column: Mentorlar + Akademiklar */}
             <Box>
@@ -416,8 +418,8 @@ export default function GroupInner() {
                       const rowBg = '#f9fafb';
                       return (
                         <Box key={t.id} sx={{
-                          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                          gap: 3, px: 3, py: 2,
+                          display: 'flex', flexDirection: { xs: 'column', md: 'row' }, alignItems: { xs: 'flex-start', md: 'center' }, justifyContent: 'space-between',
+                          gap: { xs: 1.5, md: 3 }, px: 3, py: 2,
                           border: '1px solid #e5e7eb',
                           borderRadius: '12px',
                           backgroundColor: rowBg,
@@ -425,19 +427,19 @@ export default function GroupInner() {
                           transition: 'transform 0.2s',
                           '&:hover': { transform: 'translateY(-2px)', borderColor: '#7b61ff' }
                         }}>
-                          <Typography sx={{ fontSize: '0.88rem', fontWeight: 700, color: '#7b61ff', width: '15%' }}>
+                          <Typography sx={{ fontSize: '0.88rem', fontWeight: 700, color: '#7b61ff', width: { xs: '100%', md: '15%' } }}>
                             {t.full_name}
                           </Typography>
-                          <Typography sx={{ fontSize: '0.82rem', color: '#6b7280', width: '15%', textAlign: 'center' }}>
+                          <Typography sx={{ fontSize: '0.82rem', color: '#6b7280', width: { xs: '100%', md: '15%' }, textAlign: { xs: 'left', md: 'center' } }}>
                             {days}
                           </Typography>
-                          <Typography sx={{ fontSize: '0.82rem', color: '#374151', width: '25%', textAlign: 'center' }}>
+                          <Typography sx={{ fontSize: '0.82rem', color: '#374151', width: { xs: '100%', md: '25%' }, textAlign: { xs: 'left', md: 'center' } }}>
                             {startTime} dan — {endTime} gacha
                           </Typography>
-                          <Typography sx={{ fontSize: '0.82rem', color: '#374151', width: '30%', textAlign: 'center' }}>
+                          <Typography sx={{ fontSize: '0.82rem', color: '#374151', width: { xs: '100%', md: '30%' }, textAlign: { xs: 'left', md: 'center' } }}>
                             {fmtDate(group.start_date)} — {fmtDate(group.end_date)}
                           </Typography>
-                          <Typography sx={{ fontSize: '0.85rem', fontWeight: 700, color: '#111827', width: '15%', textAlign: 'right' }}>
+                          <Typography sx={{ fontSize: '0.85rem', fontWeight: 700, color: '#111827', width: { xs: '100%', md: '15%' }, textAlign: { xs: 'left', md: 'right' } }}>
                             {group.rooms?.name || group.room?.name || '—'}
                           </Typography>
                         </Box>

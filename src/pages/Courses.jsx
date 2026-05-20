@@ -143,9 +143,9 @@ export default function Courses() {
 
   return (
     <Box>
-      <Paper elevation={0} sx={{ p: 4, borderRadius: '24px', border: '1px solid #e5e7eb', backgroundColor: '#fff' }}>
+      <Paper elevation={0} sx={{ p: { xs: 2, sm: 4 }, borderRadius: '24px', border: '1px solid #e5e7eb', backgroundColor: '#fff' }}>
         {/* Header */}
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+        <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, justifyContent: 'space-between', alignItems: { xs: 'stretch', sm: 'center' }, gap: 2, mb: 3 }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             <Typography variant="h6" sx={{ fontWeight: 700, color: '#111827' }}>Kurslar</Typography>
             <IconButton size="small" onClick={getCourses}><RefreshIcon sx={{ fontSize: 18, color: '#6b7280' }} /></IconButton>
@@ -160,10 +160,8 @@ export default function Courses() {
           </Button>
         </Box>
 
-
-
         {/* Tabs */}
-        <Box sx={{ display: 'flex', gap: 1, mb: 3 }}>
+        <Box sx={{ display: 'flex', gap: 1, mb: 3, overflowX: 'auto', pb: 1 }}>
           {[
             { key: 'active', label: "Kurslar" },
             { key: 'inactive', label: "Arxiv", icon: <CalendarMonthIcon sx={{ fontSize: 16 }} /> }
@@ -174,7 +172,8 @@ export default function Courses() {
                 textTransform: 'none', borderRadius: '8px', fontWeight: 600, px: 2,
                 color: activeTab === tab.key ? '#7b61ff' : '#6b7280',
                 borderBottom: activeTab === tab.key ? '2px solid #7b61ff' : '2px solid transparent',
-                '&:hover': { backgroundColor: 'transparent', color: '#7b61ff' }
+                '&:hover': { backgroundColor: 'transparent', color: '#7b61ff' },
+                whiteSpace: 'nowrap'
               }}
             >
               {tab.label}
@@ -182,10 +181,10 @@ export default function Courses() {
           ))}
         </Box>
 
-        {/* Course cards — har doim 4 ta qatorda */}
+        {/* Course cards — responsive grid */}
         <Box sx={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(4, 1fr)',
+          gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)', lg: 'repeat(4, 1fr)' },
           gap: '20px'
         }}>
           {courses.map(course => (
@@ -279,8 +278,8 @@ export default function Courses() {
             }
           }
         }}
-        PaperProps={{ sx: { width: 480, borderRadius: '24px 0 0 24px' } }}>
-        <Box sx={{ p: 4, overflowY: 'auto', height: '100%' }}>
+        PaperProps={{ sx: { width: { xs: '100%', sm: 480 }, borderRadius: { xs: 0, sm: '24px 0 0 24px' } } }}>
+        <Box sx={{ p: { xs: 3, sm: 4 }, overflowY: 'auto', height: '100%' }}>
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 0.5 }}>
             <Typography variant="h5" sx={{ fontWeight: 800 }}>{editingId ? 'Kursni tahrirlash' : 'Kurs qo\'shish'}</Typography>
             <IconButton onClick={() => setIsDrawerOpen(false)}><CloseIcon /></IconButton>

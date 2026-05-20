@@ -314,7 +314,7 @@ export default function Groups() {
   return (
     <Box>
       {/* Header */}
-      <Box sx={{ mb: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <Box sx={{ mb: 3, display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, justifyContent: 'space-between', alignItems: { xs: 'flex-start', sm: 'center' }, gap: 2 }}>
         <Typography variant="h5" sx={{ fontWeight: 700, color: '#111827' }}>Guruhlar</Typography>
         <Button
           variant="contained" startIcon={<AddIcon />}
@@ -326,7 +326,7 @@ export default function Groups() {
       </Box>
 
       {/* Tabs */}
-      <Box sx={{ display: 'flex', gap: 1, mb: 3 }}>
+      <Box sx={{ display: 'flex', gap: 1, mb: 3, overflowX: 'auto', pb: 0.5 }}>
         {[
           { key: 'groups', label: "Guruhlar" },
           { key: 'archive', label: "Arxiv", icon: <CalendarMonthIcon sx={{ fontSize: 16 }} /> }
@@ -337,7 +337,8 @@ export default function Groups() {
               textTransform: 'none', borderRadius: '8px', fontWeight: 600, px: 2,
               color: activeTab === tab.key ? '#7b61ff' : '#6b7280',
               borderBottom: activeTab === tab.key ? '2px solid #7b61ff' : '2px solid transparent',
-              '&:hover': { backgroundColor: 'transparent', color: '#7b61ff' }
+              '&:hover': { backgroundColor: 'transparent', color: '#7b61ff' },
+              whiteSpace: 'nowrap'
             }}
           >
             {tab.label}
@@ -346,7 +347,7 @@ export default function Groups() {
       </Box>
 
       {/* Stat cards */}
-      <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 2.5, mb: 3 }}>
+      <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(3, 1fr)' }, gap: 2.5, mb: 3 }}>
         {[
           { label: 'Jami guruhlar', value: groups.length, icon: <PeopleAltIcon sx={{ fontSize: 28, color: '#7b61ff' }} />, bg: '#f0eeff' },
           { label: "O'qituvchilar", value: uniqueTeachers, icon: <SchoolIcon sx={{ fontSize: 28, color: '#10b981' }} />, bg: '#ecfdf5' },
@@ -515,7 +516,7 @@ export default function Groups() {
             }
           }
         }}
-        PaperProps={{ sx: { width: 420, display: 'flex', flexDirection: 'column' } }}>
+        PaperProps={{ sx: { width: { xs: '100%', sm: 420 }, display: 'flex', flexDirection: 'column' } }}>
 
         <Box sx={{ p: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
           <Box>

@@ -249,7 +249,7 @@ export default function Students() {
   return (
     <Box sx={{ p: 0 }}>
       {/* ─── Header ─── */}
-      <Box sx={{ mb: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+      <Box sx={{ mb: 3, display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, justifyContent: 'space-between', alignItems: { xs: 'flex-start', sm: 'center' }, gap: 2 }}>
         <Box>
           <Typography variant="h5" sx={{ fontWeight: 700, color: '#111827', mb: 0.5 }}>Talabalar</Typography>
           <Typography variant="body2" sx={{ color: '#6b7280', maxWidth: 600 }}>
@@ -269,8 +269,8 @@ export default function Students() {
       </Box>
 
       {/* ─── Tabs & Search ─── */}
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3, width: '100%' }}>
-        <Box sx={{ display: 'flex', gap: 1 }}>
+      <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, justifyContent: 'space-between', alignItems: { xs: 'stretch', sm: 'center' }, gap: 2, mb: 3, width: '100%' }}>
+        <Box sx={{ display: 'flex', gap: 1, overflowX: 'auto', pb: 0.5 }}>
           {[
             { key: 'students', label: "Talabalar" },
             { key: 'archive', label: "Arxiv", icon: <CalendarMonthIcon sx={{ fontSize: 16 }} /> }
@@ -281,7 +281,8 @@ export default function Students() {
                 textTransform: 'none', borderRadius: '8px', fontWeight: 600, px: 2,
                 color: activeTab === tab.key ? '#7b61ff' : '#6b7280',
                 borderBottom: activeTab === tab.key ? '2px solid #7b61ff' : '2px solid transparent',
-                '&:hover': { backgroundColor: 'transparent', color: '#7b61ff' }
+                '&:hover': { backgroundColor: 'transparent', color: '#7b61ff' },
+                whiteSpace: 'nowrap'
               }}
             >
               {tab.label}
@@ -292,7 +293,7 @@ export default function Students() {
         <TextField
           size="small" placeholder="Search" value={searchQuery}
           onChange={(e) => { setSearchQuery(e.target.value); setPage(1); }}
-          sx={{ width: 260, '& .MuiOutlinedInput-root': { borderRadius: '10px', backgroundColor: '#fff' } }}
+          sx={{ width: { xs: '100%', sm: 260 }, '& .MuiOutlinedInput-root': { borderRadius: '10px', backgroundColor: '#fff' } }}
           slotProps={{ input: { startAdornment: (<InputAdornment position="start"><SearchIcon sx={{ fontSize: 20, color: '#9ca3af' }} /></InputAdornment>) } }}
         />
       </Box>
@@ -379,7 +380,7 @@ export default function Students() {
             }
           }
         }}
-        PaperProps={{ sx: { width: 400 } }}>
+        PaperProps={{ sx: { width: { xs: '100%', sm: 400 } } }}>
         <Box sx={{ p: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
           <Box>
             <Typography variant="h6" sx={{ fontWeight: 700 }}>{editingId ? 'Talabani tahrirlash' : 'Talaba qo\'shish'}</Typography>

@@ -2,6 +2,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { Box, Typography, Tab, Tabs } from '@mui/material';
 import Courses from './Courses';
 import Rooms from './Rooms';
+import Staff from './Staff';
 
 const tabs = [
   'Kurslar', 'Xonalar', 'Filiallar', 'Xodimlar', 'Sabablar',
@@ -42,6 +43,7 @@ export default function Management() {
     switch (activeTab) {
       case 0: return <Courses />;
       case 1: return <Rooms />;
+      case 3: return <Staff />;
       default:
         return (
           <Box sx={{ p: 10, textAlign: 'center', backgroundColor: '#fff', borderRadius: '24px', border: '1px solid #e5e7eb' }}>

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Box, Typography, List, ListItem, ListItemButton, ListItemIcon, Divider, Button, IconButton } from '@mui/material';
+import { Box, Typography, List, ListItem, ListItemButton, ListItemIcon, Divider, Button, IconButton, useMediaQuery, useTheme } from '@mui/material';
 import { NavLink, useLocation } from 'react-router-dom';
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import PeopleIcon from '@mui/icons-material/People';
@@ -29,6 +29,9 @@ const menuItems = [
 export default function Sidebar({ openSettings, setOpenSettings, isSidebarCollapsed, setIsSidebarCollapsed, isManagementMenuOpen, setIsManagementMenuOpen, onMobileClose }) {
   const location = useLocation();
   const navigate = useNavigate();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const collapsed = isMobile ? false : isSidebarCollapsed;
 
   const handleLogout = () => {
     localStorage.removeItem('token');
@@ -63,6 +66,7 @@ export default function Sidebar({ openSettings, setOpenSettings, isSidebarCollap
           size="small"
           onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
           sx={{
+            display: { xs: 'none', md: 'flex' },
             backgroundColor: '#7b61ff',
             color: 'white',
             borderRadius: 1,
@@ -76,12 +80,12 @@ export default function Sidebar({ openSettings, setOpenSettings, isSidebarCollap
             boxShadow: '0 2px 8px rgba(0,0,0,0.15)'
           }}
         >
-          <ArrowBackIosNewIcon sx={{ fontSize: 12, transform: isSidebarCollapsed ? 'rotate(180deg)' : 'rotate(0deg)' }} />
+          <ArrowBackIosNewIcon sx={{ fontSize: 12, transform: collapsed ? 'rotate(180deg)' : 'rotate(0deg)' }} />
         </IconButton>
 
         <Box
           sx={{
-            width: isSidebarCollapsed ? 80 : 260,
+            width: { xs: 260, md: collapsed ? 80 : 260 },
             flexShrink: 0,
             height: '100%',
             backgroundColor: '#ffffff',
@@ -93,15 +97,15 @@ export default function Sidebar({ openSettings, setOpenSettings, isSidebarCollap
           }}
         >
           {/* Logo Area */}
-          <Box sx={{ p: 2.5, pb: 3, display: 'flex', alignItems: 'center', gap: 1.5, justifyContent: isSidebarCollapsed ? 'center' : 'flex-start' }}>
+          <Box sx={{ p: 2.5, pb: 3, display: 'flex', alignItems: 'center', gap: 1.5, justifyContent: collapsed ? 'center' : 'flex-start' }}>
             <Box component="img" src="/dl3Zf.jpg" sx={{ height: 32 }} onError={(e) => { e.target.src = 'https://edu-coin.uz/assets/logo-BveCYX-f.png'; }} />
-            {!isSidebarCollapsed && (
+            {!collapsed && (
               <Typography sx={{ fontWeight: 800, color: '#111827', fontSize: '1.2rem', letterSpacing: -0.5 }}>NajotEdu</Typography>
             )}
           </Box>
 
           {/* Main Menu */}
-          <List sx={{ px: isSidebarCollapsed ? 1 : 2, flex: 1, overflowY: 'auto' }}>
+          <List sx={{ px: collapsed ? 1 : 2, flex: 1, overflowY: 'auto' }}>
             {menuItems.map((item) => {
               const isActive = location.pathname === item.path || (item.path === '/management' && location.pathname.startsWith('/management'));
               
@@ -113,7 +117,7 @@ export default function Sidebar({ openSettings, setOpenSettings, isSidebarCollap
                 // Mobil Drawer yopilsin
                 closeMobileIfNeeded();
               };
-
+ 
               return (
                 <ListItem key={item.text} disablePadding>
                   <ListItemButton
@@ -122,15 +126,15 @@ export default function Sidebar({ openSettings, setOpenSettings, isSidebarCollap
                     onClick={handleClick}
                     sx={{
                       ... (isActive ? activeStyles : defaultStyles),
-                      justifyContent: isSidebarCollapsed ? 'center' : 'flex-start',
-                      px: isSidebarCollapsed ? 0 : 2,
+                      justifyContent: collapsed ? 'center' : 'flex-start',
+                      px: collapsed ? 0 : 2,
                       minHeight: 52,
                     }}
                   >
-                    <ListItemIcon sx={{ minWidth: isSidebarCollapsed ? 0 : 36, justifyContent: 'center', color: isActive ? '#fff' : '#111827' }}>
+                    <ListItemIcon sx={{ minWidth: collapsed ? 0 : 36, justifyContent: 'center', color: isActive ? '#fff' : '#111827' }}>
                       {item.icon}
                     </ListItemIcon>
-                    {!isSidebarCollapsed && (
+                    {!collapsed && (
                       <Box sx={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                         <Typography sx={{ fontSize: '1rem', fontWeight: isActive ? 700 : 600, color: isActive ? '#fff' : '#111827' }}>{item.text}</Typography>
                         {item.premium && <WorkspacePremiumIcon sx={{ fontSize: 16, color: '#fbbf24' }} />}
@@ -143,7 +147,7 @@ export default function Sidebar({ openSettings, setOpenSettings, isSidebarCollap
           </List>
 
           {/* Subscription Box */}
-          {!isSidebarCollapsed && (
+          {!collapsed && (
             <Box sx={{ p: 2, mb: 2, mx: 1.5, backgroundColor: '#f9fafb', borderRadius: '16px', border: '1px solid #f3f4f6' }}>
               <Box sx={{ display: 'flex', gap: 1.5, mb: 1.5 }}>
                 <Box sx={{ width: 36, height: 36, backgroundColor: '#fff', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 2px 5px rgba(0,0,0,0.05)' }}>
@@ -181,18 +185,18 @@ export default function Sidebar({ openSettings, setOpenSettings, isSidebarCollap
                 onClick={handleLogout}
                 sx={{
                   ...defaultStyles,
-                  justifyContent: isSidebarCollapsed ? 'center' : 'flex-start',
-                  px: isSidebarCollapsed ? 0 : 2,
+                  justifyContent: collapsed ? 'center' : 'flex-start',
+                  px: collapsed ? 0 : 2,
                   minHeight: 52,
                   color: '#ef4444',
                   '&:hover': { backgroundColor: '#fef2f2', color: '#dc2626' },
                   '& .MuiListItemIcon-root': { color: '#ef4444' }
                 }}
               >
-                <ListItemIcon sx={{ minWidth: isSidebarCollapsed ? 0 : 36, justifyContent: 'center' }}>
+                <ListItemIcon sx={{ minWidth: collapsed ? 0 : 36, justifyContent: 'center' }}>
                   <LogoutIcon sx={{ fontSize: 22 }} />
                 </ListItemIcon>
-                {!isSidebarCollapsed && (
+                {!collapsed && (
                   <Typography sx={{ fontSize: '1rem', fontWeight: 700 }}>Chiqish</Typography>
                 )}
               </ListItemButton>

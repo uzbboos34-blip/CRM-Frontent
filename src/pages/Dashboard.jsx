@@ -326,7 +326,7 @@ export default function Dashboard() {
 
   /* Completion bars (dynamic data from backend) */
   const bars = [
-    { label: "O'quvchilar to'lovi", pct: stats?.paymentRate ?? 0, color: 'linear-gradient(90deg,#10b981,#059669)' },
+    { label: "Faol o'quvchilar ulushi", pct: stats?.activeStudentsRate ?? 0, color: 'linear-gradient(90deg,#10b981,#059669)' },
     { label: 'Dars davomati', pct: stats?.attendanceRate ?? 0, color: 'linear-gradient(90deg,#7b61ff,#6d28d9)' },
     { label: 'Vazifalar bajarilishi', pct: stats?.homeworkCompletionRate ?? 0, color: 'linear-gradient(90deg,#f59e0b,#d97706)' },
     { label: "Kurs to'liqlanishi", pct: stats?.courseOccupancyRate ?? 0, color: 'linear-gradient(90deg,#0ea5e9,#0284c7)' },

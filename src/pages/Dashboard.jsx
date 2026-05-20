@@ -357,7 +357,7 @@ export default function Dashboard() {
   const actions = [
     { icon: '➕', label: "O'quvchi qo'shish", color: '#10b981', bg: '#f0fdf4', path: '/students' },
     { icon: '👥', label: 'Guruh yaratish', color: '#7b61ff', bg: '#f5f3ff', path: '/groups' },
-    { icon: '📋', label: "Dars qo'shish", color: '#0ea5e9', bg: '#f0f9ff', path: '/groups' },
+    { icon: '👨‍🏫', label: "O'qituvchi qo'shish", color: '#0ea5e9', bg: '#f0f9ff', path: '/teachers' },
     { icon: '📚', label: "Kurs qo'shish", color: '#f59e0b', bg: '#fffbeb', path: '/management' },
   ];
 

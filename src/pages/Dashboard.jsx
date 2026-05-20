@@ -18,27 +18,10 @@ export default function Dashboard() {
 
   async function fetchCounts() {
     try {
-      const [groupsRes, coursesRes, studentsRes, teachersRes, roomsRes] = await Promise.all([
-        api.get('/api/v1/groups?status=active'),
-        api.get('/api/v1/courses/all?status=active'),
-        api.get('/api/v1/students/all?status=active'),
-        api.get('/api/v1/teachers?status=active'),
-        api.get('/api/v1/rooms?status=active')
-      ]);
-
-      const getLen = (res) => {
-        if (Array.isArray(res.data)) return res.data.length;
-        if (Array.isArray(res.data?.data)) return res.data.data.length;
-        return 0;
-      };
-
-      setCounts({
-        groups: getLen(groupsRes),
-        courses: getLen(coursesRes),
-        students: getLen(studentsRes),
-        teachers: getLen(teachersRes),
-        rooms: getLen(roomsRes)
-      });
+      const res = await api.get('/api/v1/dashboard/stats');
+      if (res.data?.success) {
+        setCounts(res.data.data);
+      }
     } catch (e) {
       console.error("Dashboard ma'lumotlarini olishda xatolik:", e);
     }

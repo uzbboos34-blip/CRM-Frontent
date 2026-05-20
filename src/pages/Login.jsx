@@ -166,7 +166,7 @@ export default function Login() {
       {/* ========== Right Side - Login Form ========== */}
       <Box
         sx={{
-          flex: '0 0 53%',
+          flex: { xs: '1 1 100%', md: '0 0 53%' },
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
@@ -383,6 +383,7 @@ export default function Login() {
             color: '#1c1d20ff',
             fontSize: '0.8rem',
             textAlign: 'center',
+            px: 2,
           }}
         >
           Copyrient o 2021 0 tasnkent Uniersity of intermation technologies

@@ -14,6 +14,9 @@ import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import InsertDriveFileIcon from '@mui/icons-material/InsertDriveFile';
 import DownloadIcon from '@mui/icons-material/Download';
 import CloseIcon from '@mui/icons-material/Close';
+import FolderZipIcon from '@mui/icons-material/FolderZip';
+import VolumeUpIcon from '@mui/icons-material/VolumeUp';
+import ArticleIcon from '@mui/icons-material/Article';
 
 /* ─── Helpers ──────────────────────────────────────────────────────────── */
 const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
@@ -47,6 +50,64 @@ const TABS = [
   { key: 'ACCEPTED', label: 'Qabul qilinganlar', color: '#10b981', icon: <CheckCircleIcon sx={{ fontSize: 16 }} /> },
   { key: 'NOT_SUBMITTED', label: 'Bajarilmagan', color: '#6b7280', icon: <CancelIcon sx={{ fontSize: 16 }} /> },
 ];
+
+function TextPreview({ url }) {
+  const [content, setContent] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
+
+  useEffect(() => {
+    fetch(url)
+      .then((res) => {
+        if (!res.ok) throw new Error();
+        return res.text();
+      })
+      .then((text) => {
+        setContent(text);
+        setLoading(false);
+      })
+      .catch(() => {
+        setError(true);
+        setLoading(false);
+      });
+  }, [url]);
+
+  if (loading) {
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', py: 15 }}>
+        <CircularProgress size={40} sx={{ color: '#10b981' }} />
+      </Box>
+    );
+  }
+
+  if (error) {
+    return (
+      <Box sx={{ py: 10, px: 2, textAlign: 'center' }}>
+        <Typography color="error" sx={{ fontWeight: 600 }}>
+          Fayl tarkibini yuklab bo'lmadi.
+        </Typography>
+      </Box>
+    );
+  }
+
+  return (
+    <Box sx={{ p: 3, background: '#f8fafc', minHeight: 400 }}>
+      <Box sx={{ border: '1px solid #e2e8f0', borderRadius: '12px', overflow: 'hidden', background: '#fff' }}>
+        <Box sx={{ background: '#f1f5f9', py: 1, px: 2, borderBottom: '1px solid #e2e8f0', display: 'flex', alignItems: 'center', gap: 1 }}>
+          <ArticleIcon sx={{ fontSize: 16, color: '#64748b' }} />
+          <Typography sx={{ fontSize: '0.78rem', color: '#64748b', fontWeight: 600 }}>
+            Matn ko'rinishi (Preview)
+          </Typography>
+        </Box>
+        <Box sx={{ p: 2, maxHeight: '480px', overflow: 'auto' }}>
+          <pre style={{ margin: 0, fontFamily: 'Consolas, Monaco, monospace', fontSize: '0.85rem', whiteSpace: 'pre-wrap', color: '#334155', lineHeight: 1.5 }}>
+            {content}
+          </pre>
+        </Box>
+      </Box>
+    </Box>
+  );
+}
 
 export default function ExamDetail() {
   const { groupId, examId } = useParams();
@@ -322,6 +383,12 @@ export default function ExamDetail() {
             const ext = (examInfo.file.split('.').pop() || '').toLowerCase();
             const isImage = ['jpg','jpeg','png','gif','webp','svg'].includes(ext);
             const isPdf = ext === 'pdf';
+            const isOffice = ['doc','docx','xls','xlsx','ppt','pptx','odt','ods','odp'].includes(ext);
+            const isText = ['txt','json','js','ts','jsx','tsx','html','css','md','csv','xml','yaml'].includes(ext);
+            const isAudio = ['mp3','wav','ogg','m4a','flac'].includes(ext);
+            const isVideo = ['mp4','webm','ogg','avi','mov'].includes(ext);
+            const isArchive = ['zip','rar','7z','tar','gz'].includes(ext);
+
             if (isImage) {
               return (
                 <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', p: 2 }}>
@@ -340,6 +407,69 @@ export default function ExamDetail() {
                 />
               );
             }
+            if (isOffice) {
+              return (
+                <iframe
+                  src={`https://docs.google.com/viewer?url=${encodeURIComponent(url)}&embedded=true`}
+                  title="exam-office-file"
+                  width="100%"
+                  height="560px"
+                  style={{ border: 'none' }}
+                />
+              );
+            }
+            if (isText) {
+              return <TextPreview url={url} />;
+            }
+            if (isAudio) {
+              return (
+                <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', py: 8, gap: 3, px: 4 }}>
+                  <VolumeUpIcon sx={{ fontSize: 72, color: '#10b981' }} />
+                  <Typography sx={{ fontWeight: 700, color: '#374151', fontSize: '1.1rem' }}>
+                    Audio faylni tinglash
+                  </Typography>
+                  <audio controls src={url} style={{ width: '100%', maxWidth: 500 }} />
+                </Box>
+              );
+            }
+            if (isVideo) {
+              return (
+                <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', p: 2, background: '#000' }}>
+                  <video
+                    src={url}
+                    controls
+                    style={{ maxWidth: '100%', maxHeight: '500px', borderRadius: 8 }}
+                  />
+                </Box>
+              );
+            }
+            if (isArchive) {
+              return (
+                <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', py: 8, gap: 2.5, px: 3, textAlign: 'center' }}>
+                  <Box sx={{ p: 2, borderRadius: '50%', backgroundColor: '#f0fdf4', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <FolderZipIcon sx={{ fontSize: 80, color: '#10b981' }} />
+                  </Box>
+                  <Typography sx={{ color: '#111827', fontWeight: 800, fontSize: '1.2rem' }}>
+                    Siqilgan arxiv (ZIP / RAR) fayli
+                  </Typography>
+                  <Typography sx={{ color: '#6b7280', fontSize: '0.9rem', maxWidth: 450 }}>
+                    Bu arxiv fayl hisoblanadi. Fayl tarkibini ko'rish uchun uni kompyuteringiz yoki telefoningizga saqlang va arxivdan chiqaring.
+                  </Typography>
+                  <Button
+                    component="a"
+                    href={url}
+                    download
+                    target="_blank"
+                    variant="contained"
+                    startIcon={<DownloadIcon />}
+                    sx={{ textTransform: 'none', borderRadius: '10px', backgroundColor: '#10b981', '&:hover': { backgroundColor: '#059669' }, boxShadow: 'none', px: 4, py: 1, mt: 1 }}
+                  >
+                    Arxivni yuklab olish
+                  </Button>
+                </Box>
+              );
+            }
+
             // Other file types — show info + download
             return (
               <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', py: 8, gap: 2 }}>

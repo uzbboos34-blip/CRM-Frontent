@@ -826,7 +826,7 @@ export default function GroupLessons({ groupId }) {
                             {ex.title}
                           </Typography>
                         </TableCell>
-                        <TableCell sx={{ ...tdSx, textAlign: 'center' }}>{ex._count?.examAnswers || 0}</TableCell>
+                        <TableCell sx={{ ...tdSx, textAlign: 'center' }}>{ex.total_students ?? ex._count?.examAnswers ?? 0}</TableCell>
                         <TableCell sx={{ ...tdSx, textAlign: 'center' }}>0</TableCell>
                         <TableCell sx={tdSx}>
                           <Chip label={isEnded ? "Tugagan" : "Jarayonda"} size="small" sx={{ borderRadius: '8px', backgroundColor: '#f3f4f6', color: '#6b7280', fontWeight: 600 }} />

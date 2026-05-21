@@ -4,7 +4,7 @@ import api from '../api/axios';
 import {
   Box, Typography, Tabs, Tab, Table, TableBody, TableCell,
   TableContainer, TableHead, TableRow, Paper, CircularProgress,
-  Avatar, Chip, Button, IconButton
+  Avatar, Chip, Button, IconButton, Dialog, DialogContent, DialogTitle
 } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
@@ -12,6 +12,8 @@ import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import CancelIcon from '@mui/icons-material/Cancel';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import InsertDriveFileIcon from '@mui/icons-material/InsertDriveFile';
+import DownloadIcon from '@mui/icons-material/Download';
+import CloseIcon from '@mui/icons-material/Close';
 
 /* ─── Helpers ──────────────────────────────────────────────────────────── */
 const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
@@ -53,6 +55,7 @@ export default function ExamDetail() {
   const [examInfo, setExamInfo] = useState(null);
   const [loading, setLoading] = useState(true);
   const [tabIndex, setTabIndex] = useState(0);
+  const [filePreviewOpen, setFilePreviewOpen] = useState(false);
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -145,16 +148,13 @@ export default function ExamDetail() {
         {examInfo.file && (
           <Box sx={{ mb: 2 }}>
             <Button
-              component="a"
-              href={getFileUrl(examInfo.file)}
-              target="_blank"
-              rel="noopener noreferrer"
               variant="outlined"
               size="small"
               startIcon={<InsertDriveFileIcon />}
+              onClick={() => setFilePreviewOpen(true)}
               sx={{ textTransform: 'none', borderRadius: '8px', color: '#10b981', borderColor: '#10b981', '&:hover': { borderColor: '#059669', background: '#f0fdf4' } }}
             >
-              Faylni yuklab olish
+              Faylni ko'rish
             </Button>
           </Box>
         )}
@@ -279,6 +279,89 @@ export default function ExamDetail() {
           </Table>
         </TableContainer>
       )}
+      {/* ── File Preview Modal ── */}
+      <Dialog
+        open={filePreviewOpen}
+        onClose={() => setFilePreviewOpen(false)}
+        maxWidth="md"
+        fullWidth
+        PaperProps={{
+          sx: { borderRadius: '16px', overflow: 'hidden' }
+        }}
+      >
+        <DialogTitle sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', py: 1.5, px: 2.5, borderBottom: '1px solid #f3f4f6' }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <InsertDriveFileIcon sx={{ color: '#10b981' }} />
+            <Typography sx={{ fontWeight: 700, fontSize: '1rem' }}>
+              {examInfo?.title} — Fayl
+            </Typography>
+          </Box>
+          <Box sx={{ display: 'flex', gap: 1 }}>
+            <Button
+              component="a"
+              href={getFileUrl(examInfo?.file)}
+              download
+              target="_blank"
+              rel="noopener noreferrer"
+              variant="contained"
+              size="small"
+              startIcon={<DownloadIcon />}
+              sx={{ textTransform: 'none', borderRadius: '8px', backgroundColor: '#10b981', '&:hover': { backgroundColor: '#059669' }, boxShadow: 'none', fontSize: '0.82rem' }}
+            >
+              Saqlash
+            </Button>
+            <IconButton size="small" onClick={() => setFilePreviewOpen(false)} sx={{ color: '#9ca3af' }}>
+              <CloseIcon fontSize="small" />
+            </IconButton>
+          </Box>
+        </DialogTitle>
+        <DialogContent sx={{ p: 0, minHeight: 500 }}>
+          {examInfo?.file && (() => {
+            const url = getFileUrl(examInfo.file);
+            const ext = (examInfo.file.split('.').pop() || '').toLowerCase();
+            const isImage = ['jpg','jpeg','png','gif','webp','svg'].includes(ext);
+            const isPdf = ext === 'pdf';
+            if (isImage) {
+              return (
+                <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', p: 2 }}>
+                  <img src={url} alt="exam file" style={{ maxWidth: '100%', maxHeight: 600, borderRadius: 8 }} />
+                </Box>
+              );
+            }
+            if (isPdf) {
+              return (
+                <iframe
+                  src={url}
+                  title="exam-file"
+                  width="100%"
+                  height="560px"
+                  style={{ border: 'none' }}
+                />
+              );
+            }
+            // Other file types — show info + download
+            return (
+              <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', py: 8, gap: 2 }}>
+                <InsertDriveFileIcon sx={{ fontSize: 64, color: '#d1d5db' }} />
+                <Typography sx={{ color: '#6b7280', fontWeight: 500 }}>
+                  Bu fayl tur brauzerda ko'rsatilmaydi
+                </Typography>
+                <Button
+                  component="a"
+                  href={url}
+                  download
+                  target="_blank"
+                  variant="contained"
+                  startIcon={<DownloadIcon />}
+                  sx={{ textTransform: 'none', borderRadius: '8px', backgroundColor: '#10b981', '&:hover': { backgroundColor: '#059669' }, boxShadow: 'none' }}
+                >
+                  Yuklab olish
+                </Button>
+              </Box>
+            );
+          })()}
+        </DialogContent>
+      </Dialog>
     </Box>
   );
 }

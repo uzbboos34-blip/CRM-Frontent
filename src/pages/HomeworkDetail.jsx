@@ -202,50 +202,27 @@ export default function HomeworkDetail() {
         )}
 
         {/* Original homework resource files */}
-        {(hw.file || hw.video_url) && (
+        {hw.file && (
           <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1.5, mb: 2 }}>
-            {hw.file && (
-              <Button
-                variant="outlined"
-                size="small"
-                startIcon={<InsertDriveFileIcon />}
-                onClick={() => {
-                  setPreviewFile(hw.file);
-                  setFilePreviewOpen(true);
-                }}
-                sx={{
-                  textTransform: 'none',
-                  borderRadius: '8px',
-                  color: '#7b61ff',
-                  borderColor: '#7b61ff',
-                  fontWeight: 600,
-                  '&:hover': { borderColor: '#6246ea', background: '#f0eeff' }
-                }}
-              >
-                Vazifa fayli
-              </Button>
-            )}
-            {hw.video_url && (
-              <Button
-                variant="outlined"
-                size="small"
-                startIcon={<VolumeUpIcon />}
-                onClick={() => {
-                  setPreviewFile(hw.video_url);
-                  setFilePreviewOpen(true);
-                }}
-                sx={{
-                  textTransform: 'none',
-                  borderRadius: '8px',
-                  color: '#7b61ff',
-                  borderColor: '#7b61ff',
-                  fontWeight: 600,
-                  '&:hover': { borderColor: '#6246ea', background: '#f0eeff' }
-                }}
-              >
-                Vazifa videosi
-              </Button>
-            )}
+            <Button
+              variant="outlined"
+              size="small"
+              startIcon={<InsertDriveFileIcon />}
+              onClick={() => {
+                setPreviewFile(hw.file);
+                setFilePreviewOpen(true);
+              }}
+              sx={{
+                textTransform: 'none',
+                borderRadius: '8px',
+                color: '#7b61ff',
+                borderColor: '#7b61ff',
+                fontWeight: 600,
+                '&:hover': { borderColor: '#6246ea', background: '#f0eeff' }
+              }}
+            >
+              Vazifa fayli
+            </Button>
           </Box>
         )}
 

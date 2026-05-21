@@ -1,22 +1,17 @@
-import React, { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import api from '../api/axios';
 import { useUploads } from '../context/UploadContext';
 import {
   Box, Typography, Button, MenuItem, Select, FormControl,
-  FormHelperText, Paper, Divider, CircularProgress,
-  Snackbar, Alert, IconButton, Tooltip, TextField
+  FormHelperText, Divider, Snackbar, Alert, IconButton, Tooltip
 } from '@mui/material';
 import ArrowBack from '@mui/icons-material/ArrowBack';
 import CloudUpload from '@mui/icons-material/CloudUpload';
-import AttachFile from '@mui/icons-material/AttachFile';
-import Close from '@mui/icons-material/Close';
 import LoadingBuffer from '../components/LoadingBuffer';
 
 const ArrowBackIcon = ArrowBack;
 const CloudUploadIcon = CloudUpload;
-const AttachFileIcon = AttachFile;
-const CloseIcon = Close;
 
 /* ── Minimal Rich-Text Editor ── */
 const FONT_FAMILIES = ['Sans Serif', 'Serif', 'Monospace'];
@@ -87,16 +82,14 @@ export default function CreateHomeWork() {
 
   const [lessons, setLessons]       = useState([]);
   const [lessonId, setLessonId]     = useState('');
-  const [title, setTitle]           = useState('');
   const [description, setDescription] = useState('');
   const [file, setFile]             = useState(null);
-  const [videoFile, setVideoFile]   = useState(null);
+
   const [saving, setSaving]         = useState(false);
   const [errors, setErrors]         = useState({});
   const [snackbar, setSnackbar]     = useState({ open: false, msg: '', sev: 'success' });
 
   const fileInputRef = useRef(null);
-  const videoInputRef = useRef(null);
 
   useEffect(() => {
     if (!groupId) return;
@@ -111,7 +104,6 @@ export default function CreateHomeWork() {
         .then(res => {
           const d = res.data?.data || res.data;
           if (d) {
-            setTitle(d.title || '');
             setLessonId(d.lesson_id || '');
             setDescription(d.description || '');
           }
@@ -129,6 +121,8 @@ export default function CreateHomeWork() {
   async function handleSubmit() {
     if (!validate()) return;
     
+    setSaving(true);
+    
     const selectedLesson = lessons.find(l => l.id === lessonId);
     const autoTitle = selectedLesson?.topic || `Dars #${lessonId} vazifasi`;
 
@@ -138,7 +132,6 @@ export default function CreateHomeWork() {
     formData.append('group_id', groupId);
     formData.append('description', description);
     if (file) formData.append('file', file);
-    if (videoFile) formData.append('video', videoFile);
 
     const url = hwId ? `/api/v1/home-works/${hwId}` : '/api/v1/home-works';
     const method = hwId ? 'put' : 'post';
@@ -189,22 +182,6 @@ export default function CreateHomeWork() {
           <RichEditor value={description} onChange={setDescription} />
         </Box>
 
-        {/* Video Upload */}
-        <Box>
-          <Typography sx={{ fontSize: '0.85rem', fontWeight: 700, mb: 1 }}>Video yuklash</Typography>
-          <Box
-            onClick={() => videoInputRef.current?.click()}
-            sx={{
-              border: '1px dashed #d1d5db', borderRadius: '10px', p: 1.5,
-              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1.5,
-              cursor: 'pointer', '&:hover': { borderColor: '#10b981', background: '#f9fafb' }
-            }}
-          >
-            <input type="file" accept="video/*" hidden ref={videoInputRef} onChange={e => setVideoFile(e.target.files[0])} />
-            <CloudUploadIcon sx={{ color: '#9ca3af', fontSize: 20 }} />
-            <Typography sx={{ fontSize: '0.85rem', color: '#9ca3af' }}>{videoFile ? videoFile.name : "Yuklash"}</Typography>
-          </Box>
-        </Box>
 
         {/* File Upload */}
         <Box>

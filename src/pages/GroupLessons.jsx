@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useTheme } from '@mui/material/styles';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import { useNavigate, useLocation } from 'react-router-dom';
@@ -20,7 +20,6 @@ import DeleteOutlined from '@mui/icons-material/DeleteOutlined';
 import EditOutlined from '@mui/icons-material/EditOutlined';
 import Close from '@mui/icons-material/Close';
 import PlayCircle from '@mui/icons-material/PlayCircle';
-import { Pause, PlayArrow } from '@mui/icons-material';
 
 const AddIcon = Add;
 const PersonOutlineIcon = PersonOutlined;
@@ -31,8 +30,6 @@ const DeleteOutlineIcon = DeleteOutlined;
 const EditOutlinedIcon = EditOutlined;
 const CloseIcon = Close;
 const PlayCircleIcon = PlayCircle;
-const PauseIcon = Pause;
-const PlayIcon = PlayArrow;
 
 /* ─── Format helpers ─────────────────────────────────────── */
 const MONTHS = [
@@ -66,15 +63,7 @@ function fmtFileSize(bytes) {
   return `${(b / (1024 * 1024 * 1024)).toFixed(2)} GB`;
 }
 
-function getYTThumb(url) {
-  if (!url) return '';
-  const ytMatch = url.match(/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/);
-  if (ytMatch) {
-    return `https://img.youtube.com/vi/${ytMatch[1]}/mqdefault.jpg`;
-  }
-  // Local video placeholder
-  return 'https://img.freepik.com/free-vector/gradient-play-button-concept_23-2148705809.jpg';
-}
+
 
 function getFullVideoUrl(url) {
   if (!url) return '';
@@ -106,10 +95,8 @@ export default function GroupLessons({ groupId }) {
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
   const location = useLocation();
-  const [subTab, setSubTab] = useState(() => {
-    const params = new URLSearchParams(location.search);
-    return parseInt(params.get('subTab') || '0', 10);
-  });
+  const params = new URLSearchParams(location.search);
+  const subTab = parseInt(params.get('subTab') || '0', 10);
   const [homeworks, setHomeworks] = useState([]);
   const [videos, setVideos] = useState([]);
   const [exams, setExams] = useState([]);
@@ -117,6 +104,7 @@ export default function GroupLessons({ groupId }) {
   const [examForm, setExamForm] = useState({ title: '', description: '', start_date: '', end_date: '' });
   const [file, setFile] = useState(null);
   const fileInputRef = useRef(null);
+  const refetchedIds = useRef(new Set());
   const [loading, setLoading] = useState(false);
   // Homework menu
   const [anchorEl, setAnchorEl] = useState(null);
@@ -137,25 +125,8 @@ export default function GroupLessons({ groupId }) {
   const [uploadModalOpen, setUploadModalOpen] = useState(false);
   const [snackbar, setSnackbar] = useState({ open: false, msg: '', sev: 'success' });
 
-  /* ── read subTab from URL on mount & URL changes ── */
-  useEffect(() => {
-    const params = new URLSearchParams(location.search);
-    const sub = params.get('subTab');
-    if (sub !== null) {
-      setSubTab(parseInt(sub));
-    }
-  }, [location.search]);
-
-  /* ── fetch data based on tab ── */
-  useEffect(() => {
-    if (!groupId) return;
-    if (subTab === 0) fetchHomeworks();
-    if (subTab === 1) fetchVideos();
-    if (subTab === 2) fetchExams();
-  }, [subTab, groupId]);
-
-  async function fetchExams() {
-    setLoading(true);
+  const fetchExams = useCallback(async (silent = false) => {
+    if (!silent) setLoading(true);
     try {
       const res = await api.get(`/api/v1/exams/group/${groupId}`);
       setExams(res.data?.data || res.data || []);
@@ -163,9 +134,49 @@ export default function GroupLessons({ groupId }) {
       console.error('Exams fetch error:', e);
       setExams([]);
     } finally {
-      setLoading(false);
+      if (!silent) setLoading(false);
     }
-  }
+  }, [groupId]);
+
+  const fetchHomeworks = useCallback(async (silent = false) => {
+    if (!silent) setLoading(true);
+    try {
+      const res = await api.get(`/api/v1/home-works/group/${groupId}`);
+      setHomeworks(res.data?.data || res.data || []);
+    } catch (e) {
+      console.error('HomeWorks fetch error:', e);
+      setHomeworks([]);
+    } finally {
+      if (!silent) setLoading(false);
+    }
+  }, [groupId]);
+
+  const fetchVideos = useCallback(async (silent = false) => {
+    if (!silent) setLoading(true);
+    try {
+      const res = await api.get(`/api/v1/videos/group/${groupId}`);
+      setVideos(res.data?.data || res.data || []);
+    } catch (e) {
+      console.error('Videos fetch error:', e);
+      setVideos([]);
+    } finally {
+      if (!silent) setLoading(false);
+    }
+  }, [groupId]);
+
+  /* ── fetch data based on tab ── */
+  useEffect(() => {
+    if (!groupId) return;
+    if (subTab === 0) {
+      Promise.resolve().then(() => fetchHomeworks());
+    }
+    if (subTab === 1) {
+      Promise.resolve().then(() => fetchVideos());
+    }
+    if (subTab === 2) {
+      Promise.resolve().then(() => fetchExams());
+    }
+  }, [subTab, groupId, fetchHomeworks, fetchVideos, fetchExams]);
 
   async function handleCreateExam(e) {
     e.preventDefault();
@@ -194,7 +205,7 @@ export default function GroupLessons({ groupId }) {
       setExamForm({ title: '', description: '', start_date: '', end_date: '' });
       setEditingExamId(null);
       setFile(null);
-      fetchExams();
+      fetchExams(true);
     } catch (e) {
       setSnackbar({ open: true, msg: e.response?.data?.message || 'Xatolik', sev: 'error' });
     }
@@ -211,7 +222,7 @@ export default function GroupLessons({ groupId }) {
     try {
       await api.delete(`/api/v1/exams/${id}`);
       setSnackbar({ open: true, msg: "Imtihon muvaffaqiyatli o'chirildi", sev: 'success' });
-      fetchExams();
+      fetchExams(true);
     } catch (e) {
       setSnackbar({ open: true, msg: e.response?.data?.message || 'Xatolik', sev: 'error' });
     } finally {
@@ -232,42 +243,21 @@ export default function GroupLessons({ groupId }) {
 
   /* ── auto-refresh when background upload completes ── */
   useEffect(() => {
-    const completed = uploads.filter(u => String(u.metadata.groupId) === String(groupId) && u.status === 'completed');
+    const completed = uploads.filter(u => 
+      String(u.metadata.groupId) === String(groupId) && 
+      u.status === 'completed' &&
+      !refetchedIds.current.has(u.id)
+    );
     if (completed.length > 0) {
+      completed.forEach(u => refetchedIds.current.add(u.id));
       // Small delay to ensure DB is updated
       const timer = setTimeout(() => {
-        if (subTab === 0) fetchHomeworks();
-        if (subTab === 1) fetchVideos();
+        if (subTab === 0) fetchHomeworks(true);
+        if (subTab === 1) fetchVideos(true);
       }, 1000);
       return () => clearTimeout(timer);
     }
-  }, [uploads, groupId, subTab]);
-
-  async function fetchHomeworks() {
-    setLoading(true);
-    try {
-      const res = await api.get(`/api/v1/home-works/group/${groupId}`);
-      setHomeworks(res.data?.data || res.data || []);
-    } catch (e) {
-      console.error('HomeWorks fetch error:', e);
-      setHomeworks([]);
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  async function fetchVideos() {
-    setLoading(true);
-    try {
-      const res = await api.get(`/api/v1/videos/group/${groupId}`);
-      setVideos(res.data?.data || res.data || []);
-    } catch (e) {
-      console.error('Videos fetch error:', e);
-      setVideos([]);
-    } finally {
-      setLoading(false);
-    }
-  }
+  }, [uploads, groupId, subTab, fetchHomeworks, fetchVideos]);
 
   /* ── delete homework ── */
   function handleDelete(id) {
@@ -281,7 +271,7 @@ export default function GroupLessons({ groupId }) {
     try {
       await api.delete(`/api/v1/home-works/${id}`);
       setSnackbar({ open: true, msg: "Uyga vazifa o'chirildi", sev: 'success' });
-      fetchHomeworks();
+      fetchHomeworks(true);
     } catch (e) {
       setSnackbar({ open: true, msg: e.response?.data?.message || 'Xatolik', sev: 'error' });
     } finally {
@@ -295,7 +285,7 @@ export default function GroupLessons({ groupId }) {
     try {
       await api.delete(`/api/v1/videos/${id}`);
       setSnackbar({ open: true, msg: "Video o'chirildi", sev: 'success' });
-      fetchVideos();
+      fetchVideos(true);
     } catch (e) {
       setSnackbar({ open: true, msg: e.response?.data?.message || 'Xatolik', sev: 'error' });
     }
@@ -344,7 +334,6 @@ export default function GroupLessons({ groupId }) {
           <Tabs
             value={subTab}
             onChange={(_, v) => {
-              setSubTab(v);
               navigate(`?tab=1&subTab=${v}`, { replace: true });
             }}
             variant="scrollable"

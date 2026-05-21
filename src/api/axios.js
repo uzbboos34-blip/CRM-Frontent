@@ -20,6 +20,15 @@ const api = axios.create({
   },
 });
 
+// FormData uploads uchun alohida instance (timeout yo'q, Content-Type yo'q)
+export const uploadApi = axios.create({
+  baseURL: BASE_URL,
+  timeout: 0, // Katta fayllar uchun timeout yo'q
+  headers: {
+    Accept: 'application/json',
+  },
+});
+
 // ─── Helpers ───────────────────────────────────────────────────────────────
 function getToken() {
   return localStorage.getItem('token');
@@ -74,93 +83,98 @@ function delay(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-// ─── Request interceptor ───────────────────────────────────────────────────
-api.interceptors.request.use(
-  (config) => {
-    const token = getToken();
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-
-    // Retry meta (attached to config so response interceptor can read it)
-    config._retryCount = config._retryCount ?? 0;
-
-    if (IS_DEV) {
-      const { method, url, params, data } = config;
-      console.groupCollapsed(
-        `%c⬆ ${method?.toUpperCase()} ${url}`,
-        'color:#3b82f6;font-weight:700;'
-      );
-      if (params) console.log('params', params);
-      if (data) console.log('body', data);
-      console.groupEnd();
-    }
-
-    return config;
-  },
-  (error) => Promise.reject(error)
-);
-
-// ─── Response interceptor ─────────────────────────────────────────────────
-api.interceptors.response.use(
-  (response) => {
-    if (IS_DEV) {
-      console.log(
-        `%c⬇ ${response.status} ${response.config.url}`,
-        'color:#10b981;font-weight:700;',
-        response.data
-      );
-    }
-    return response;
-  },
-
-  async (error) => {
-    const config = error.config;
-    const status = error?.response?.status;
-
-    // ── Dev logging ──────────────────────────────────────────────────────
-    if (IS_DEV) {
-      console.groupCollapsed(
-        `%c✖ ${status ?? 'NET'} ${config?.url ?? ''}`,
-        'color:#ef4444;font-weight:700;'
-      );
-      console.error(error?.response?.data ?? error.message);
-      console.groupEnd();
-    }
-
-    // ── Auto-retry on network errors and 5xx (not on 4xx) ───────────────
-    const isNetworkError = !error.response;
-    const isServerError = status >= 500 && status < 600;
-    const canRetry =
-      config &&
-      (isNetworkError || isServerError) &&
-      config._retryCount < MAX_RETRIES;
-
-    if (canRetry) {
-      config._retryCount += 1;
-      const wait = RETRY_DELAY_MS * config._retryCount;
-      if (IS_DEV) {
-        console.warn(`↩ Retrying (${config._retryCount}/${MAX_RETRIES}) in ${wait}ms…`);
-      }
-      await delay(wait);
-      return api(config);
-    }
-
-    // ── 401 → clear session & redirect ──────────────────────────────────
-    if (status === 401) {
-      clearSession();
-      // Avoid infinite redirect loop if already on /login
-      if (!window.location.pathname.includes('/login')) {
-        window.location.href = '/login';
-      }
-    }
-
-    // ── Attach translated message for easy consumption in components ──────
-    error.userMessage = translateError(error);
-
-    return Promise.reject(error);
+// ─── Request interceptor (shared logic) ───────────────────────────────────
+function requestInterceptor(config) {
+  const token = getToken();
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
   }
-);
+
+  // FormData bo'lsa Content-Type ni o'chirish (axios o'zi to'g'ri qo'yadi)
+  if (config.data instanceof FormData) {
+    delete config.headers['Content-Type'];
+  }
+
+  config._retryCount = config._retryCount ?? 0;
+
+  if (IS_DEV) {
+    const { method, url, params, data } = config;
+    console.groupCollapsed(
+      `%c⬆ ${method?.toUpperCase()} ${url}`,
+      'color:#3b82f6;font-weight:700;'
+    );
+    if (params) console.log('params', params);
+    if (data) console.log('body', data);
+    console.groupEnd();
+  }
+
+  return config;
+}
+
+api.interceptors.request.use(requestInterceptor, (error) => Promise.reject(error));
+uploadApi.interceptors.request.use(requestInterceptor, (error) => Promise.reject(error));
+
+// ─── Response interceptor (shared) ───────────────────────────────────────
+function responseSuccess(response) {
+  if (IS_DEV) {
+    console.log(
+      `%c⬇ ${response.status} ${response.config.url}`,
+      'color:#10b981;font-weight:700;',
+      response.data
+    );
+  }
+  return response;
+}
+
+async function responseError(error) {
+  const config = error.config;
+  const status = error?.response?.status;
+
+  // ── Dev logging ────────────────────────────────────────────────────────
+  if (IS_DEV) {
+    console.groupCollapsed(
+      `%c✖ ${status ?? 'NET'} ${config?.url ?? ''}`,
+      'color:#ef4444;font-weight:700;'
+    );
+    console.error(error?.response?.data ?? error.message);
+    console.groupEnd();
+  }
+
+  // ── Auto-retry faqat asosiy api uchun (upload retry kerak emas) ───────
+  const isNetworkError = !error.response;
+  const isServerError = status >= 500 && status < 600;
+  const canRetry =
+    config &&
+    (isNetworkError || isServerError) &&
+    config._retryCount < MAX_RETRIES &&
+    !config._isUpload; // Upload request larni retry qilmaymiz
+
+  if (canRetry) {
+    config._retryCount += 1;
+    const wait = RETRY_DELAY_MS * config._retryCount;
+    if (IS_DEV) {
+      console.warn(`↩ Retrying (${config._retryCount}/${MAX_RETRIES}) in ${wait}ms…`);
+    }
+    await delay(wait);
+    return api(config);
+  }
+
+  // ── 401 → clear session & redirect ────────────────────────────────────
+  if (status === 401) {
+    clearSession();
+    if (!window.location.pathname.includes('/login')) {
+      window.location.href = '/login';
+    }
+  }
+
+  // ── Attach translated message ──────────────────────────────────────────
+  error.userMessage = translateError(error);
+
+  return Promise.reject(error);
+}
+
+api.interceptors.response.use(responseSuccess, responseError);
+uploadApi.interceptors.response.use(responseSuccess, responseError);
 
 // ─── Convenience wrappers ──────────────────────────────────────────────────
 // These propagate error.userMessage so callers can do:

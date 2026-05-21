@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState } from 'react';
-import api from '../api/axios';
+import { uploadApi } from '../api/axios';
 
 const UploadContext = createContext();
 
@@ -15,7 +15,7 @@ export function UploadProvider({ children }) {
           ? { ...u, status: 'error', error: 'Yuklash toʻxtatildi (sahifa yangilandi)' } 
           : u
       );
-    } catch (e) {
+    } catch {
       return [];
     }
   });
@@ -40,6 +40,7 @@ export function UploadProvider({ children }) {
 
     try {
       const axiosConfig = {
+        _isUpload: true,
         onUploadProgress: (progressEvent) => {
           const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
           setUploads(prev => prev.map(u => 
@@ -49,8 +50,8 @@ export function UploadProvider({ children }) {
       };
 
       const response = method.toLowerCase() === 'put' 
-        ? await api.put(url, formData, axiosConfig)
-        : await api.post(url, formData, axiosConfig);
+        ? await uploadApi.put(url, formData, axiosConfig)
+        : await uploadApi.post(url, formData, axiosConfig);
 
       setUploads(prev => prev.map(u => 
         u.id === uploadId ? { ...u, status: 'completed', progress: 100 } : u

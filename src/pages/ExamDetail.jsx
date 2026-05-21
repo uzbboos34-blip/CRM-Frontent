@@ -23,12 +23,13 @@ function fmtDate(d) {
   return `${dt.getDate()} ${MONTHS[dt.getMonth()]}, ${dt.getFullYear()} ${String(dt.getHours()).padStart(2,'0')}:${String(dt.getMinutes()).padStart(2,'0')}`;
 }
 
-const BASE_URL = import.meta.env.VITE_API_URL || 'https://crm-backend-l7jq.onrender.com';
+const SUPABASE_URL = 'https://mcjypffxtuoqfttoapjh.supabase.co';
 
 function getFileUrl(filename) {
   if (!filename) return '';
   if (filename.startsWith('http')) return filename;
-  return `${BASE_URL}/file/${filename}`;
+  // Faqat fayl nomi saqlangan bo'lsa — Supabase public URL yasaymiz
+  return `${SUPABASE_URL}/storage/v1/object/public/NajotEdu/${filename}`;
 }
 
 function getInitials(name = '') {

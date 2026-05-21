@@ -120,6 +120,8 @@ export default function GroupLessons({ groupId }) {
   const [examToDelete, setExamToDelete] = useState(null);
   const [hwDeleteConfirmOpen, setHwDeleteConfirmOpen] = useState(false);
   const [hwToDelete, setHwToDelete] = useState(null);
+  const [vidDeleteConfirmOpen, setVidDeleteConfirmOpen] = useState(false);
+  const [vidToDelete, setVidToDelete] = useState(null);
   // Video preview modal
   const [previewVid, setPreviewVid] = useState(null);
   const [uploadModalOpen, setUploadModalOpen] = useState(false);
@@ -280,14 +282,22 @@ export default function GroupLessons({ groupId }) {
   }
 
   /* ── delete video ── */
-  async function handleDeleteVideo(id) {
+  function handleDeleteVideo(id) {
     handleVidMenuClose();
+    setVidToDelete(id);
+    setVidDeleteConfirmOpen(true);
+  }
+
+  async function confirmDeleteVideo(id) {
+    if (!id) return;
     try {
       await api.delete(`/api/v1/videos/${id}`);
       setSnackbar({ open: true, msg: "Video o'chirildi", sev: 'success' });
       fetchVideos(true);
     } catch (e) {
       setSnackbar({ open: true, msg: e.response?.data?.message || 'Xatolik', sev: 'error' });
+    } finally {
+      setVidToDelete(null);
     }
   }
 
@@ -1083,6 +1093,58 @@ export default function GroupLessons({ groupId }) {
               </Button>
               <Button fullWidth variant="contained"
                 onClick={() => { setDeleteConfirmOpen(false); confirmDeleteExam(examToDelete); }}
+                sx={{ textTransform: 'none', fontWeight: 600, py: 1.5, borderRadius: '10px', backgroundColor: '#ef4444', boxShadow: 'none', fontSize: '0.9rem', '&:hover': { backgroundColor: '#dc2626', boxShadow: 'none' } }}
+              >
+                O'chirish
+              </Button>
+            </Box>
+          </Box>
+        </DialogContent>
+      </Dialog>
+
+      {/* ── Beautiful Video Delete Confirmation Dialog ── */}
+      <Dialog
+        open={vidDeleteConfirmOpen}
+        onClose={() => setVidDeleteConfirmOpen(false)}
+        PaperProps={{
+          sx: {
+            borderRadius: '20px',
+            width: '420px',
+            maxWidth: '90vw',
+            boxShadow: '0 25px 50px -12px rgba(0,0,0,0.15)'
+          }
+        }}
+      >
+        <DialogContent sx={{ p: 4 }}>
+          <Box sx={{ textAlign: 'center' }}>
+            <Box sx={{
+              width: 64, height: 64,
+              borderRadius: '50%',
+              background: '#fef2f2',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              mx: 'auto', mb: 3
+            }}>
+              <DeleteOutlineIcon sx={{ fontSize: 32, color: '#ef4444' }} />
+            </Box>
+
+            <Typography sx={{ fontWeight: 700, fontSize: '1.2rem', color: '#111827', mb: 1.5 }}>
+              Videoni o'chirish
+            </Typography>
+
+            <Typography sx={{ fontSize: '0.875rem', color: '#6b7280', lineHeight: 1.6, mb: 4, px: 2 }}>
+              Ushbu videoni o'chirmoqchimisiz? O'chirilgandan so'ng qayta tiklab bo'lmaydi.
+            </Typography>
+
+            <Box sx={{ display: 'flex', gap: 2 }}>
+              <Button fullWidth onClick={() => setVidDeleteConfirmOpen(false)}
+                sx={{ textTransform: 'none', fontWeight: 600, py: 1.5, borderRadius: '10px', border: '1.5px solid #e5e7eb', color: '#374151', fontSize: '0.9rem', '&:hover': { background: '#f9fafb' } }}
+              >
+                Bekor qilish
+              </Button>
+              <Button fullWidth variant="contained"
+                onClick={() => { setVidDeleteConfirmOpen(false); confirmDeleteVideo(vidToDelete); }}
                 sx={{ textTransform: 'none', fontWeight: 600, py: 1.5, borderRadius: '10px', backgroundColor: '#ef4444', boxShadow: 'none', fontSize: '0.9rem', '&:hover': { backgroundColor: '#dc2626', boxShadow: 'none' } }}
               >
                 O'chirish

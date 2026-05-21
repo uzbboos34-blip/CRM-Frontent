@@ -4,13 +4,19 @@ import api from '../api/axios';
 import {
   Box, Typography, Tabs, Tab, Table, TableBody, TableCell,
   TableContainer, TableHead, TableRow, Paper, CircularProgress,
-  Avatar, Chip, Button,
+  Avatar, Chip, Button, Dialog, DialogTitle, DialogContent, IconButton
 } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import ReplayIcon from '@mui/icons-material/Replay';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import CancelIcon from '@mui/icons-material/Cancel';
+import InsertDriveFileIcon from '@mui/icons-material/InsertDriveFile';
+import DownloadIcon from '@mui/icons-material/Download';
+import CloseIcon from '@mui/icons-material/Close';
+import FolderZipIcon from '@mui/icons-material/FolderZip';
+import VolumeUpIcon from '@mui/icons-material/VolumeUp';
+import ArticleIcon from '@mui/icons-material/Article';
 
 /* ─── Helpers ──────────────────────────────────────────────────────────── */
 const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
@@ -18,6 +24,14 @@ function fmtDate(d) {
   if (!d) return '—';
   const dt = new Date(d);
   return `${dt.getDate()} ${MONTHS[dt.getMonth()]}, ${dt.getFullYear()} ${String(dt.getHours()).padStart(2,'0')}:${String(dt.getMinutes()).padStart(2,'0')}`;
+}
+
+const SUPABASE_URL = 'https://mcjypffxtuoqfttoapjh.supabase.co';
+
+function getFileUrl(filename) {
+  if (!filename) return '';
+  if (filename.startsWith('http')) return filename;
+  return `${SUPABASE_URL}/storage/v1/object/public/NajotEdu/${filename}`;
 }
 
 function getInitials(name = '') {
@@ -29,6 +43,64 @@ function getInitials(name = '') {
 
 const avatarColors = ['#7b61ff','#10b981','#f59e0b','#3b82f6','#ec4899','#ef4444'];
 const avatarColor = (i) => avatarColors[i % avatarColors.length];
+
+function TextPreview({ url }) {
+  const [content, setContent] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
+
+  useEffect(() => {
+    fetch(url)
+      .then((res) => {
+        if (!res.ok) throw new Error();
+        return res.text();
+      })
+      .then((text) => {
+        setContent(text);
+        setLoading(false);
+      })
+      .catch(() => {
+        setError(true);
+        setLoading(false);
+      });
+  }, [url]);
+
+  if (loading) {
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', py: 15 }}>
+        <CircularProgress size={40} sx={{ color: '#7b61ff' }} />
+      </Box>
+    );
+  }
+
+  if (error) {
+    return (
+      <Box sx={{ py: 10, px: 2, textAlign: 'center' }}>
+        <Typography color="error" sx={{ fontWeight: 600 }}>
+          Fayl tarkibini yuklab bo'lmadi.
+        </Typography>
+      </Box>
+    );
+  }
+
+  return (
+    <Box sx={{ p: 3, background: '#f8fafc', minHeight: 400 }}>
+      <Box sx={{ border: '1px solid #e2e8f0', borderRadius: '12px', overflow: 'hidden', background: '#fff' }}>
+        <Box sx={{ background: '#f1f5f9', py: 1, px: 2, borderBottom: '1px solid #e2e8f0', display: 'flex', alignItems: 'center', gap: 1 }}>
+          <ArticleIcon sx={{ fontSize: 16, color: '#64748b' }} />
+          <Typography sx={{ fontSize: '0.78rem', color: '#64748b', fontWeight: 600 }}>
+            Matn ko'rinishi (Preview)
+          </Typography>
+        </Box>
+        <Box sx={{ p: 2, maxHeight: '480px', overflow: 'auto' }}>
+          <pre style={{ margin: 0, fontFamily: 'Consolas, Monaco, monospace', fontSize: '0.85rem', whiteSpace: 'pre-wrap', color: '#334155', lineHeight: 1.5 }}>
+            {content}
+          </pre>
+        </Box>
+      </Box>
+    </Box>
+  );
+}
 
 /* ─── Tab config ───────────────────────────────────────────────────────── */
 const TABS = [
@@ -55,6 +127,8 @@ export default function HomeworkDetail() {
   const [data,    setData]    = useState(null);
   const [loading, setLoading] = useState(true);
   const [tab,     setTab]     = useState(0);
+  const [filePreviewOpen, setFilePreviewOpen] = useState(false);
+  const [previewFile, setPreviewFile] = useState('');
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -69,7 +143,9 @@ export default function HomeworkDetail() {
   }, [hwId]);
 
   useEffect(() => {
-    fetchData();
+    Promise.resolve().then(() => {
+      fetchData();
+    });
   }, [fetchData]);
 
   if (loading) {
@@ -119,11 +195,61 @@ export default function HomeworkDetail() {
           {hw.title}
         </Typography>
         {hw.description && (
-          <Typography sx={{ fontSize: '0.88rem', color: '#6b7280', mb: 1 }}>
-            {hw.description}
-          </Typography>
+          <Typography
+            sx={{ fontSize: '0.88rem', color: '#6b7280', mb: 2 }}
+            dangerouslySetInnerHTML={{ __html: hw.description }}
+          />
         )}
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+
+        {/* Original homework resource files */}
+        {(hw.file || hw.video_url) && (
+          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1.5, mb: 2 }}>
+            {hw.file && (
+              <Button
+                variant="outlined"
+                size="small"
+                startIcon={<InsertDriveFileIcon />}
+                onClick={() => {
+                  setPreviewFile(hw.file);
+                  setFilePreviewOpen(true);
+                }}
+                sx={{
+                  textTransform: 'none',
+                  borderRadius: '8px',
+                  color: '#7b61ff',
+                  borderColor: '#7b61ff',
+                  fontWeight: 600,
+                  '&:hover': { borderColor: '#6246ea', background: '#f0eeff' }
+                }}
+              >
+                Vazifa fayli
+              </Button>
+            )}
+            {hw.video_url && (
+              <Button
+                variant="outlined"
+                size="small"
+                startIcon={<VolumeUpIcon />}
+                onClick={() => {
+                  setPreviewFile(hw.video_url);
+                  setFilePreviewOpen(true);
+                }}
+                sx={{
+                  textTransform: 'none',
+                  borderRadius: '8px',
+                  color: '#7b61ff',
+                  borderColor: '#7b61ff',
+                  fontWeight: 600,
+                  '&:hover': { borderColor: '#6246ea', background: '#f0eeff' }
+                }}
+              >
+                Vazifa videosi
+              </Button>
+            )}
+          </Box>
+        )}
+
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, pt: 1, borderTop: '1px solid #f3f4f6' }}>
           <Typography sx={{ fontSize: '0.8rem', color: '#9ca3af' }}>Tugash vaqti:</Typography>
           <Typography sx={{ fontSize: '0.8rem', fontWeight: 600, color: '#374151' }}>
             {fmtDate(new Date(new Date(hw.created_at).getTime() + 86400000))}
@@ -147,7 +273,7 @@ export default function HomeworkDetail() {
             '& .Mui-selected': { color: '#111827 !important' },
           }}
         >
-          {TABS.map((t, i) => {
+          {TABS.map((t) => {
             const count =
               t.key === 'kutilayotganlar' ? stats.pending :
               t.key === 'qaytarilganlar'  ? stats.returned :
@@ -266,6 +392,159 @@ export default function HomeworkDetail() {
           </Table>
         </TableContainer>
       )}
+
+      {/* ── File Preview Modal ── */}
+      <Dialog
+        open={filePreviewOpen}
+        onClose={() => setFilePreviewOpen(false)}
+        maxWidth="md"
+        fullWidth
+        PaperProps={{
+          sx: { borderRadius: '16px', overflow: 'hidden' }
+        }}
+      >
+        <DialogTitle sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', py: 1.5, px: 2.5, borderBottom: '1px solid #f3f4f6' }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <InsertDriveFileIcon sx={{ color: '#7b61ff' }} />
+            <Typography sx={{ fontWeight: 700, fontSize: '1rem' }}>
+              {previewFile.split('/').pop() || 'Fayl ko\'rish'}
+            </Typography>
+          </Box>
+          <Box sx={{ display: 'flex', gap: 1 }}>
+            <Button
+              component="a"
+              href={getFileUrl(previewFile)}
+              download
+              target="_blank"
+              rel="noopener noreferrer"
+              variant="contained"
+              size="small"
+              startIcon={<DownloadIcon />}
+              sx={{ textTransform: 'none', borderRadius: '8px', backgroundColor: '#7b61ff', '&:hover': { backgroundColor: '#6246ea' }, boxShadow: 'none', fontSize: '0.82rem' }}
+            >
+              Saqlash
+            </Button>
+            <IconButton size="small" onClick={() => setFilePreviewOpen(false)} sx={{ color: '#9ca3af' }}>
+              <CloseIcon fontSize="small" />
+            </IconButton>
+          </Box>
+        </DialogTitle>
+        <DialogContent sx={{ p: 0, minHeight: 500 }}>
+          {previewFile && (() => {
+            const url = getFileUrl(previewFile);
+            const ext = (previewFile.split('.').pop() || '').toLowerCase();
+            const isImg = ['jpg','jpeg','png','gif','webp','svg'].includes(ext);
+            const isPdf = ext === 'pdf';
+            const isOffice = ['doc','docx','xls','xlsx','ppt','pptx','odt','ods','odp'].includes(ext);
+            const isText = ['txt','json','js','ts','jsx','tsx','html','css','md','csv','xml','yaml'].includes(ext);
+            const isAudio = ['mp3','wav','ogg','m4a','flac'].includes(ext);
+            const isVideo = ['mp4','webm','ogg','avi','mov'].includes(ext);
+            const isArchive = ['zip','rar','7z','tar','gz'].includes(ext);
+
+            if (isImg) {
+              return (
+                <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', p: 2 }}>
+                  <img src={url} alt="homework file" style={{ maxWidth: '100%', maxHeight: 600, borderRadius: 8 }} />
+                </Box>
+              );
+            }
+            if (isPdf) {
+              return (
+                <iframe
+                  src={url}
+                  title="homework-file"
+                  width="100%"
+                  height="560px"
+                  style={{ border: 'none' }}
+                />
+              );
+            }
+            if (isOffice) {
+              return (
+                <iframe
+                  src={`https://docs.google.com/viewer?url=${encodeURIComponent(url)}&embedded=true`}
+                  title="homework-office-file"
+                  width="100%"
+                  height="560px"
+                  style={{ border: 'none' }}
+                />
+              );
+            }
+            if (isText) {
+              return <TextPreview url={url} />;
+            }
+            if (isAudio) {
+              return (
+                <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', py: 8, gap: 3, px: 4 }}>
+                  <VolumeUpIcon sx={{ fontSize: 72, color: '#7b61ff' }} />
+                  <Typography sx={{ fontWeight: 700, color: '#374151', fontSize: '1.1rem' }}>
+                    Audio faylni tinglash
+                  </Typography>
+                  <audio controls src={url} style={{ width: '100%', maxWidth: 500 }} />
+                </Box>
+              );
+            }
+            if (isVideo) {
+              return (
+                <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', p: 2, background: '#000' }}>
+                  <video
+                    src={url}
+                    controls
+                    style={{ maxWidth: '100%', maxHeight: '500px', borderRadius: 8 }}
+                  />
+                </Box>
+              );
+            }
+            if (isArchive) {
+              return (
+                <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', py: 8, gap: 2.5, px: 3, textAlign: 'center' }}>
+                  <Box sx={{ p: 2, borderRadius: '50%', backgroundColor: '#f5f3ff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <FolderZipIcon sx={{ fontSize: 80, color: '#7b61ff' }} />
+                  </Box>
+                  <Typography sx={{ color: '#111827', fontWeight: 800, fontSize: '1.2rem' }}>
+                    Siqilgan arxiv (ZIP / RAR) fayli
+                  </Typography>
+                  <Typography sx={{ color: '#6b7280', fontSize: '0.9rem', maxWidth: 450 }}>
+                    Bu arxiv fayl hisoblanadi. Fayl tarkibini ko'rish uchun uni kompyuteringiz yoki telefoningizga saqlang va arxivdan chiqaring.
+                  </Typography>
+                  <Button
+                    component="a"
+                    href={url}
+                    download
+                    target="_blank"
+                    variant="contained"
+                    startIcon={<DownloadIcon />}
+                    sx={{ textTransform: 'none', borderRadius: '10px', backgroundColor: '#7b61ff', '&:hover': { backgroundColor: '#6246ea' }, boxShadow: 'none', px: 4, py: 1, mt: 1 }}
+                  >
+                    Arxivni yuklab olish
+                  </Button>
+                </Box>
+              );
+            }
+
+            // Other file types — show info + download
+            return (
+              <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', py: 8, gap: 2 }}>
+                <InsertDriveFileIcon sx={{ fontSize: 64, color: '#d1d5db' }} />
+                <Typography sx={{ color: '#6b7280', fontWeight: 500 }}>
+                  Bu fayl tur brauzerda ko'rsatilmaydi
+                </Typography>
+                <Button
+                  component="a"
+                  href={url}
+                  download
+                  target="_blank"
+                  variant="contained"
+                  startIcon={<DownloadIcon />}
+                  sx={{ textTransform: 'none', borderRadius: '8px', backgroundColor: '#7b61ff', '&:hover': { backgroundColor: '#6246ea' }, boxShadow: 'none' }}
+                >
+                  Yuklab olish
+                </Button>
+              </Box>
+            );
+          })()}
+        </DialogContent>
+      </Dialog>
     </Box>
   );
 }

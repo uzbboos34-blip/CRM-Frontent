@@ -1,19 +1,17 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import api from '../api/axios';
 import {
   Box, Typography, Paper, Button, CircularProgress,
   Chip, Slider, TextField, Snackbar, Alert, Avatar,
-  Divider, LinearProgress, Dialog, DialogTitle, DialogContent, IconButton
+  Divider, Dialog, DialogTitle, DialogContent, IconButton
 } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
-import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import ReplayIcon from '@mui/icons-material/Replay';
 import CancelIcon from '@mui/icons-material/Cancel';
 import InsertDriveFileIcon from '@mui/icons-material/InsertDriveFile';
-import ImageIcon from '@mui/icons-material/Image';
 import DownloadIcon from '@mui/icons-material/Download';
 import CloseIcon from '@mui/icons-material/Close';
 import FolderZipIcon from '@mui/icons-material/FolderZip';
@@ -130,12 +128,9 @@ export default function StudentHomeworkDetail() {
   const [grade,      setGrade]      = useState(60);
   const [comment,    setComment]    = useState('');
   const [grading,    setGrading]    = useState(false);
-  const [dragOver,   setDragOver]   = useState(false);
   const [snackbar,   setSnackbar]   = useState({ open: false, msg: '', sev: 'success' });
   const [filePreviewOpen, setFilePreviewOpen] = useState(false);
   const [previewFile, setPreviewFile] = useState('');
-
-  const fileInputRef = useRef();
 
   /* ── Fetch ── */
   const fetchData = useCallback(async () => {
@@ -156,7 +151,11 @@ export default function StudentHomeworkDetail() {
     }
   }, [hwId, studentId]);
 
-  useEffect(() => { fetchData(); }, [fetchData]);
+  useEffect(() => {
+    Promise.resolve().then(() => {
+      fetchData();
+    });
+  }, [fetchData]);
 
   /* ── Grade submit ── */
   async function handleGrade() {
@@ -231,17 +230,66 @@ export default function StudentHomeworkDetail() {
       {/* ── Homework info card ── */}
       <Paper elevation={0} sx={{ border: '1px solid #e5e7eb', borderRadius: '16px', p: 3, mb: 3 }}>
         <Typography sx={{ fontSize: '0.72rem', color: '#9ca3af', mb: 0.3 }}>Uy vazifasi</Typography>
-        <Box sx={{ background: '#f9fafb', borderRadius: '10px', p: 2 }}>
+        <Box sx={{ background: '#f9fafb', borderRadius: '10px', p: 2, mb: (data.homework?.file || data.homework?.video_url) ? 2 : 0 }}>
           <Typography sx={{ fontSize: '0.75rem', color: '#9ca3af', mb: 0.3 }}>Izoh:</Typography>
           <Typography sx={{ fontWeight: 600, color: '#111827', fontSize: '0.95rem' }}>
             {data.homework?.title || '—'}
           </Typography>
           {data.homework?.description && (
-            <Typography sx={{ color: '#6b7280', fontSize: '0.85rem', mt: 0.5 }}>
-              {data.homework.description}
-            </Typography>
+            <Typography
+              sx={{ color: '#6b7280', fontSize: '0.85rem', mt: 0.5 }}
+              dangerouslySetInnerHTML={{ __html: data.homework.description }}
+            />
           )}
         </Box>
+
+        {/* Original homework resource files */}
+        {(data.homework?.file || data.homework?.video_url) && (
+          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1.5, mt: 1 }}>
+            {data.homework.file && (
+              <Button
+                variant="outlined"
+                size="small"
+                startIcon={<InsertDriveFileIcon />}
+                onClick={() => {
+                  setPreviewFile(data.homework.file);
+                  setFilePreviewOpen(true);
+                }}
+                sx={{
+                  textTransform: 'none',
+                  borderRadius: '8px',
+                  color: '#7b61ff',
+                  borderColor: '#7b61ff',
+                  fontWeight: 600,
+                  '&:hover': { borderColor: '#6246ea', background: '#f0eeff' }
+                }}
+              >
+                Vazifa fayli
+              </Button>
+            )}
+            {data.homework.video_url && (
+              <Button
+                variant="outlined"
+                size="small"
+                startIcon={<VolumeUpIcon />}
+                onClick={() => {
+                  setPreviewFile(data.homework.video_url);
+                  setFilePreviewOpen(true);
+                }}
+                sx={{
+                  textTransform: 'none',
+                  borderRadius: '8px',
+                  color: '#7b61ff',
+                  borderColor: '#7b61ff',
+                  fontWeight: 600,
+                  '&:hover': { borderColor: '#6246ea', background: '#f0eeff' }
+                }}
+              >
+                Vazifa videosi
+              </Button>
+            )}
+          </Box>
+        )}
       </Paper>
 
       {/* ── Student submission card ── */}

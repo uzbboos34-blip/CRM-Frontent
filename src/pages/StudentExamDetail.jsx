@@ -124,6 +124,7 @@ export default function StudentExamDetail() {
   const [grading, setGrading] = useState(false);
   const [snackbar, setSnackbar] = useState({ open: false, msg: '', sev: 'success' });
   const [filePreviewOpen, setFilePreviewOpen] = useState(false);
+  const [previewFile, setPreviewFile] = useState('');
 
   /* ── Fetch ── */
   const fetchData = useCallback(async () => {
@@ -147,7 +148,11 @@ export default function StudentExamDetail() {
     }
   }, [examId, studentId]);
 
-  useEffect(() => { fetchData(); }, [fetchData]);
+  useEffect(() => {
+    Promise.resolve().then(() => {
+      fetchData();
+    });
+  }, [fetchData]);
 
   /* ── Grade submit ── */
   async function handleGrade() {
@@ -217,7 +222,7 @@ export default function StudentExamDetail() {
       {/* ── Exam info card ── */}
       <Paper elevation={0} sx={{ border: '1px solid #e5e7eb', borderRadius: '16px', p: 3, mb: 3 }}>
         <Typography sx={{ fontSize: '0.72rem', color: '#9ca3af', mb: 0.3 }}>Imtihon shartlari</Typography>
-        <Box sx={{ background: '#f9fafb', borderRadius: '10px', p: 2 }}>
+        <Box sx={{ background: '#f9fafb', borderRadius: '10px', p: 2, mb: exam.file ? 2 : 0 }}>
           <Typography sx={{ fontWeight: 750, color: '#111827', fontSize: '1rem', mb: 0.5 }}>
             {exam.title || '—'}
           </Typography>
@@ -227,6 +232,29 @@ export default function StudentExamDetail() {
             </Typography>
           )}
         </Box>
+        {exam.file && (
+          <Box sx={{ mt: 1 }}>
+            <Button
+              variant="outlined"
+              size="small"
+              startIcon={<InsertDriveFileIcon />}
+              onClick={() => {
+                setPreviewFile(exam.file);
+                setFilePreviewOpen(true);
+              }}
+              sx={{
+                textTransform: 'none',
+                borderRadius: '8px',
+                color: '#10b981',
+                borderColor: '#10b981',
+                fontWeight: 600,
+                '&:hover': { borderColor: '#059669', background: '#f0fdf4' }
+              }}
+            >
+              Imtihon topshiriq fayli
+            </Button>
+          </Box>
+        )}
       </Paper>
 
       {/* ── Student Header ── */}
@@ -330,7 +358,10 @@ export default function StudentExamDetail() {
               </Box>
 
               <Button
-                onClick={() => setFilePreviewOpen(true)}
+                onClick={() => {
+                  setPreviewFile(submission.file);
+                  setFilePreviewOpen(true);
+                }}
                 variant="contained"
                 size="small"
                 sx={{
@@ -525,13 +556,13 @@ export default function StudentExamDetail() {
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             <InsertDriveFileIcon sx={{ color: '#10b981' }} />
             <Typography sx={{ fontWeight: 700, fontSize: '1rem' }}>
-              {submission?.file?.split('/').pop() || 'Fayl ko\'rish'}
+              {previewFile?.split('/').pop() || 'Fayl ko\'rish'}
             </Typography>
           </Box>
           <Box sx={{ display: 'flex', gap: 1 }}>
             <Button
               component="a"
-              href={getFileUrl(submission?.file)}
+              href={getFileUrl(previewFile)}
               download
               target="_blank"
               rel="noopener noreferrer"
@@ -548,9 +579,9 @@ export default function StudentExamDetail() {
           </Box>
         </DialogTitle>
         <DialogContent sx={{ p: 0, minHeight: 500 }}>
-          {submission?.file && (() => {
-            const url = getFileUrl(submission.file);
-            const ext = (submission.file.split('.').pop() || '').toLowerCase();
+          {previewFile && (() => {
+            const url = getFileUrl(previewFile);
+            const ext = (previewFile.split('.').pop() || '').toLowerCase();
             const isImg = ['jpg','jpeg','png','gif','webp','svg'].includes(ext);
             const isPdf = ext === 'pdf';
             const isOffice = ['doc','docx','xls','xlsx','ppt','pptx','odt','ods','odp'].includes(ext);
@@ -562,7 +593,7 @@ export default function StudentExamDetail() {
             if (isImg) {
               return (
                 <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', p: 2 }}>
-                  <img src={url} alt="submission file" style={{ maxWidth: '100%', maxHeight: 600, borderRadius: 8 }} />
+                  <img src={url} alt="preview file" style={{ maxWidth: '100%', maxHeight: 600, borderRadius: 8 }} />
                 </Box>
               );
             }
@@ -570,7 +601,7 @@ export default function StudentExamDetail() {
               return (
                 <iframe
                   src={url}
-                  title="submission-file"
+                  title="preview-file"
                   width="100%"
                   height="560px"
                   style={{ border: 'none' }}
@@ -581,7 +612,7 @@ export default function StudentExamDetail() {
               return (
                 <iframe
                   src={`https://docs.google.com/viewer?url=${encodeURIComponent(url)}&embedded=true`}
-                  title="submission-office-file"
+                  title="preview-office-file"
                   width="100%"
                   height="560px"
                   style={{ border: 'none' }}

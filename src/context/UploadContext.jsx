@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState } from 'react';
 import { uploadApi } from '../api/axios';
+import axios from 'axios';
 
 const UploadContext = createContext();
 
@@ -46,38 +47,33 @@ export function UploadProvider({ children }) {
       const file = formData.get('video') || formData.get('file');
       if (metadata.type === 'video' && file instanceof File) {
         isDirectSupabase = true;
-        const { supabase } = await import('../api/supabase');
+        const { supabaseUrl, supabaseKey } = await import('../api/supabase');
         
         const ext = file.name.split('.').pop();
         const filename = `${Date.now()}-${Math.round(Math.random() * 1e9)}.${ext}`;
 
-        // Fake progress for UI while uploading to Supabase
-        const progressInterval = setInterval(() => {
-          setUploads(prev => prev.map(u => {
-            if (u.id === uploadId && u.progress < 90) {
-              const newProg = u.progress + 5;
-              return { ...u, progress: newProg, buffer: Math.min(newProg + 10, 100) };
-            }
-            return u;
-          }));
-        }, 500);
+        const storageUrl = `${supabaseUrl}/storage/v1/object/NajotEdu/${filename}`;
 
-        const { data, error } = await supabase.storage
-          .from('NajotEdu')
-          .upload(filename, file, {
-            cacheControl: '3600',
-            upsert: false
-          });
+        // To'g'ridan-to'g'ri Axios orqali yuklaymiz, shunda 100% HAQIQIY progress chiqadi
+        await axios.post(storageUrl, file, {
+          headers: {
+            Authorization: `Bearer ${supabaseKey}`,
+            apikey: supabaseKey,
+            'Content-Type': file.type || 'video/mp4',
+            'x-upsert': 'false'
+          },
+          onUploadProgress: (progressEvent) => {
+            const percentCompleted = Math.round((progressEvent.loaded * 95) / progressEvent.total);
+            setUploads(prev => prev.map(u => {
+              if (u.id === uploadId) {
+                return { ...u, progress: percentCompleted, buffer: Math.min(percentCompleted + 10, 100) };
+              }
+              return u;
+            }));
+          }
+        });
 
-        clearInterval(progressInterval);
-
-        if (error) {
-          throw new Error(`Supabase upload failed: ${error.message}`);
-        }
-
-        const { data: publicUrlData } = supabase.storage
-          .from('NajotEdu')
-          .getPublicUrl(filename);
+        const publicUrl = `${supabaseUrl}/storage/v1/object/public/NajotEdu/${filename}`;
 
         // Backend-ga faqat ma'lumotlarni yuboramiz (og'ir faylni emas)
         finalFormData = new FormData();
@@ -86,7 +82,8 @@ export function UploadProvider({ children }) {
             finalFormData.append(key, value);
           }
         }
-        finalFormData.append('video_url', publicUrlData.publicUrl);
+        finalFormData.append('video_url', publicUrl);
+        finalFormData.append('file_size', file.size);
         
         setUploads(prev => prev.map(u => 
           u.id === uploadId ? { ...u, progress: 95, buffer: 100 } : u

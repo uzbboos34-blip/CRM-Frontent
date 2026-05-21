@@ -4,7 +4,7 @@ import api from '../api/axios';
 import {
   Box, Typography, Paper, Button, CircularProgress,
   Chip, Slider, TextField, Snackbar, Alert, Avatar,
-  Divider,
+  Divider, Dialog, DialogTitle, DialogContent, IconButton
 } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
@@ -12,6 +12,11 @@ import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import ReplayIcon from '@mui/icons-material/Replay';
 import CancelIcon from '@mui/icons-material/Cancel';
 import InsertDriveFileIcon from '@mui/icons-material/InsertDriveFile';
+import DownloadIcon from '@mui/icons-material/Download';
+import CloseIcon from '@mui/icons-material/Close';
+import FolderZipIcon from '@mui/icons-material/FolderZip';
+import VolumeUpIcon from '@mui/icons-material/VolumeUp';
+import ArticleIcon from '@mui/icons-material/Article';
 
 /* ─── Helpers ──────────────────────────────────────────────────────────── */
 const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
@@ -21,12 +26,12 @@ function fmtDate(d) {
   return `${dt.getDate()} ${MONTHS[dt.getMonth()]}, ${dt.getFullYear()} ${String(dt.getHours()).padStart(2,'0')}:${String(dt.getMinutes()).padStart(2,'0')}`;
 }
 
-const BASE_URL = import.meta.env.VITE_API_URL || 'https://crm-backend-l7jq.onrender.com';
+const SUPABASE_URL = 'https://mcjypffxtuoqfttoapjh.supabase.co';
 
 function getFileUrl(filename) {
   if (!filename) return '';
   if (filename.startsWith('http')) return filename;
-  return `${BASE_URL}/file/${filename}`;
+  return `${SUPABASE_URL}/storage/v1/object/public/NajotEdu/${filename}`;
 }
 
 function getInitials(name = '') {
@@ -34,6 +39,64 @@ function getInitials(name = '') {
   return p.length >= 2
     ? (p[0][0] + p[1][0]).toUpperCase()
     : (p[0]?.[0] || '?').toUpperCase();
+}
+
+function TextPreview({ url }) {
+  const [content, setContent] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
+
+  useEffect(() => {
+    fetch(url)
+      .then((res) => {
+        if (!res.ok) throw new Error();
+        return res.text();
+      })
+      .then((text) => {
+        setContent(text);
+        setLoading(false);
+      })
+      .catch(() => {
+        setError(true);
+        setLoading(false);
+      });
+  }, [url]);
+
+  if (loading) {
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', py: 15 }}>
+        <CircularProgress size={40} sx={{ color: '#10b981' }} />
+      </Box>
+    );
+  }
+
+  if (error) {
+    return (
+      <Box sx={{ py: 10, px: 2, textAlign: 'center' }}>
+        <Typography color="error" sx={{ fontWeight: 600 }}>
+          Fayl tarkibini yuklab bo'lmadi.
+        </Typography>
+      </Box>
+    );
+  }
+
+  return (
+    <Box sx={{ p: 3, background: '#f8fafc', minHeight: 400 }}>
+      <Box sx={{ border: '1px solid #e2e8f0', borderRadius: '12px', overflow: 'hidden', background: '#fff' }}>
+        <Box sx={{ background: '#f1f5f9', py: 1, px: 2, borderBottom: '1px solid #e2e8f0', display: 'flex', alignItems: 'center', gap: 1 }}>
+          <ArticleIcon sx={{ fontSize: 16, color: '#64748b' }} />
+          <Typography sx={{ fontSize: '0.78rem', color: '#64748b', fontWeight: 600 }}>
+            Matn ko'rinishi (Preview)
+          </Typography>
+        </Box>
+        <Box sx={{ p: 2, maxHeight: '480px', overflow: 'auto' }}>
+          <pre style={{ margin: 0, fontFamily: 'Consolas, Monaco, monospace', fontSize: '0.85rem', whiteSpace: 'pre-wrap', color: '#334155', lineHeight: 1.5 }}>
+            {content}
+          </pre>
+        </Box>
+      </Box>
+    </Box>
+  );
 }
 
 /* ─── Status config ─────────────────────────────────────────────────────── */
@@ -60,6 +123,7 @@ export default function StudentExamDetail() {
   const [feedback, setFeedback] = useState('');
   const [grading, setGrading] = useState(false);
   const [snackbar, setSnackbar] = useState({ open: false, msg: '', sev: 'success' });
+  const [filePreviewOpen, setFilePreviewOpen] = useState(false);
 
   /* ── Fetch ── */
   const fetchData = useCallback(async () => {
@@ -266,10 +330,7 @@ export default function StudentExamDetail() {
               </Box>
 
               <Button
-                component="a"
-                href={getFileUrl(submission.file)}
-                target="_blank"
-                rel="noopener noreferrer"
+                onClick={() => setFilePreviewOpen(true)}
                 variant="contained"
                 size="small"
                 sx={{
@@ -282,7 +343,7 @@ export default function StudentExamDetail() {
                   boxShadow: 'none',
                 }}
               >
-                Faylni yuklab olish
+                Faylni ko'rish
               </Button>
             </Box>
           )}
@@ -449,6 +510,159 @@ export default function StudentExamDetail() {
           {snackbar.msg}
         </Alert>
       </Snackbar>
+
+      {/* ── File Preview Modal ── */}
+      <Dialog
+        open={filePreviewOpen}
+        onClose={() => setFilePreviewOpen(false)}
+        maxWidth="md"
+        fullWidth
+        PaperProps={{
+          sx: { borderRadius: '16px', overflow: 'hidden' }
+        }}
+      >
+        <DialogTitle sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', py: 1.5, px: 2.5, borderBottom: '1px solid #f3f4f6' }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <InsertDriveFileIcon sx={{ color: '#10b981' }} />
+            <Typography sx={{ fontWeight: 700, fontSize: '1rem' }}>
+              {submission?.file?.split('/').pop() || 'Fayl ko\'rish'}
+            </Typography>
+          </Box>
+          <Box sx={{ display: 'flex', gap: 1 }}>
+            <Button
+              component="a"
+              href={getFileUrl(submission?.file)}
+              download
+              target="_blank"
+              rel="noopener noreferrer"
+              variant="contained"
+              size="small"
+              startIcon={<DownloadIcon />}
+              sx={{ textTransform: 'none', borderRadius: '8px', backgroundColor: '#10b981', '&:hover': { backgroundColor: '#059669' }, boxShadow: 'none', fontSize: '0.82rem' }}
+            >
+              Saqlash
+            </Button>
+            <IconButton size="small" onClick={() => setFilePreviewOpen(false)} sx={{ color: '#9ca3af' }}>
+              <CloseIcon fontSize="small" />
+            </IconButton>
+          </Box>
+        </DialogTitle>
+        <DialogContent sx={{ p: 0, minHeight: 500 }}>
+          {submission?.file && (() => {
+            const url = getFileUrl(submission.file);
+            const ext = (submission.file.split('.').pop() || '').toLowerCase();
+            const isImg = ['jpg','jpeg','png','gif','webp','svg'].includes(ext);
+            const isPdf = ext === 'pdf';
+            const isOffice = ['doc','docx','xls','xlsx','ppt','pptx','odt','ods','odp'].includes(ext);
+            const isText = ['txt','json','js','ts','jsx','tsx','html','css','md','csv','xml','yaml'].includes(ext);
+            const isAudio = ['mp3','wav','ogg','m4a','flac'].includes(ext);
+            const isVideo = ['mp4','webm','ogg','avi','mov'].includes(ext);
+            const isArchive = ['zip','rar','7z','tar','gz'].includes(ext);
+
+            if (isImg) {
+              return (
+                <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', p: 2 }}>
+                  <img src={url} alt="submission file" style={{ maxWidth: '100%', maxHeight: 600, borderRadius: 8 }} />
+                </Box>
+              );
+            }
+            if (isPdf) {
+              return (
+                <iframe
+                  src={url}
+                  title="submission-file"
+                  width="100%"
+                  height="560px"
+                  style={{ border: 'none' }}
+                />
+              );
+            }
+            if (isOffice) {
+              return (
+                <iframe
+                  src={`https://docs.google.com/viewer?url=${encodeURIComponent(url)}&embedded=true`}
+                  title="submission-office-file"
+                  width="100%"
+                  height="560px"
+                  style={{ border: 'none' }}
+                />
+              );
+            }
+            if (isText) {
+              return <TextPreview url={url} />;
+            }
+            if (isAudio) {
+              return (
+                <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', py: 8, gap: 3, px: 4 }}>
+                  <VolumeUpIcon sx={{ fontSize: 72, color: '#10b981' }} />
+                  <Typography sx={{ fontWeight: 700, color: '#374151', fontSize: '1.1rem' }}>
+                    Audio faylni tinglash
+                  </Typography>
+                  <audio controls src={url} style={{ width: '100%', maxWidth: 500 }} />
+                </Box>
+              );
+            }
+            if (isVideo) {
+              return (
+                <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', p: 2, background: '#000' }}>
+                  <video
+                    src={url}
+                    controls
+                    style={{ maxWidth: '100%', maxHeight: '500px', borderRadius: 8 }}
+                  />
+                </Box>
+              );
+            }
+            if (isArchive) {
+              return (
+                <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', py: 8, gap: 2.5, px: 3, textAlign: 'center' }}>
+                  <Box sx={{ p: 2, borderRadius: '50%', backgroundColor: '#f0fdf4', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <FolderZipIcon sx={{ fontSize: 80, color: '#10b981' }} />
+                  </Box>
+                  <Typography sx={{ color: '#111827', fontWeight: 800, fontSize: '1.2rem' }}>
+                    Siqilgan arxiv (ZIP / RAR) fayli
+                  </Typography>
+                  <Typography sx={{ color: '#6b7280', fontSize: '0.9rem', maxWidth: 450 }}>
+                    Bu arxiv fayl hisoblanadi. Fayl tarkibini ko'rish uchun uni kompyuteringiz yoki telefoningizga saqlang va arxivdan chiqaring.
+                  </Typography>
+                  <Button
+                    component="a"
+                    href={url}
+                    download
+                    target="_blank"
+                    variant="contained"
+                    startIcon={<DownloadIcon />}
+                    sx={{ textTransform: 'none', borderRadius: '10px', backgroundColor: '#10b981', '&:hover': { backgroundColor: '#059669' }, boxShadow: 'none', px: 4, py: 1, mt: 1 }}
+                  >
+                    Arxivni yuklab olish
+                  </Button>
+                </Box>
+              );
+            }
+
+            // Other file types — show info + download
+            return (
+              <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', py: 8, gap: 2 }}>
+                <InsertDriveFileIcon sx={{ fontSize: 64, color: '#d1d5db' }} />
+                <Typography sx={{ color: '#6b7280', fontWeight: 500 }}>
+                  Bu fayl tur brauzerda ko'rsatilmaydi
+                </Typography>
+                <Button
+                  component="a"
+                  href={url}
+                  download
+                  target="_blank"
+                  variant="contained"
+                  startIcon={<DownloadIcon />}
+                  sx={{ textTransform: 'none', borderRadius: '8px', backgroundColor: '#10b981', '&:hover': { backgroundColor: '#059669' }, boxShadow: 'none' }}
+                >
+                  Yuklab olish
+                </Button>
+              </Box>
+            );
+          })()}
+        </DialogContent>
+      </Dialog>
     </Box>
   );
 }

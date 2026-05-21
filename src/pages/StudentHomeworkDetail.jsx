@@ -4,7 +4,7 @@ import api from '../api/axios';
 import {
   Box, Typography, Paper, Button, CircularProgress,
   Chip, Slider, TextField, Snackbar, Alert, Avatar,
-  Divider, LinearProgress,
+  Divider, LinearProgress, Dialog, DialogTitle, DialogContent, IconButton
 } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
@@ -14,6 +14,11 @@ import ReplayIcon from '@mui/icons-material/Replay';
 import CancelIcon from '@mui/icons-material/Cancel';
 import InsertDriveFileIcon from '@mui/icons-material/InsertDriveFile';
 import ImageIcon from '@mui/icons-material/Image';
+import DownloadIcon from '@mui/icons-material/Download';
+import CloseIcon from '@mui/icons-material/Close';
+import FolderZipIcon from '@mui/icons-material/FolderZip';
+import VolumeUpIcon from '@mui/icons-material/VolumeUp';
+import ArticleIcon from '@mui/icons-material/Article';
 
 /* ─── Helpers ──────────────────────────────────────────────────────────── */
 const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
@@ -23,12 +28,12 @@ function fmtDate(d) {
   return `${dt.getDate()} ${MONTHS[dt.getMonth()]}, ${dt.getFullYear()} ${String(dt.getHours()).padStart(2,'0')}:${String(dt.getMinutes()).padStart(2,'0')}`;
 }
 
-const BASE_URL = import.meta.env.VITE_API_URL || 'https://crm-backend-l7jq.onrender.com';
+const SUPABASE_URL = 'https://mcjypffxtuoqfttoapjh.supabase.co';
 
 function getFileUrl(filename) {
   if (!filename) return '';
   if (filename.startsWith('http')) return filename;
-  return `${BASE_URL}/file/${filename}`;
+  return `${SUPABASE_URL}/storage/v1/object/public/NajotEdu/${filename}`;
 }
 
 function isImage(filename = '') {
@@ -40,6 +45,64 @@ function getInitials(name = '') {
   return p.length >= 2
     ? (p[0][0] + p[1][0]).toUpperCase()
     : (p[0]?.[0] || '?').toUpperCase();
+}
+
+function TextPreview({ url }) {
+  const [content, setContent] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
+
+  useEffect(() => {
+    fetch(url)
+      .then((res) => {
+        if (!res.ok) throw new Error();
+        return res.text();
+      })
+      .then((text) => {
+        setContent(text);
+        setLoading(false);
+      })
+      .catch(() => {
+        setError(true);
+        setLoading(false);
+      });
+  }, [url]);
+
+  if (loading) {
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', py: 15 }}>
+        <CircularProgress size={40} sx={{ color: '#7b61ff' }} />
+      </Box>
+    );
+  }
+
+  if (error) {
+    return (
+      <Box sx={{ py: 10, px: 2, textAlign: 'center' }}>
+        <Typography color="error" sx={{ fontWeight: 600 }}>
+          Fayl tarkibini yuklab bo'lmadi.
+        </Typography>
+      </Box>
+    );
+  }
+
+  return (
+    <Box sx={{ p: 3, background: '#f8fafc', minHeight: 400 }}>
+      <Box sx={{ border: '1px solid #e2e8f0', borderRadius: '12px', overflow: 'hidden', background: '#fff' }}>
+        <Box sx={{ background: '#f1f5f9', py: 1, px: 2, borderBottom: '1px solid #e2e8f0', display: 'flex', alignItems: 'center', gap: 1 }}>
+          <ArticleIcon sx={{ fontSize: 16, color: '#64748b' }} />
+          <Typography sx={{ fontSize: '0.78rem', color: '#64748b', fontWeight: 600 }}>
+            Matn ko'rinishi (Preview)
+          </Typography>
+        </Box>
+        <Box sx={{ p: 2, maxHeight: '480px', overflow: 'auto' }}>
+          <pre style={{ margin: 0, fontFamily: 'Consolas, Monaco, monospace', fontSize: '0.85rem', whiteSpace: 'pre-wrap', color: '#334155', lineHeight: 1.5 }}>
+            {content}
+          </pre>
+        </Box>
+      </Box>
+    </Box>
+  );
 }
 
 /* ─── Status config ─────────────────────────────────────────────────────── */
@@ -69,6 +132,8 @@ export default function StudentHomeworkDetail() {
   const [grading,    setGrading]    = useState(false);
   const [dragOver,   setDragOver]   = useState(false);
   const [snackbar,   setSnackbar]   = useState({ open: false, msg: '', sev: 'success' });
+  const [filePreviewOpen, setFilePreviewOpen] = useState(false);
+  const [previewFile, setPreviewFile] = useState('');
 
   const fileInputRef = useRef();
 
@@ -267,10 +332,10 @@ export default function StudentHomeworkDetail() {
                     isImage(f) ? (
                       <Box
                         key={i}
-                        component="a"
-                        href={getFileUrl(f)}
-                        target="_blank"
-                        rel="noopener noreferrer"
+                        onClick={() => {
+                          setPreviewFile(f);
+                          setFilePreviewOpen(true);
+                        }}
                         sx={{
                           width: 120, height: 80, borderRadius: '10px',
                           overflow: 'hidden', border: '1.5px solid #e5e7eb',
@@ -290,15 +355,15 @@ export default function StudentHomeworkDetail() {
                     ) : (
                       <Box
                         key={i}
-                        component="a"
-                        href={getFileUrl(f)}
-                        target="_blank"
-                        rel="noopener noreferrer"
+                        onClick={() => {
+                          setPreviewFile(f);
+                          setFilePreviewOpen(true);
+                        }}
                         sx={{
                           display: 'flex', alignItems: 'center', gap: 1,
                           px: 2, py: 1, borderRadius: '10px',
                           border: '1.5px solid #e5e7eb', background: '#f9fafb',
-                          textDecoration: 'none', color: '#374151',
+                          cursor: 'pointer', color: '#374151',
                           fontSize: '0.8rem', fontWeight: 600,
                           transition: 'all 0.2s',
                           '&:hover': { borderColor: '#7b61ff', color: '#7b61ff', background: '#f0eeff' },
@@ -504,6 +569,159 @@ export default function StudentHomeworkDetail() {
           {snackbar.msg}
         </Alert>
       </Snackbar>
+
+      {/* ── File Preview Modal ── */}
+      <Dialog
+        open={filePreviewOpen}
+        onClose={() => setFilePreviewOpen(false)}
+        maxWidth="md"
+        fullWidth
+        PaperProps={{
+          sx: { borderRadius: '16px', overflow: 'hidden' }
+        }}
+      >
+        <DialogTitle sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', py: 1.5, px: 2.5, borderBottom: '1px solid #f3f4f6' }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <InsertDriveFileIcon sx={{ color: '#7b61ff' }} />
+            <Typography sx={{ fontWeight: 700, fontSize: '1rem' }}>
+              {previewFile.split('/').pop() || 'Fayl ko\'rish'}
+            </Typography>
+          </Box>
+          <Box sx={{ display: 'flex', gap: 1 }}>
+            <Button
+              component="a"
+              href={getFileUrl(previewFile)}
+              download
+              target="_blank"
+              rel="noopener noreferrer"
+              variant="contained"
+              size="small"
+              startIcon={<DownloadIcon />}
+              sx={{ textTransform: 'none', borderRadius: '8px', backgroundColor: '#7b61ff', '&:hover': { backgroundColor: '#6246ea' }, boxShadow: 'none', fontSize: '0.82rem' }}
+            >
+              Saqlash
+            </Button>
+            <IconButton size="small" onClick={() => setFilePreviewOpen(false)} sx={{ color: '#9ca3af' }}>
+              <CloseIcon fontSize="small" />
+            </IconButton>
+          </Box>
+        </DialogTitle>
+        <DialogContent sx={{ p: 0, minHeight: 500 }}>
+          {previewFile && (() => {
+            const url = getFileUrl(previewFile);
+            const ext = (previewFile.split('.').pop() || '').toLowerCase();
+            const isImg = ['jpg','jpeg','png','gif','webp','svg'].includes(ext);
+            const isPdf = ext === 'pdf';
+            const isOffice = ['doc','docx','xls','xlsx','ppt','pptx','odt','ods','odp'].includes(ext);
+            const isText = ['txt','json','js','ts','jsx','tsx','html','css','md','csv','xml','yaml'].includes(ext);
+            const isAudio = ['mp3','wav','ogg','m4a','flac'].includes(ext);
+            const isVideo = ['mp4','webm','ogg','avi','mov'].includes(ext);
+            const isArchive = ['zip','rar','7z','tar','gz'].includes(ext);
+
+            if (isImg) {
+              return (
+                <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', p: 2 }}>
+                  <img src={url} alt="homework file" style={{ maxWidth: '100%', maxHeight: 600, borderRadius: 8 }} />
+                </Box>
+              );
+            }
+            if (isPdf) {
+              return (
+                <iframe
+                  src={url}
+                  title="homework-file"
+                  width="100%"
+                  height="560px"
+                  style={{ border: 'none' }}
+                />
+              );
+            }
+            if (isOffice) {
+              return (
+                <iframe
+                  src={`https://docs.google.com/viewer?url=${encodeURIComponent(url)}&embedded=true`}
+                  title="homework-office-file"
+                  width="100%"
+                  height="560px"
+                  style={{ border: 'none' }}
+                />
+              );
+            }
+            if (isText) {
+              return <TextPreview url={url} />;
+            }
+            if (isAudio) {
+              return (
+                <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', py: 8, gap: 3, px: 4 }}>
+                  <VolumeUpIcon sx={{ fontSize: 72, color: '#7b61ff' }} />
+                  <Typography sx={{ fontWeight: 700, color: '#374151', fontSize: '1.1rem' }}>
+                    Audio faylni tinglash
+                  </Typography>
+                  <audio controls src={url} style={{ width: '100%', maxWidth: 500 }} />
+                </Box>
+              );
+            }
+            if (isVideo) {
+              return (
+                <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', p: 2, background: '#000' }}>
+                  <video
+                    src={url}
+                    controls
+                    style={{ maxWidth: '100%', maxHeight: '500px', borderRadius: 8 }}
+                  />
+                </Box>
+              );
+            }
+            if (isArchive) {
+              return (
+                <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', py: 8, gap: 2.5, px: 3, textAlign: 'center' }}>
+                  <Box sx={{ p: 2, borderRadius: '50%', backgroundColor: '#f5f3ff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <FolderZipIcon sx={{ fontSize: 80, color: '#7b61ff' }} />
+                  </Box>
+                  <Typography sx={{ color: '#111827', fontWeight: 800, fontSize: '1.2rem' }}>
+                    Siqilgan arxiv (ZIP / RAR) fayli
+                  </Typography>
+                  <Typography sx={{ color: '#6b7280', fontSize: '0.9rem', maxWidth: 450 }}>
+                    Bu arxiv fayl hisoblanadi. Fayl tarkibini ko'rish uchun uni kompyuteringiz yoki telefoningizga saqlang va arxivdan chiqaring.
+                  </Typography>
+                  <Button
+                    component="a"
+                    href={url}
+                    download
+                    target="_blank"
+                    variant="contained"
+                    startIcon={<DownloadIcon />}
+                    sx={{ textTransform: 'none', borderRadius: '10px', backgroundColor: '#7b61ff', '&:hover': { backgroundColor: '#6246ea' }, boxShadow: 'none', px: 4, py: 1, mt: 1 }}
+                  >
+                    Arxivni yuklab olish
+                  </Button>
+                </Box>
+              );
+            }
+
+            // Other file types — show info + download
+            return (
+              <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', py: 8, gap: 2 }}>
+                <InsertDriveFileIcon sx={{ fontSize: 64, color: '#d1d5db' }} />
+                <Typography sx={{ color: '#6b7280', fontWeight: 500 }}>
+                  Bu fayl tur brauzerda ko'rsatilmaydi
+                </Typography>
+                <Button
+                  component="a"
+                  href={url}
+                  download
+                  target="_blank"
+                  variant="contained"
+                  startIcon={<DownloadIcon />}
+                  sx={{ textTransform: 'none', borderRadius: '8px', backgroundColor: '#7b61ff', '&:hover': { backgroundColor: '#6246ea' }, boxShadow: 'none' }}
+                >
+                  Yuklab olish
+                </Button>
+              </Box>
+            );
+          })()}
+        </DialogContent>
+      </Dialog>
     </Box>
   );
 }

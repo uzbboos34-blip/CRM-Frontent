@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState } from 'react';
 import { uploadApi } from '../api/axios';
 import axios from 'axios';
+import { supabaseUrl, supabaseKey } from '../api/supabase';
 
 const UploadContext = createContext();
 
@@ -47,7 +48,6 @@ export function UploadProvider({ children }) {
       const file = formData.get('video') || formData.get('file');
       if (metadata.type === 'video' && file instanceof File) {
         isDirectSupabase = true;
-        const { supabaseUrl, supabaseKey } = await import('../api/supabase');
         
         const ext = file.name.split('.').pop();
         const filename = `${Date.now()}-${Math.round(Math.random() * 1e9)}.${ext}`;

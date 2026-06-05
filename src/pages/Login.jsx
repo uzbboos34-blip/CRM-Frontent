@@ -98,7 +98,7 @@ export default function Login() {
 
       if (!response.ok) {
         // If user login fails, try teacher login
-        const teacherResponse = await fetch("https://crm-backend-l7jq.onrender.com/api/v1/auth/teacher/login", {
+        let teacherResponse = await fetch("https://crm-backend-l7jq.onrender.com/api/v1/auth/teacher/login", {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -109,7 +109,27 @@ export default function Login() {
           }),
         });
 
-        const teacherData = await teacherResponse.json();
+        let teacherData = await teacherResponse.json();
+
+        // If direct teacher login fails, try alternate phone format (+ prefix)
+        if (!teacherResponse.ok) {
+          const alternatePhone = login.startsWith('+') ? login.substring(1) : `+${login}`;
+          const altResponse = await fetch("https://crm-backend-l7jq.onrender.com/api/v1/auth/teacher/login", {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              phone: alternatePhone,
+              password: password,
+            }),
+          });
+
+          if (altResponse.ok) {
+            teacherResponse = altResponse;
+            teacherData = await altResponse.json();
+          }
+        }
 
         if (!teacherResponse.ok) {
           let msg = teacherData.message || 'Login xatosi yuz berdi';

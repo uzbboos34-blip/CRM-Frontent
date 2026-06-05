@@ -65,8 +65,7 @@ export default function Attendance() {
     setLoading(true);
     try {
       // 1. Foydalanuvchi rolini olish
-      const userRes = await api.get('/api/v1/auth/me');
-      setUserRole(userRes.data?.role);
+      setUserRole(userRes.data?.data?.role || userRes.data?.role);
 
       // 2. Guruh ma'lumotlarini olish
       const groupRes = await api.get(`/api/v1/groups/${id}`);

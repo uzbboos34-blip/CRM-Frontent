@@ -14,6 +14,7 @@ import HomeworkDetail from './pages/HomeworkDetail';
 import StudentHomeworkDetail from './pages/StudentHomeworkDetail';
 import ExamDetail from './pages/ExamDetail';
 import StudentExamDetail from './pages/StudentExamDetail';
+import Profile from './pages/Profile';
 
 import { UploadProvider } from './context/UploadContext';
 
@@ -60,6 +61,7 @@ function App() {
             <Route path="group/:id/video/create" element={<CreateVideo />} />
 
             <Route path="students" element={<Students />} />
+            <Route path="profile" element={<Profile />} />
           </Route>
 
           {/* Catch all */}

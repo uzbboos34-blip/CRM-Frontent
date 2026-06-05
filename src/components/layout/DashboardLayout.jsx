@@ -1,8 +1,8 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Box, Typography, List, ListItem, ListItemButton, ListItemIcon, ListItemText, IconButton, Drawer, useMediaQuery } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import { keyframes } from '@mui/system';
-import { Outlet, useLocation, NavLink } from 'react-router-dom';
+import { Outlet, useLocation, NavLink, useNavigate } from 'react-router-dom';
 
 // Icons for Management Menu
 import BookIcon from '@mui/icons-material/Book';
@@ -42,10 +42,36 @@ export default function DashboardLayout() {
   // Mobil uchun Drawer holati
   const [mobileOpen, setMobileOpen] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
 
   // Mobil ekranni aniqlash
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+
+  const tokenVal = localStorage.getItem('token');
+  let userRole = null;
+  if (tokenVal) {
+    try {
+      const payload = JSON.parse(atob(tokenVal.split('.')[1]));
+      userRole = payload.role;
+    } catch (e) {
+      console.error(e);
+    }
+  }
+
+  useEffect(() => {
+    if (userRole === 'TEACHER') {
+      const allowedPatterns = [
+        /^\/groups$/,
+        /^\/group\/[^/]+/,
+        /^\/profile$/
+      ];
+      const isAllowed = allowedPatterns.some(pattern => pattern.test(location.pathname));
+      if (!isAllowed) {
+        navigate('/groups', { replace: true });
+      }
+    }
+  }, [location.pathname, userRole, navigate]);
 
   const isManagementActive = location.pathname.startsWith('/management');
 

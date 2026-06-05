@@ -88,12 +88,50 @@ export default function Groups() {
   const [studentModalOpen, setStudentModalOpen] = useState(false);
   const [studentSearch, setStudentSearch] = useState('');
   const [selectedStudents, setSelectedStudents] = useState([]);
+  const [userRole, setUserRole] = useState(null);
 
   async function fetchGroups() {
     try {
-      const res = await api.get('/api/v1/groups');
-      setGroups(Array.isArray(res.data) ? res.data : (res.data?.data || []));
-    } catch (e) { if (e.response?.status === 401) { localStorage.removeItem('token'); window.location.href = '/login'; } }
+      const tokenVal = localStorage.getItem('token');
+      let role = '';
+      if (tokenVal) {
+        try {
+          const payload = JSON.parse(atob(tokenVal.split('.')[1]));
+          role = payload.role;
+          setUserRole(role);
+        } catch (e) {
+          console.error(e);
+        }
+      }
+
+      if (role === 'TEACHER') {
+        const res = await api.get('/api/v1/teachers/group/students');
+        const teacherGroups = Array.isArray(res.data) ? res.data : (res.data?.data || []);
+        const normalized = teacherGroups.map(tg => ({
+          id: tg.id,
+          name: tg.name,
+          status: 'active',
+          course: '—',
+          course_duration: 2,
+          start_date: tg.start_date,
+          end_date: null,
+          start_time: tg.start_time,
+          week_day: tg.week_day,
+          rooms: '—',
+          teachers: [],
+          students: tg.studentCount || (tg.students ? tg.students.length : 0),
+        }));
+        setGroups(normalized);
+      } else {
+        const res = await api.get('/api/v1/groups');
+        setGroups(Array.isArray(res.data) ? res.data : (res.data?.data || []));
+      }
+    } catch (e) {
+      if (e.response?.status === 401) {
+        localStorage.removeItem('token');
+        window.location.href = '/login';
+      }
+    }
   }
 
   async function fetchCourses() {
@@ -316,13 +354,15 @@ export default function Groups() {
       {/* Header */}
       <Box sx={{ mb: 3, display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, justifyContent: 'space-between', alignItems: { xs: 'flex-start', sm: 'center' }, gap: 2 }}>
         <Typography variant="h5" sx={{ fontWeight: 700, color: '#111827' }}>Guruhlar</Typography>
-        <Button
-          variant="contained" startIcon={<AddIcon />}
-          onClick={openCreateDrawer}
-          sx={{ backgroundColor: '#7b61ff', textTransform: 'none', borderRadius: '10px', px: 2.5, fontWeight: 700, '&:hover': { backgroundColor: '#6a50e8' } }}
-        >
-          Guruh qo'shish
-        </Button>
+        {userRole !== 'TEACHER' && (
+          <Button
+            variant="contained" startIcon={<AddIcon />}
+            onClick={openCreateDrawer}
+            sx={{ backgroundColor: '#7b61ff', textTransform: 'none', borderRadius: '10px', px: 2.5, fontWeight: 700, '&:hover': { backgroundColor: '#6a50e8' } }}
+          >
+            Guruh qo'shish
+          </Button>
+        )}
       </Box>
 
       {/* Tabs */}
@@ -371,7 +411,7 @@ export default function Groups() {
           <Table>
             <TableHead sx={{ backgroundColor: '#f9fafb' }}>
               <TableRow>
-                {['Status', 'Guruh', 'Kurs', 'Davomiyligi', 'Dars vaqti', 'Xona', "O'qituvchi", 'Talabalar', 'Amallar'].map(col => (
+                {['Status', 'Guruh', 'Kurs', 'Davomiyligi', 'Dars vaqti', 'Xona', "O'qituvchi", 'Talabalar', ...(userRole !== 'TEACHER' ? ['Amallar'] : [])].map(col => (
                   <TableCell key={col} sx={{ fontWeight: 600, color: '#6b7280', fontSize: '0.75rem', textTransform: 'uppercase', whiteSpace: 'nowrap' }}>
                     {col}
                   </TableCell>
@@ -381,7 +421,7 @@ export default function Groups() {
             <TableBody>
               {displayedGroups.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={9} align="center" sx={{ py: 6, color: '#9ca3af' }}>Ma'lumot topilmadi</TableCell>
+                  <TableCell colSpan={userRole === 'TEACHER' ? 8 : 9} align="center" sx={{ py: 6, color: '#9ca3af' }}>Ma'lumot topilmadi</TableCell>
                 </TableRow>
               ) : displayedGroups.map((group) => {
                 const teachers = group.teachers || [];
@@ -479,24 +519,26 @@ export default function Groups() {
                     </TableCell>
 
                     {/* Actions */}
-                    <TableCell>
-                      <Box sx={{ display: 'flex', gap: 0.5 }}>
-                        {activeTab === 'archive' ? (
-                          <IconButton size="small" onClick={() => restoreGroup(group.id)} sx={{ color: '#10b981', '&:hover': { color: '#059669' } }}>
-                            <RefreshIcon sx={{ fontSize: 16 }} />
-                          </IconButton>
-                        ) : (
-                          <>
-                            <IconButton size="small" onClick={() => triggerDelete(group.id)} sx={{ color: '#9ca3af', '&:hover': { color: '#ef4444' } }}>
-                              <DeleteIcon sx={{ fontSize: 16 }} />
+                    {userRole !== 'TEACHER' && (
+                      <TableCell>
+                        <Box sx={{ display: 'flex', gap: 0.5 }}>
+                          {activeTab === 'archive' ? (
+                            <IconButton size="small" onClick={() => restoreGroup(group.id)} sx={{ color: '#10b981', '&:hover': { color: '#059669' } }}>
+                              <RefreshIcon sx={{ fontSize: 16 }} />
                             </IconButton>
-                            <IconButton size="small" onClick={() => openEditDrawer(group)} sx={{ color: '#9ca3af', '&:hover': { color: '#10b981' } }}>
-                              <EditIcon sx={{ fontSize: 18 }} />
-                            </IconButton>
-                          </>
-                        )}
-                      </Box>
-                    </TableCell>
+                          ) : (
+                            <>
+                              <IconButton size="small" onClick={() => triggerDelete(group.id)} sx={{ color: '#9ca3af', '&:hover': { color: '#ef4444' } }}>
+                                <DeleteIcon sx={{ fontSize: 16 }} />
+                              </IconButton>
+                              <IconButton size="small" onClick={() => openEditDrawer(group)} sx={{ color: '#9ca3af', '&:hover': { color: '#10b981' } }}>
+                                <EditIcon sx={{ fontSize: 18 }} />
+                              </IconButton>
+                            </>
+                          )}
+                        </Box>
+                      </TableCell>
+                    )}
                   </TableRow>
                 );
               })}

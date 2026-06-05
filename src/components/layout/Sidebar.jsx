@@ -16,6 +16,7 @@ import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import BoltIcon from '@mui/icons-material/Bolt';
 import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
 import LogoutIcon from '@mui/icons-material/Logout';
+import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import { useNavigate } from 'react-router-dom';
 
 const menuItems = [
@@ -33,8 +34,27 @@ export default function Sidebar({ openSettings, setOpenSettings, isSidebarCollap
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const collapsed = isMobile ? false : isSidebarCollapsed;
 
+  const tokenVal = localStorage.getItem('token');
+  let role = '';
+  if (tokenVal) {
+    try {
+      const payload = JSON.parse(atob(tokenVal.split('.')[1]));
+      role = payload.role;
+    } catch (e) {
+      console.error(e);
+    }
+  }
+
+  const itemsToRender = role === 'TEACHER'
+    ? [
+        { text: 'Guruhlar', icon: <GroupsIcon />, path: '/groups' },
+        { text: 'Profil', icon: <AccountCircleIcon />, path: '/profile' }
+      ]
+    : menuItems;
+
   const handleLogout = () => {
     localStorage.removeItem('token');
+    localStorage.removeItem('user');
     navigate('/login');
   };
 
@@ -106,7 +126,7 @@ export default function Sidebar({ openSettings, setOpenSettings, isSidebarCollap
 
           {/* Main Menu */}
           <List sx={{ px: collapsed ? 1 : 2, flex: 1, overflowY: 'auto' }}>
-            {menuItems.map((item) => {
+            {itemsToRender.map((item) => {
               const isActive = location.pathname === item.path || (item.path === '/management' && location.pathname.startsWith('/management'));
               
               const handleClick = (e) => {
@@ -147,7 +167,7 @@ export default function Sidebar({ openSettings, setOpenSettings, isSidebarCollap
           </List>
 
           {/* Subscription Box */}
-          {!collapsed && (
+          {!collapsed && role !== 'TEACHER' && (
             <Box sx={{ p: 2, mb: 2, mx: 1.5, backgroundColor: '#f9fafb', borderRadius: '16px', border: '1px solid #f3f4f6' }}>
               <Box sx={{ display: 'flex', gap: 1.5, mb: 1.5 }}>
                 <Box sx={{ width: 36, height: 36, backgroundColor: '#fff', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 2px 5px rgba(0,0,0,0.05)' }}>

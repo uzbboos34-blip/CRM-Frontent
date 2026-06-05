@@ -83,7 +83,7 @@ export default function Login() {
     setSuccess(false);
 
     try {
-      const response = await fetch("https://crm-backend-l7jq.onrender.com/api/v1/auth/user/login", {
+      let response = await fetch("https://crm-backend-l7jq.onrender.com/api/v1/auth/user/login", {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -94,25 +94,58 @@ export default function Login() {
         }),
       });
 
-      const data = await response.json();
+      let data = await response.json();
 
       if (!response.ok) {
-        // Translate common errors
-        let msg = data.message || 'Login xatosi yuz berdi';
-        if (msg.includes('Unauthorized') || msg.includes('Incorrect') || msg.toLowerCase().includes('invalid')) {
-          msg = 'Login yoki parol xato kiritildi';
-        } else if (msg.includes('User not found')) {
-          msg = 'Bunday foydalanuvchi mavjud emas';
+        // If user login fails, try teacher login
+        const teacherResponse = await fetch("https://crm-backend-l7jq.onrender.com/api/v1/auth/teacher/login", {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            phone: login,
+            password: password,
+          }),
+        });
+
+        const teacherData = await teacherResponse.json();
+
+        if (!teacherResponse.ok) {
+          let msg = teacherData.message || 'Login xatosi yuz berdi';
+          if (msg.includes('Unauthorized') || msg.includes('Incorrect') || msg.toLowerCase().includes('invalid')) {
+            msg = 'Login yoki parol xato kiritildi';
+          } else if (msg.includes('Teacher not found') || msg.includes('not found') || msg.includes('User not found')) {
+            msg = 'Bunday foydalanuvchi yoki o\'qituvchi mavjud emas';
+          }
+          throw new Error(msg);
         }
-        throw new Error(msg);
+
+        response = teacherResponse;
+        data = teacherData;
       }
 
       setSuccess(true);
       
-      // Optionally save token and redirect here
+      // Save token and redirect
       localStorage.setItem('token', data.token);
+
+      // Fetch user role info by decoding JWT token
+      let role = null;
+      try {
+        const payload = JSON.parse(atob(data.token.split('.')[1]));
+        role = payload.role;
+        localStorage.setItem('user', JSON.stringify(payload));
+      } catch (e) {
+        console.error('JWT decode error:', e);
+      }
+
       setTimeout(() => {
-        navigate('/dashboard');
+        if (role === 'TEACHER') {
+          navigate('/groups');
+        } else {
+          navigate('/dashboard');
+        }
       }, 800);
 
     } catch (err) {

@@ -392,7 +392,7 @@ export default function Attendance() {
         <Typography sx={{ fontWeight: 800, fontSize: '1.05rem', color: '#111827', mb: 2 }}>
           Yo'qlama va mavzu kiritish
         </Typography>
-        <FormControl component="fieldset" sx={{ mb: 2.5 }}>
+        <FormControl component="fieldset" sx={{ mb: 2.5 }} disabled={alreadyTaken && userRole === 'TEACHER'}>
           <RadioGroup row value={lessonType} onChange={e => setLessonType(e.target.value)}>
             <FormControlLabel value="plan"
               control={<Radio size="small" sx={{ color: '#d1d5db', '&.Mui-checked': { color: '#10b981' } }} />}
@@ -410,6 +410,7 @@ export default function Attendance() {
           </Typography>
           <TextField fullWidth placeholder="Dars mavzusini kiriting..."
             value={lessonTopic} onChange={e => setLessonTopic(e.target.value)}
+            disabled={alreadyTaken && userRole === 'TEACHER'}
             size="small"
             sx={{
               '& .MuiOutlinedInput-root': {

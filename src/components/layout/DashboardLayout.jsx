@@ -63,7 +63,7 @@ export default function DashboardLayout() {
     if (userRole === 'TEACHER') {
       const allowedPatterns = [
         /^\/groups$/,
-        /^\/group\/[^/]+/,
+        /^\/group(\/|$)/,
         /^\/profile$/
       ];
       const isAllowed = allowedPatterns.some(pattern => pattern.test(location.pathname));

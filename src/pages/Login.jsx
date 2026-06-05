@@ -62,8 +62,8 @@ const shake = keyframes`
 
 export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
-  const [login, setLogin] = useState('+998907012161');
-  const [password, setPassword] = useState('Rahmonbergan04@');
+  const [login, setLogin] = useState('');
+  const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(false);

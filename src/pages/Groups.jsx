@@ -107,18 +107,29 @@ export default function Groups() {
       if (role === 'TEACHER') {
         const res = await api.get('/api/v1/teachers/group/students');
         const teacherGroups = Array.isArray(res.data) ? res.data : (res.data?.data || []);
+        let currentUser = null;
+        try {
+          const userStr = localStorage.getItem('user');
+          if (userStr) {
+            currentUser = JSON.parse(userStr);
+          } else if (tokenVal) {
+            currentUser = JSON.parse(atob(tokenVal.split('.')[1]));
+          }
+        } catch (e) {
+          console.error(e);
+        }
         const normalized = teacherGroups.map(tg => ({
           id: tg.id,
           name: tg.name,
-          status: 'active',
-          course: '—',
-          course_duration: 2,
+          status: tg.status || 'active',
+          course: tg.course || '—',
+          course_duration: tg.course_duration || 0,
           start_date: tg.start_date,
-          end_date: null,
+          end_date: tg.end_date || null,
           start_time: tg.start_time,
           week_day: tg.week_day,
-          rooms: '—',
-          teachers: [],
+          rooms: tg.rooms || '—',
+          teachers: currentUser ? [{ id: currentUser.id, full_name: currentUser.full_name }] : [],
           students: tg.studentCount || (tg.students ? tg.students.length : 0),
         }));
         setGroups(normalized);
@@ -387,10 +398,18 @@ export default function Groups() {
       </Box>
 
       {/* Stat cards */}
-      <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(3, 1fr)' }, gap: 2.5, mb: 3 }}>
+      <Box sx={{
+        display: 'grid',
+        gridTemplateColumns: {
+          xs: '1fr',
+          sm: userRole === 'TEACHER' ? 'repeat(2, 1fr)' : 'repeat(3, 1fr)'
+        },
+        gap: 2.5,
+        mb: 3
+      }}>
         {[
           { label: 'Jami guruhlar', value: groups.length, icon: <PeopleAltIcon sx={{ fontSize: 28, color: '#7b61ff' }} />, bg: '#f0eeff' },
-          { label: "O'qituvchilar", value: uniqueTeachers, icon: <SchoolIcon sx={{ fontSize: 28, color: '#10b981' }} />, bg: '#ecfdf5' },
+          ...(userRole !== 'TEACHER' ? [{ label: "O'qituvchilar", value: uniqueTeachers, icon: <SchoolIcon sx={{ fontSize: 28, color: '#10b981' }} />, bg: '#ecfdf5' }] : []),
           { label: "O'quvchilar", value: totalStudents, icon: <SchoolIcon sx={{ fontSize: 28, color: '#f59e0b' }} />, bg: '#fffbeb' },
         ].map((card, i) => (
           <Paper key={i} elevation={0} sx={{ p: 3, border: '1px solid #e5e7eb', borderRadius: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>

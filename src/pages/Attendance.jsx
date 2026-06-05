@@ -141,6 +141,10 @@ export default function Attendance() {
   }, [monthGroups]);
 
   async function handleSave() {
+    if (userRole === 'TEACHER' && alreadyTaken) {
+      setSnackbar({ open: true, message: "Davomat allaqachon olingan, uni o'zgartirish taqiqlanadi!", severity: 'error' });
+      return;
+    }
     if (!lessonTopic.trim()) {
       setSnackbar({ open: true, message: 'Mavzu kiriting!', severity: 'warning' });
       return;
@@ -385,6 +389,11 @@ export default function Attendance() {
       {/* ══════════════════════════════════
           5. YO'QLAMA MAVZU KIRITISH
       ══════════════════════════════════ */}
+      {alreadyTaken && userRole === 'TEACHER' && (
+        <Alert severity="warning" variant="filled" sx={{ mb: 3, borderRadius: '12px', fontWeight: 700 }}>
+          Ushbu dars uchun davomat allaqachon olingan. O'zgartirish kiritish taqiqlanadi!
+        </Alert>
+      )}
       <Paper elevation={0} sx={{
         p: 3, borderRadius: '20px', mb: 4,
         backgroundColor: '#f8fafc', border: '1px solid #e5e7eb'
@@ -460,6 +469,7 @@ export default function Attendance() {
               <Box sx={{ width: 72, textAlign: 'right' }}>
                 <Switch size="small"
                   checked={attendance[sg.students.id] !== false}
+                  disabled={alreadyTaken && userRole === 'TEACHER'}
                   onChange={e => setAttendance(prev => ({ ...prev, [sg.students.id]: e.target.checked }))}
                   sx={{
                     '& .MuiSwitch-switchBase.Mui-checked': { color: '#10b981' },

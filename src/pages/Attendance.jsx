@@ -65,7 +65,9 @@ export default function Attendance() {
     setLoading(true);
     try {
       // 1. Foydalanuvchi rolini olish
-      setUserRole(userRes.data?.data?.role || userRes.data?.role);
+      const userRes = await api.get('/api/v1/auth/me');
+      const role = userRes.data?.data?.role || userRes.data?.role;
+      setUserRole(role);
 
       // 2. Guruh ma'lumotlarini olish
       const groupRes = await api.get(`/api/v1/groups/${id}`);
@@ -77,7 +79,7 @@ export default function Attendance() {
       const attData = attRes.data;
 
       const studentList = groupData?.studentGroups || [];
-      
+
       if (attData?.lesson) {
         setExistingLesson(attData.lesson);
         setAlreadyTaken(true);
@@ -100,7 +102,7 @@ export default function Attendance() {
         setExistingLesson(null);
         setLessonTopic('');
         setLessonType('plan');
-        
+
         const init = {};
         studentList.forEach(sg => { init[sg.students.id] = true; });
         setAttendance(init);
@@ -108,7 +110,14 @@ export default function Attendance() {
 
       fetchSchedule();
     } catch (e) {
-      if (e.response?.status === 401) { localStorage.removeItem('token'); navigate('/login'); }
+      console.error('loadData error:', e);
+      const msg = e.response?.data?.message || e.message || 'Xatolik yuz berdi';
+      if (e.response?.status === 401) {
+        localStorage.removeItem('token');
+        navigate('/login');
+      } else {
+        setSnackbar({ open: true, message: msg, severity: 'error' });
+      }
     } finally {
       setLoading(false);
     }
@@ -240,7 +249,7 @@ export default function Attendance() {
                 const isSelected = d.toISOString().slice(0, 10) === date;
                 const isPast = d < today && !isToday;
                 const isFuture = new Date(d.getFullYear(), d.getMonth(), d.getDate()) > new Date(today.getFullYear(), today.getMonth(), today.getDate());
-                
+
                 return (
                   <Box key={i}
                     onClick={() => handleDateClick(d)}
@@ -252,7 +261,7 @@ export default function Attendance() {
                         ? '2px solid #10b981'
                         : isToday
                           ? '2px solid #7b61ff'
-                          : isPast 
+                          : isPast
                             ? '1.5px solid #10b981'
                             : '1.5px solid #e5e7eb',
                       backgroundColor: isSelected
@@ -264,10 +273,10 @@ export default function Attendance() {
                       gap: 0.2,
                       transition: 'all 0.15s',
                       opacity: 1,
-                      '&:hover': isFuture 
-                        ? { borderColor: '#f97316' } 
-                        : isToday 
-                          ? { borderColor: '#7b61ff', backgroundColor: '#f0eeff' } 
+                      '&:hover': isFuture
+                        ? { borderColor: '#f97316' }
+                        : isToday
+                          ? { borderColor: '#7b61ff', backgroundColor: '#f0eeff' }
                           : { borderColor: '#059669', backgroundColor: '#dcfce7' }
                     }}>
                     <Typography sx={{

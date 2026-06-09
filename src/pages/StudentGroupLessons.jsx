@@ -7,6 +7,18 @@ import {
 } from '@mui/material';
 import api from '../api/axios';
 
+// Sana formatlash: "2025-yil 10-noyabr"
+function formatLessonDate(dateStr) {
+  if (!dateStr) return '—';
+  const d = new Date(dateStr);
+  if (isNaN(d.getTime())) return dateStr;
+  const months = [
+    'yanvar', 'fevral', 'mart', 'aprel', 'may', 'iyun',
+    'iyul', 'avgust', 'sentabr', 'oktabr', 'noyabr', 'dekabr'
+  ];
+  return `${d.getFullYear()}-yil ${d.getDate()}-${months[d.getMonth()]}`;
+}
+
 // Uy vazifasi holati config
 const HW_STATUS = {
   ACCEPTED: { label: 'Qabul qilingan', bg: '#4caf50', color: '#fff' },
@@ -229,7 +241,7 @@ export default function StudentGroupLessons() {
 
                     {/* Date */}
                     <TableCell sx={{ py: 2, px: 3, fontSize: '0.83rem', color: '#4a5568', fontWeight: 600, fontFamily: "'Inter', 'Outfit', sans-serif", whiteSpace: 'nowrap' }}>
-                      {lesson.date || '—'}
+                      {formatLessonDate(lesson.date)}
                     </TableCell>
                   </TableRow>
                 );

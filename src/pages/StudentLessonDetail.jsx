@@ -483,6 +483,9 @@ export default function StudentLessonDetail() {
   const hasSubmittedHomework = Boolean(answer);
   const score = answer?.homeWorkResults?.[0]?.grade || 0;
   const teacherComment = answer?.homeWorkResults?.[0];
+  const isLate = homework?.deadline && answer?.created_at
+    ? new Date(answer.created_at) > new Date(homework.deadline)
+    : false;
 
   return (
     <Box sx={{
@@ -948,7 +951,7 @@ export default function StudentLessonDetail() {
                     </Typography>
                   </Box>
 
-                  {teacherComment.title && (
+                  {isLate && (
                     <Box sx={{
                       display: 'inline-flex',
                       alignItems: 'center',
@@ -962,9 +965,15 @@ export default function StudentLessonDetail() {
                     }}>
                       <WarningIcon sx={{ fontSize: 16, color: '#ff9800', flexShrink: 0 }} />
                       <Typography sx={{ fontSize: { xs: '0.68rem', sm: '0.74rem' }, fontWeight: 600, whiteSpace: 'nowrap', fontFamily: "'Inter', 'Outfit', sans-serif" }}>
-                        {teacherComment.title}
+                        Vazifa kechikib topshirilgan
                       </Typography>
                     </Box>
+                  )}
+
+                  {teacherComment.title && (
+                    <Typography sx={{ fontSize: { xs: '0.9rem', sm: '0.95rem' }, color: '#333', fontWeight: 500, lineHeight: 1.5, fontFamily: "'Inter', 'Outfit', sans-serif" }}>
+                      {teacherComment.title}
+                    </Typography>
                   )}
 
                   <Typography sx={{ fontSize: { xs: '0.9rem', sm: '0.95rem' }, color: '#333', fontWeight: 500, fontFamily: "'Inter', 'Outfit', sans-serif" }}>

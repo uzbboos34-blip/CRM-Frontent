@@ -380,9 +380,8 @@ export default function StudentLessonDetail() {
                   gap: { xs: 2, md: 2.5 },
                 }}>
                   <Typography sx={{
-                    width: { xs: '100%', md: 190 },
                     flexShrink: 0,
-                    fontSize: { xs: '1.3rem', sm: '1.5rem' },
+                    fontSize: { xs: '0.95rem', sm: '1rem' },
                     fontWeight: 500,
                     color: '#333',
                     whiteSpace: 'nowrap',
@@ -392,45 +391,33 @@ export default function StudentLessonDetail() {
                   </Typography>
 
                   <Box sx={{
-                    flex: { xs: 'none', md: '1 1 460px' },
-                    width: { xs: '100%', md: 'auto' },
-                    display: 'flex',
+                    flexShrink: 0,
+                    display: 'inline-flex',
                     alignItems: 'center',
                     justifyContent: 'center',
                     flexWrap: 'nowrap',
-                    gap: { xs: 0.6, sm: 0.75 },
+                    gap: { xs: 0.5, sm: 0.65 },
                     backgroundColor: hasSubmittedHomework ? '#ff2d12' : '#fffaf0',
                     color: hasSubmittedHomework ? '#fff' : '#4f3b10',
-                    px: { xs: 1.25, sm: 1.5 },
-                    py: { xs: 0.75, sm: 0.85 },
+                    px: { xs: 1, sm: 1.25 },
+                    py: { xs: 0.65, sm: 0.75 },
                     borderRadius: '6px',
-                    minHeight: 40,
-                    minWidth: 0,
-                    overflow: 'hidden',
+                    maxWidth: { xs: '100%', md: 'none' },
                   }}>
                     {hasSubmittedHomework ? (
-                      <ErrorOutlineIcon sx={{ fontSize: 18, color: '#fff', flexShrink: 0 }} />
+                      <ErrorOutlineIcon sx={{ fontSize: 16, color: '#fff', flexShrink: 0 }} />
                     ) : (
-                      <WarningIcon sx={{ fontSize: 18, color: '#e6a72d', flexShrink: 0 }} />
+                      <WarningIcon sx={{ fontSize: 16, color: '#e6a72d', flexShrink: 0 }} />
                     )}
-                    <Typography sx={{
-                      fontSize: { xs: '0.72rem', sm: '0.78rem' },
-                      lineHeight: 1.2,
-                      fontWeight: 700,
-                      whiteSpace: 'nowrap',
-                      flexShrink: 0,
-                      fontFamily: "'Inter', 'Outfit', sans-serif"
-                    }}>
-                      Uyga vazifa muddati:
-                    </Typography>
-                    <Typography sx={{
-                      fontSize: { xs: '0.72rem', sm: '0.78rem' },
+                    <Typography component="span" sx={{
+                      fontSize: { xs: '0.68rem', sm: '0.74rem' },
                       lineHeight: 1.2,
                       fontWeight: 600,
                       whiteSpace: 'nowrap',
-                      flexShrink: 0,
                       fontFamily: "'Inter', 'Outfit', sans-serif"
                     }}>
+                      <Box component="span" sx={{ fontWeight: 700 }}>Uyga vazifa muddati:</Box>
+                      {' '}
                       {hasSubmittedHomework
                         ? (homework.deadline ? formatDeadlineShort(homework.deadline) : formatDeadlineShort(homework.created_at))
                         : (homework.deadline ? formatDateTime(homework.deadline) : formatDateTime(homework.created_at))}
@@ -438,10 +425,9 @@ export default function StudentLessonDetail() {
                   </Box>
 
                   <Typography sx={{
-                    width: { xs: '100%', md: 155 },
                     flexShrink: 0,
                     textAlign: { xs: 'left', md: 'right' },
-                    fontSize: { xs: '1rem', sm: '1.1rem' },
+                    fontSize: { xs: '0.9rem', sm: '0.95rem' },
                     color: '#333',
                     fontWeight: 500,
                     whiteSpace: 'nowrap',

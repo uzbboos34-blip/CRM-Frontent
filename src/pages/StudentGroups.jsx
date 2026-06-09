@@ -4,6 +4,7 @@ import {
   Box, Typography, Paper, Tab, Tabs, Table, TableBody,
   TableCell, TableContainer, TableHead, TableRow, CircularProgress
 } from '@mui/material';
+import CloseIcon from '@mui/icons-material/Close';
 import api from '../api/axios';
 
 // Kun qisqartmalari mapping
@@ -171,6 +172,7 @@ export default function StudentGroups() {
   const [activeTab, setActiveTab] = useState(0);
   const [groups, setGroups] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [selectedItem, setSelectedItem] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -250,15 +252,32 @@ export default function StudentGroups() {
                     <TableCell sx={{ py: 1.2, px: 2, fontSize: '0.88rem', fontWeight: 600, color: '#111827' }}>{idx + 1}</TableCell>
                     <TableCell sx={{ py: 1.2, px: 2, fontSize: '0.88rem', fontWeight: 600, color: '#111827' }}>{group.name}</TableCell>
                     <TableCell sx={{ py: 1.2, px: 2, fontSize: '0.88rem', color: '#4b5563', fontWeight: 500 }}>{courseName}</TableCell>
-                    <TableCell sx={{ py: 1.2, px: 2 }}>
+                    <TableCell
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSelectedItem(item);
+                      }}
+                      sx={{ py: 1.2, px: 2 }}
+                    >
                       {/* O'qituvchilar soni — doira badge */}
                       <Box
                         sx={{
-                          width: 28, height: 28, borderRadius: '50%',
+                          width: 28,
+                          height: 28,
+                          borderRadius: '50%',
                           backgroundColor: 'rgba(197,160,89,0.18)',
                           color: '#c5a059',
-                          fontWeight: 700, fontSize: '0.78rem',
-                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          fontWeight: 700,
+                          fontSize: '0.78rem',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          cursor: 'pointer',
+                          transition: 'all 0.2s',
+                          '&:hover': {
+                            backgroundColor: 'rgba(197,160,89,0.3)',
+                            transform: 'scale(1.05)',
+                          },
                         }}
                       >
                         {teachers.length || '—'}
@@ -273,6 +292,13 @@ export default function StudentGroups() {
             </TableBody>
           </Table>
         </TableContainer>
+      )}
+
+      {selectedItem && (
+        <GroupDetailModal
+          item={selectedItem}
+          onClose={() => setSelectedItem(null)}
+        />
       )}
     </Box>
   );

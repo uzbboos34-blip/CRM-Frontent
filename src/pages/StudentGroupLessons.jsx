@@ -25,7 +25,7 @@ const STATUS_OPTIONS = [
 ];
 
 const DROPDOWN_COLORS = {
-  ALL: { bg: '#ffffff', color: '#1f2937', hoverBg: '#f3f4f6' },
+  ALL: { bg: '#ffffff', color: '#1a202c', hoverBg: '#f7fafc' },
   qabul_qilingan: { bg: '#4caf50', color: '#ffffff', hoverBg: '#45a049' },
   NONE: { bg: '#78909c', color: '#ffffff', hoverBg: '#6b7280' },
   qaytarilgan: { bg: '#ffa000', color: '#ffffff', hoverBg: '#ff8f00' },
@@ -147,14 +147,14 @@ export default function StudentGroupLessons() {
   });
 
   return (
-    <Box sx={{ animation: 'fadeIn 0.3s ease-out', pt: 1.5, px: 1 }}>
-      {/* Title "Uy vazifasi statusi" */}
-      <Typography sx={{ fontSize: '0.85rem', fontWeight: 600, color: '#6b7280', mb: 0.8 }}>
+    <Box sx={{ animation: 'fadeIn 0.3s ease-out', pt: 0.5, px: 1 }}>
+      {/* Title "Uy vazifasi statusi" - moved up by setting small margins */}
+      <Typography sx={{ fontSize: '0.85rem', fontWeight: 700, color: '#4a5568', mb: 0.4 }}>
         Uy vazifasi statusi
       </Typography>
 
-      {/* Filter bar */}
-      <Box sx={{ mb: 3.5 }}>
+      {/* Filter bar - tighter spacing */}
+      <Box sx={{ mb: 2.2 }}>
         <FormControl size="small">
           <Select
             value={filter}
@@ -173,9 +173,9 @@ export default function StudentGroupLessons() {
               backgroundColor: '#fff',
               borderRadius: '8px',
               fontSize: '0.85rem',
-              fontWeight: 600,
-              color: '#4b5563', // Soft grey selected value matching Screenshot 3
-              '& .MuiOutlinedInput-notchedOutline': { borderColor: '#e5e7eb' },
+              fontWeight: 700,
+              color: '#2d3748', // Darker, crisp text for selected value
+              '& .MuiOutlinedInput-notchedOutline': { borderColor: '#e2e8f0' },
               '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: '#c5a059' },
               '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: '#c5a059' },
             }}
@@ -228,23 +228,23 @@ export default function StudentGroupLessons() {
           <Typography sx={{ color: '#9ca3af', fontWeight: 600 }}>Darslar mavjud emas</Typography>
         </Box>
       ) : (
-        <TableContainer component={Paper} elevation={0} sx={{ border: '1px solid #e5e7eb', borderRadius: '12px', overflow: 'hidden', backgroundColor: '#fff' }}>
+        <TableContainer component={Paper} elevation={0} sx={{ border: '1px solid #e2e8f0', borderRadius: '12px', overflow: 'hidden', backgroundColor: '#fff' }}>
           <Table>
             <TableHead sx={{ backgroundColor: '#ffffff' }}>
-              <TableRow sx={{ '& th': { borderBottom: '1.5px solid #f3f4f6' } }}>
-                <TableCell sx={{ fontWeight: 600, color: '#4b5563', fontSize: '0.83rem', py: 2.2, px: 3 }}>Mavzular</TableCell>
-                <TableCell sx={{ fontWeight: 600, color: '#4b5563', fontSize: '0.83rem', py: 2.2, px: 3 }}>Video</TableCell>
-                <TableCell sx={{ fontWeight: 600, color: '#4b5563', fontSize: '0.83rem', py: 2.2, px: 3 }}>Uyga vazifa Holati</TableCell>
-                <TableCell sx={{ fontWeight: 600, color: '#4b5563', fontSize: '0.83rem', py: 2.2, px: 3 }}>
+              <TableRow sx={{ '& th': { borderBottom: '1.5px solid #e2e8f0' } }}>
+                <TableCell sx={{ fontWeight: 700, color: '#2d3748', fontSize: '0.85rem', py: 2.2, px: 3 }}>Mavzular</TableCell>
+                <TableCell sx={{ fontWeight: 700, color: '#2d3748', fontSize: '0.85rem', py: 2.2, px: 3 }}>Video</TableCell>
+                <TableCell sx={{ fontWeight: 700, color: '#2d3748', fontSize: '0.85rem', py: 2.2, px: 3 }}>Uyga vazifa Holati</TableCell>
+                <TableCell sx={{ fontWeight: 700, color: '#2d3748', fontSize: '0.85rem', py: 2.2, px: 3 }}>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                     Uyga vazifa tugash vaqti
-                    <Box component="span" sx={{ fontWeight: 800, fontSize: '0.95rem', color: '#4b5563', ml: 0.5 }}>↓</Box>
+                    <Box component="span" sx={{ fontWeight: 800, fontSize: '0.95rem', color: '#1a202c', ml: 0.5 }}>↓</Box>
                   </Box>
                 </TableCell>
-                <TableCell sx={{ fontWeight: 600, color: '#4b5563', fontSize: '0.83rem', py: 2.2, px: 3 }}>
+                <TableCell sx={{ fontWeight: 700, color: '#2d3748', fontSize: '0.85rem', py: 2.2, px: 3 }}>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                     Dars sanasi
-                    <Box component="span" sx={{ fontWeight: 800, fontSize: '0.95rem', color: '#4caf50', ml: 0.5 }}>↑</Box>
+                    <Box component="span" sx={{ fontWeight: 800, fontSize: '0.95rem', color: '#38a169', ml: 0.5 }}>↑</Box>
                   </Box>
                 </TableCell>
               </TableRow>
@@ -260,13 +260,13 @@ export default function StudentGroupLessons() {
                     sx={{
                       cursor: 'pointer',
                       '&:hover': { backgroundColor: '#fdf8f0' },
-                      '& td': { borderBottom: idx === filtered.length - 1 ? 'none' : '1px solid #f3f4f6' },
+                      '& td': { borderBottom: idx === filtered.length - 1 ? 'none' : '1px solid #e2e8f0' },
                       transition: 'background 0.12s',
                     }}
                   >
-                    {/* Mavzu */}
+                    {/* Mavzu - Crisp dark slate text with 600 weight */}
                     <TableCell sx={{ py: 2, px: 3 }}>
-                      <Typography sx={{ fontSize: '0.88rem', fontWeight: 500, color: '#4b5563' }}>
+                      <Typography sx={{ fontSize: '0.88rem', fontWeight: 600, color: '#2d3748', fontFamily: "'Inter', 'Outfit', sans-serif" }}>
                         {lesson.topic || `Dars #${idx + 1}`}
                       </Typography>
                     </TableCell>
@@ -288,13 +288,13 @@ export default function StudentGroupLessons() {
                       <HwBadge statusKey={lesson.state} />
                     </TableCell>
 
-                    {/* Deadline */}
-                    <TableCell sx={{ py: 2, px: 3, fontSize: '0.83rem', color: '#4b5563', fontWeight: 500, whiteSpace: 'nowrap' }}>
+                    {/* Deadline - Crisp dark text with 600 weight */}
+                    <TableCell sx={{ py: 2, px: 3, fontSize: '0.83rem', color: '#4a5568', fontWeight: 600, fontFamily: "'Inter', 'Outfit', sans-serif", whiteSpace: 'nowrap' }}>
                       {lesson.deadline}
                     </TableCell>
 
-                    {/* Date */}
-                    <TableCell sx={{ py: 2, px: 3, fontSize: '0.83rem', color: '#4b5563', fontWeight: 500, whiteSpace: 'nowrap' }}>
+                    {/* Date - Crisp dark text with 600 weight */}
+                    <TableCell sx={{ py: 2, px: 3, fontSize: '0.83rem', color: '#4a5568', fontWeight: 600, fontFamily: "'Inter', 'Outfit', sans-serif", whiteSpace: 'nowrap' }}>
                       {lesson.date}
                     </TableCell>
                   </TableRow>

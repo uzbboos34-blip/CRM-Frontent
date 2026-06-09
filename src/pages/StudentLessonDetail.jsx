@@ -179,7 +179,6 @@ export default function StudentLessonDetail() {
   const [submitText, setSubmitText] = useState('');
   const [selectedFiles, setSelectedFiles] = useState([]);
   const [isEditing, setIsEditing] = useState(false);
-  const [homeworkFiles, setHomeworkFiles] = useState([]);
   // Fetch all lessons of group
   const fetchGroupLessons = () => {
     return api.get(`/api/v1/students/my/groups/${groupId}/lessons`)
@@ -210,34 +209,6 @@ export default function StudentLessonDetail() {
   }, [lessonId]);
 
   const activeLessonId = Number(lessonId);
-  const activeHomeworkId = lessons.find(l => l.id === activeLessonId)?.homeWorks?.[0]?.id;
-
-  useEffect(() => {
-    const hw = lessons.find(l => l.id === activeLessonId)?.homeWorks?.[0];
-    if (!hw) {
-      setHomeworkFiles([]);
-      return;
-    }
-
-    const filesFromLesson = parseHomeworkFiles(hw);
-    if (filesFromLesson.length > 0) {
-      setHomeworkFiles(filesFromLesson);
-      return;
-    }
-
-    if (!hw.id) {
-      setHomeworkFiles([]);
-      return;
-    }
-
-    api.get(`/api/v1/home-works/${hw.id}`)
-      .then(res => {
-        const detail = res.data?.data || res.data;
-        setHomeworkFiles(parseHomeworkFiles(detail));
-      })
-      .catch(() => setHomeworkFiles([]));
-  }, [activeLessonId, activeHomeworkId, lessons]);
-
   const activeLesson = lessons.find(l => l.id === activeLessonId);
   const activeVideoId = activeLesson
     ? (activeVideos[activeLesson.id] ?? activeLesson.videos?.[0]?.id)
@@ -323,6 +294,7 @@ export default function StudentLessonDetail() {
 
   // Extract homework details
   const homework = activeLesson.homeWorks?.[0];
+  const homeworkFiles = parseHomeworkFiles(homework);
   const answer = homework?.homeWorkAnswers?.[0];
   const statusKey = homework ? (answer ? answer.homeworkStatus : 'NOT_DONE') : 'NONE';
   const hasSubmittedHomework = Boolean(answer);

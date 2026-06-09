@@ -42,6 +42,19 @@ function formatDateTime(dateStr) {
   return `${d.getFullYear()}-yil ${d.getDate()}-${months[d.getMonth()]}, soat ${hh}:${mm}`;
 }
 
+function formatDeadlineDate(dateStr) {
+  if (!dateStr) return '—';
+  const d = new Date(dateStr);
+  if (isNaN(d.getTime())) return dateStr;
+  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  const day = d.getDate();
+  const month = months[d.getMonth()];
+  const year = d.getFullYear();
+  const hh = String(d.getHours()).padStart(2, '0');
+  const mm = String(d.getMinutes()).padStart(2, '0');
+  return `${day} ${month}, ${year} ${hh}:${mm}`;
+}
+
 function formatLessonDate(dateStr) {
   if (!dateStr) return '—';
   const parts = dateStr.split('-');
@@ -315,282 +328,345 @@ export default function StudentLessonDetail() {
             </Typography>
           </Paper>
 
-          {/* Vazifalar detail cards */}
-          <Paper elevation={0} sx={{
-            borderRadius: '16px',
-            border: '1px solid #e2e8f0',
-            backgroundColor: '#ffffff',
-            overflow: 'hidden'
+          {/* Tabs bar */}
+          <Box sx={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            borderBottom: '1.5px solid #e2e8f0',
+            pb: 1,
+            mb: 2.5
           }}>
-            {/* Tabs bar */}
-            <Box sx={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              borderBottom: '1px solid #f3f4f6',
-              px: 3,
-              py: 2
-            }}>
-              <Box sx={{ borderBottom: '2.5px solid #c5a059', pb: 1.5, mt: 1.5 }}>
-                <Typography sx={{ fontWeight: 700, color: '#c5a059', fontSize: '0.92rem' }}>
-                  Vazifalar
-                </Typography>
-              </Box>
-              <Typography sx={{ fontWeight: 700, color: '#2d3748', fontSize: '0.9rem' }}>
-                To'p: {score}
+            <Box sx={{ borderBottom: '2.5px solid #c5a059', pb: 1.2 }}>
+              <Typography sx={{ fontWeight: 800, color: '#c5a059', fontSize: '0.92rem' }}>
+                Vazifalar
               </Typography>
             </Box>
+            <Typography sx={{ fontWeight: 800, color: '#2d3748', fontSize: '0.9rem' }}>
+              To'p: {score}
+            </Typography>
+          </Box>
 
-            {/* Main content body */}
-            <Box sx={{ p: 3, display: 'flex', flexDirection: 'column', gap: 3.5 }}>
-              {homework ? (
-                <>
-                  {/* Uyga vazifa description */}
+          {homework ? (
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
+              {/* Card 1: Uyga vazifa description */}
+              <Paper
+                elevation={0}
+                sx={{
+                  p: 3,
+                  borderRadius: '12px',
+                  border: '1px solid #e2e8f0',
+                  backgroundColor: '#ffffff',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: 2
+                }}
+              >
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                  <Typography sx={{ fontSize: '1.15rem', fontWeight: 800, color: '#2d3748', fontFamily: "'Inter', 'Outfit', sans-serif" }}>
+                    Uyga vazifa
+                  </Typography>
+                  <Typography sx={{ fontSize: '0.85rem', color: '#6b7280', fontWeight: 600, fontFamily: "'Inter', 'Outfit', sans-serif" }}>
+                    Fayllar soni: {homework.file ? 1 : 0}
+                  </Typography>
+                </Box>
+
+                {/* Deadline/creation status */}
+                <Box sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 1.5,
+                  backgroundColor: '#ff3b30', // Bright red background!
+                  color: '#ffffff', // White text!
+                  p: 2,
+                  borderRadius: '8px',
+                }}>
+                  <ErrorIcon sx={{ fontSize: 20, color: '#ffffff' }} />
+                  <Typography sx={{ fontSize: '0.88rem', fontWeight: 700, fontFamily: "'Inter', 'Outfit', sans-serif" }}>
+                    Uyga vazifa muddati: {homework.deadline ? formatDeadlineDate(homework.deadline) : formatDeadlineDate(homework.created_at)}
+                  </Typography>
+                </Box>
+
+                {/* HW details description */}
+                <Box>
+                  <Typography sx={{ fontSize: '0.92rem', color: '#4a5568', lineHeight: 1.6, fontWeight: 500, fontFamily: "'Inter', 'Outfit', sans-serif" }}>
+                    {homework.description || homework.title}
+                  </Typography>
+                </Box>
+
+                {homework.file && (
                   <Box>
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
-                      <Typography sx={{ fontSize: '1.15rem', fontWeight: 800, color: '#2d3748' }}>
-                        Uyga vazifa
+                    <Button 
+                      variant="outlined" 
+                      size="small" 
+                      onClick={() => window.open(homework.file.startsWith('http') ? homework.file : `https://supabase.co/storage/v1/object/public/NajotEdu/${homework.file}`, '_blank')}
+                      sx={{ textTransform: 'none', color: '#c5a059', borderColor: '#c5a059', '&:hover': { borderColor: '#e68a00', color: '#e68a00' } }}
+                    >
+                      Biriktirilgan fayl
+                    </Button>
+                  </Box>
+                )}
+
+                <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
+                  <Typography sx={{ fontSize: '0.78rem', color: '#9ca3af', fontWeight: 600, fontFamily: "'Inter', 'Outfit', sans-serif" }}>
+                    {homework.created_at ? formatDateTime(homework.created_at) : ''}
+                  </Typography>
+                </Box>
+              </Paper>
+
+              {/* Card 2: Submission input block / Edit block / submitted response card */}
+              {statusKey === 'NOT_DONE' && !isEditing ? (
+                <Paper
+                  elevation={0}
+                  sx={{
+                    p: 3,
+                    borderRadius: '12px',
+                    border: '1px solid #e2e8f0',
+                    backgroundColor: '#ffffff',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: 2
+                  }}
+                >
+                  <Typography sx={{ fontSize: '0.95rem', fontWeight: 700, color: '#2d3748', fontFamily: "'Inter', 'Outfit', sans-serif" }}>
+                    Vazifa yuklash
+                  </Typography>
+                  <Box sx={{
+                    position: 'relative',
+                    border: '1px solid #e2e8f0',
+                    borderRadius: '12px',
+                    backgroundColor: '#fafafa',
+                    p: 1.5,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: 1
+                  }}>
+                    <TextField
+                      multiline
+                      rows={3}
+                      fullWidth
+                      variant="standard"
+                      disabled={submitting}
+                      placeholder="Havola (link) yoki vazifa izohini qoldiring..."
+                      value={submitText}
+                      onChange={(e) => setSubmitText(e.target.value)}
+                      InputProps={{ disableUnderline: true }}
+                      sx={{ '& .MuiInputBase-input': { fontSize: '0.9rem', color: '#2d3748' } }}
+                    />
+                    <Box sx={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      mt: 1
+                    }}>
+                      <Tooltip title="Fayl yuklash">
+                        <IconButton size="small" sx={{ color: '#9ca3af', '&:hover': { color: '#4a5568' } }}>
+                          <AttachFileIcon sx={{ fontSize: 20 }} />
+                        </IconButton>
+                      </Tooltip>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                        <Typography sx={{ fontSize: '0.78rem', color: '#9ca3af', fontWeight: 600 }}>
+                          {submitText.length} / 1000
+                        </Typography>
+                        <IconButton 
+                          onClick={handleSendHomework}
+                          disabled={!submitText.trim() || submitting}
+                          sx={{
+                            backgroundColor: submitText.trim() ? '#ff9800' : 'rgba(0,0,0,0.04)',
+                            color: '#ffffff',
+                            '&:hover': { backgroundColor: '#e68a00' },
+                            '&.Mui-disabled': { color: '#9ca3af' },
+                            width: 34, height: 34,
+                          }}
+                        >
+                          {submitting ? <CircularProgress size={16} sx={{ color: '#fff' }} /> : <SendIcon sx={{ fontSize: 16 }} />}
+                        </IconButton>
+                      </Box>
+                    </Box>
+                  </Box>
+                </Paper>
+              ) : isEditing ? (
+                <Paper
+                  elevation={0}
+                  sx={{
+                    p: 3,
+                    borderRadius: '12px',
+                    border: '1px solid #e2e8f0',
+                    backgroundColor: '#ffffff',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: 2
+                  }}
+                >
+                  <Typography sx={{ fontSize: '0.95rem', fontWeight: 700, color: '#2d3748', fontFamily: "'Inter', 'Outfit', sans-serif" }}>
+                    Vazifani tahrirlash
+                  </Typography>
+                  <Box sx={{
+                    border: '1px solid #e2e8f0',
+                    borderRadius: '12px',
+                    backgroundColor: '#fafafa',
+                    p: 1.5,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: 1
+                  }}>
+                    <TextField
+                      multiline
+                      rows={3}
+                      fullWidth
+                      variant="standard"
+                      disabled={submitting}
+                      placeholder="Havola (link) yoki vazifa izohini qoldiring..."
+                      value={submitText}
+                      onChange={(e) => setSubmitText(e.target.value)}
+                      InputProps={{ disableUnderline: true }}
+                      sx={{ '& .MuiInputBase-input': { fontSize: '0.9rem', color: '#2d3748' } }}
+                    />
+                    <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1.5, mt: 1 }}>
+                      <Button size="small" variant="text" disabled={submitting} onClick={() => setIsEditing(false)} sx={{ color: '#6b7280', textTransform: 'none', fontWeight: 600 }}>
+                        Bekor qilish
+                      </Button>
+                      <Button 
+                        size="small" 
+                        variant="contained" 
+                        onClick={handleSaveEdit}
+                        disabled={!submitText.trim() || submitting}
+                        sx={{
+                          backgroundColor: '#ff9800',
+                          color: '#fff',
+                          textTransform: 'none',
+                          fontWeight: 700,
+                          boxShadow: 'none',
+                          '&:hover': { backgroundColor: '#e68a00', boxShadow: 'none' }
+                        }}
+                      >
+                        {submitting ? <CircularProgress size={16} sx={{ color: '#fff' }} /> : 'Saqlash'}
+                      </Button>
+                    </Box>
+                  </Box>
+                </Paper>
+              ) : (
+                <Paper
+                  elevation={0}
+                  sx={{
+                    p: 3,
+                    borderRadius: '12px',
+                    border: '1px solid #e2e8f0',
+                    backgroundColor: '#ffffff',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: 2
+                  }}
+                >
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <Box sx={{ display: 'flex', gap: 1.5, alignItems: 'center' }}>
+                      <Typography sx={{ fontSize: '1.05rem', fontWeight: 800, color: '#2d3748', fontFamily: "'Inter', 'Outfit', sans-serif" }}>
+                        Mening jo'natmalarim
                       </Typography>
-                      <Typography sx={{ fontSize: '0.85rem', color: '#6b7280', fontWeight: 600 }}>
-                        Fayllar soni: {homework.file ? 1 : 0}
+                      <Typography sx={{ fontSize: '0.8rem', color: '#6b7280', fontWeight: 600, fontFamily: "'Inter', 'Outfit', sans-serif" }}>
+                        Fayllar soni: {answer.file ? JSON.parse(answer.file || '[]').length : 0}
                       </Typography>
                     </Box>
+                    {statusKey === 'PENDING' && (
+                      <IconButton size="small" onClick={handleStartEdit} sx={{ border: '1px solid #e2e8f0', borderRadius: '8px' }}>
+                        <EditIcon sx={{ fontSize: 16, color: '#6b7280' }} />
+                      </IconButton>
+                    )}
+                  </Box>
 
-                    {/* Deadline/creation status */}
+                  {/* Submitted response text */}
+                  <Box sx={{
+                    p: 2,
+                    borderRadius: '10px',
+                    backgroundColor: '#f9fafb',
+                    border: '1px solid #f3f4f6',
+                  }}>
+                    <Typography sx={{ fontSize: '0.9rem', color: '#2563eb', fontWeight: 600, wordBreak: 'break-all', fontFamily: "'Inter', 'Outfit', sans-serif" }}>
+                      {answer.title}
+                    </Typography>
+                  </Box>
+
+                  <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
+                    <Typography sx={{ fontSize: '0.78rem', color: '#9ca3af', fontWeight: 600, fontFamily: "'Inter', 'Outfit', sans-serif" }}>
+                      {formatDateTime(answer.updated_at || answer.created_at)}
+                    </Typography>
+                  </Box>
+                </Paper>
+              )}
+
+              {/* Card 3: O'qituvchi izohi response */}
+              {teacherComment && (
+                <Paper
+                  elevation={0}
+                  sx={{
+                    p: 3,
+                    borderRadius: '12px',
+                    border: '1px solid #e2e8f0',
+                    backgroundColor: '#ffffff',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: 2
+                  }}
+                >
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <Typography sx={{ fontSize: '1.05rem', fontWeight: 800, color: '#2d3748', fontFamily: "'Inter', 'Outfit', sans-serif" }}>
+                      O'qituvchi izohi
+                    </Typography>
+                    <Typography sx={{ fontSize: '0.85rem', color: statusKey === 'ACCEPTED' ? '#16a34a' : '#ef4444', fontWeight: 800, fontFamily: "'Inter', 'Outfit', sans-serif" }}>
+                      {statusKey === 'ACCEPTED' ? 'Vazifa qabul qilindi' : 'Vazifa qaytarildi'}
+                    </Typography>
+                  </Box>
+
+                  {/* Grading deduction delay warning banner */}
+                  {teacherComment.title && (
                     <Box sx={{
                       display: 'flex',
                       alignItems: 'center',
                       gap: 1.5,
-                      backgroundColor: '#ff3b30', // Bright red background!
-                      color: '#ffffff', // White text!
+                      backgroundColor: '#fff9e6',
+                      border: '1px solid #ffeeba',
+                      color: '#b25e00',
                       p: 2,
-                      borderRadius: '8px',
-                      mb: 2.5
+                      borderRadius: '10px'
                     }}>
-                      <ErrorIcon sx={{ fontSize: 20, color: '#ffffff' }} />
+                      <WarningIcon sx={{ fontSize: 20, color: '#ff9800' }} />
                       <Typography sx={{ fontSize: '0.88rem', fontWeight: 700, fontFamily: "'Inter', 'Outfit', sans-serif" }}>
-                        Uyga vazifa muddati: {homework.deadline ? formatDateTime(homework.deadline) : formatDateTime(homework.created_at)}
+                        {teacherComment.title}
                       </Typography>
-                    </Box>
-
-                    {/* HW details description */}
-                    <Box sx={{ mb: 2 }}>
-                      <Typography sx={{ fontSize: '0.92rem', color: '#4a5568', lineHeight: 1.6, fontWeight: 500 }}>
-                        {homework.description || homework.title}
-                      </Typography>
-                    </Box>
-
-                    {homework.file && (
-                      <Box sx={{ mb: 2 }}>
-                        <Button 
-                          variant="outlined" 
-                          size="small" 
-                          onClick={() => window.open(homework.file.startsWith('http') ? homework.file : `https://supabase.co/storage/v1/object/public/NajotEdu/${homework.file}`, '_blank')}
-                          sx={{ textTransform: 'none', color: '#c5a059', borderColor: '#c5a059', '&:hover': { borderColor: '#e68a00', color: '#e68a00' } }}
-                        >
-                          Biriktirilgan fayl
-                        </Button>
-                      </Box>
-                    )}
-
-                    <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
-                      <Typography sx={{ fontSize: '0.78rem', color: '#9ca3af', fontWeight: 600 }}>
-                        {homework.created_at ? new Date(homework.created_at).toLocaleDateString('uz-UZ') : ''}
-                      </Typography>
-                    </Box>
-                  </Box>
-
-                  <Box sx={{ borderBottom: '1px dashed #e2e8f0' }} />
-
-                  {/* Submission input block */}
-                  {statusKey === 'NOT_DONE' && !isEditing ? (
-                    <Box>
-                      <Typography sx={{ fontSize: '0.95rem', fontWeight: 700, color: '#2d3748', mb: 1.5 }}>
-                        Vazifa yuklash
-                      </Typography>
-                      <Box sx={{
-                        position: 'relative',
-                        border: '1px solid #e2e8f0',
-                        borderRadius: '12px',
-                        backgroundColor: '#fafafa',
-                        p: 1.5,
-                        display: 'flex',
-                        flexDirection: 'column',
-                        gap: 1
-                      }}>
-                        <TextField
-                          multiline
-                          rows={3}
-                          fullWidth
-                          variant="standard"
-                          disabled={submitting}
-                          placeholder="Havola (link) yoki vazifa izohini qoldiring..."
-                          value={submitText}
-                          onChange={(e) => setSubmitText(e.target.value)}
-                          InputProps={{ disableUnderline: true }}
-                          sx={{ '& .MuiInputBase-input': { fontSize: '0.9rem', color: '#2d3748' } }}
-                        />
-                        <Box sx={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'space-between',
-                          mt: 1
-                        }}>
-                          <Tooltip title="Fayl yuklash">
-                            <IconButton size="small" sx={{ color: '#9ca3af', '&:hover': { color: '#4a5568' } }}>
-                              <AttachFileIcon sx={{ fontSize: 20 }} />
-                            </IconButton>
-                          </Tooltip>
-                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                            <Typography sx={{ fontSize: '0.78rem', color: '#9ca3af', fontWeight: 600 }}>
-                              {submitText.length} / 1000
-                            </Typography>
-                            <IconButton 
-                              onClick={handleSendHomework}
-                              disabled={!submitText.trim() || submitting}
-                              sx={{
-                                backgroundColor: submitText.trim() ? '#ff9800' : 'rgba(0,0,0,0.04)',
-                                color: '#ffffff',
-                                '&:hover': { backgroundColor: '#e68a00' },
-                                '&.Mui-disabled': { color: '#9ca3af' },
-                                width: 34, height: 34,
-                              }}
-                            >
-                              {submitting ? <CircularProgress size={16} sx={{ color: '#fff' }} /> : <SendIcon sx={{ fontSize: 16 }} />}
-                            </IconButton>
-                          </Box>
-                        </Box>
-                      </Box>
-                    </Box>
-                  ) : isEditing ? (
-                    <Box>
-                      <Typography sx={{ fontSize: '0.95rem', fontWeight: 700, color: '#2d3748', mb: 1.5 }}>
-                        Vazifani tahrirlash
-                      </Typography>
-                      <Box sx={{
-                        border: '1px solid #e2e8f0',
-                        borderRadius: '12px',
-                        backgroundColor: '#fafafa',
-                        p: 1.5,
-                        display: 'flex',
-                        flexDirection: 'column',
-                        gap: 1
-                      }}>
-                        <TextField
-                          multiline
-                          rows={3}
-                          fullWidth
-                          variant="standard"
-                          disabled={submitting}
-                          placeholder="Havola (link) yoki vazifa izohini qoldiring..."
-                          value={submitText}
-                          onChange={(e) => setSubmitText(e.target.value)}
-                          InputProps={{ disableUnderline: true }}
-                          sx={{ '& .MuiInputBase-input': { fontSize: '0.9rem', color: '#2d3748' } }}
-                        />
-                        <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1.5, mt: 1 }}>
-                          <Button size="small" variant="text" disabled={submitting} onClick={() => setIsEditing(false)} sx={{ color: '#6b7280', textTransform: 'none', fontWeight: 600 }}>
-                            Bekor qilish
-                          </Button>
-                          <Button 
-                            size="small" 
-                            variant="contained" 
-                            onClick={handleSaveEdit}
-                            disabled={!submitText.trim() || submitting}
-                            sx={{
-                              backgroundColor: '#ff9800',
-                              color: '#fff',
-                              textTransform: 'none',
-                              fontWeight: 700,
-                              boxShadow: 'none',
-                              '&:hover': { backgroundColor: '#e68a00', boxShadow: 'none' }
-                            }}
-                          >
-                            {submitting ? <CircularProgress size={16} sx={{ color: '#fff' }} /> : 'Saqlash'}
-                          </Button>
-                        </Box>
-                      </Box>
-                    </Box>
-                  ) : (
-                    // Submission review card
-                    <Box>
-                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-                        <Box>
-                          <Typography sx={{ fontSize: '1.05rem', fontWeight: 800, color: '#2d3748' }}>
-                            Mening jo'natmalarim
-                          </Typography>
-                          <Typography sx={{ fontSize: '0.8rem', color: '#6b7280', fontWeight: 600, mt: 0.2 }}>
-                            Fayllar soni: {answer.file ? JSON.parse(answer.file || '[]').length : 0}
-                          </Typography>
-                        </Box>
-                        {statusKey === 'PENDING' && (
-                          <IconButton size="small" onClick={handleStartEdit} sx={{ border: '1px solid #e2e8f0', borderRadius: '8px' }}>
-                            <EditIcon sx={{ fontSize: 16, color: '#6b7280' }} />
-                          </IconButton>
-                        )}
-                      </Box>
-
-                      {/* Submitted response text */}
-                      <Box sx={{
-                        p: 2,
-                        borderRadius: '10px',
-                        backgroundColor: '#f9fafb',
-                        border: '1px solid #f3f4f6',
-                        mb: 1.5
-                      }}>
-                        <Typography sx={{ fontSize: '0.9rem', color: '#2563eb', fontWeight: 600, wordBreak: 'break-all' }}>
-                          {answer.title}
-                        </Typography>
-                      </Box>
-
-                      <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 2 }}>
-                        <Typography sx={{ fontSize: '0.78rem', color: '#9ca3af', fontWeight: 600 }}>
-                          {formatDateTime(answer.updated_at || answer.created_at)}
-                        </Typography>
-                      </Box>
-
-                      {/* Teacher's comment response */}
-                      {teacherComment && (
-                        <>
-                          <Box sx={{ borderBottom: '1px dashed #e2e8f0', my: 2.5 }} />
-                          <Box>
-                            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1.5 }}>
-                              <Typography sx={{ fontSize: '1rem', fontWeight: 800, color: '#2d3748' }}>
-                                O'qituvchi izohi
-                              </Typography>
-                              <Typography sx={{ fontSize: '0.85rem', color: statusKey === 'ACCEPTED' ? '#16a34a' : '#ef4444', fontWeight: 800 }}>
-                                {statusKey === 'ACCEPTED' ? 'Vazifa qabul qilindi' : 'Vazifa qaytarildi'}
-                              </Typography>
-                            </Box>
-
-                            <Box sx={{
-                              display: 'flex',
-                              alignItems: 'center',
-                              gap: 1.5,
-                              backgroundColor: '#fff9e6',
-                              border: '1px solid #ffeeba',
-                              color: '#b25e00',
-                              p: 2,
-                              borderRadius: '10px'
-                            }}>
-                              <WarningIcon sx={{ fontSize: 20, color: '#ff9800' }} />
-                              <Typography sx={{ fontSize: '0.88rem', fontWeight: 700 }}>
-                                {teacherComment.title}
-                              </Typography>
-                            </Box>
-                          </Box>
-                        </>
-                      )}
                     </Box>
                   )}
-                </>
-              ) : (
-                <Box sx={{ textAlign: 'center', py: 4, color: '#9ca3af' }}>
-                  <Typography sx={{ fontWeight: 600 }}>Uyga vazifa berilmagan</Typography>
-                </Box>
+
+                  {/* Checker teacher details */}
+                  <Box sx={{ mt: 0.5, display: 'flex', flexDirection: 'column', gap: 0.8 }}>
+                    <Typography sx={{ fontSize: '0.88rem', color: '#4a5568', fontWeight: 600, fontFamily: "'Inter', 'Outfit', sans-serif" }}>
+                      Tekshiruvchi: {teacherComment.teachers?.full_name || teacherComment.users?.full_name || 'O\'qituvchi'}
+                    </Typography>
+                  </Box>
+
+                  <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
+                    <Typography sx={{ fontSize: '0.78rem', color: '#9ca3af', fontWeight: 600, fontFamily: "'Inter', 'Outfit', sans-serif" }}>
+                      {teacherComment.created_at ? formatDateTime(teacherComment.created_at) : ''}
+                    </Typography>
+                  </Box>
+                </Paper>
               )}
             </Box>
-          </Paper>
+          ) : (
+            <Paper
+              elevation={0}
+              sx={{
+                p: 4,
+                textAlign: 'center',
+                borderRadius: '12px',
+                border: '1px solid #e2e8f0',
+                backgroundColor: '#ffffff'
+              }}
+            >
+              <Typography sx={{ color: '#9ca3af', fontWeight: 600, fontFamily: "'Inter', 'Outfit', sans-serif" }}>
+                Uyga vazifa berilmagan
+              </Typography>
+            </Paper>
+          )}
         </Box>
 
         {/* Right side: Sidebar List of Lessons */}

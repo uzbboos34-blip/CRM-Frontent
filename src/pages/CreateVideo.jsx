@@ -41,6 +41,7 @@ export default function CreateVideo({ groupId: propGroupId, onClose }) {
   const { startUpload } = useUploads();
 
   const [lessons, setLessons] = useState([]);
+  const [lessonsLoaded, setLessonsLoaded] = useState(false);
   const [rows, setRows] = useState([]);
   const [saving, setSaving] = useState(false);
   const [errors, setErrors] = useState({});
@@ -49,12 +50,15 @@ export default function CreateVideo({ groupId: propGroupId, onClose }) {
 
   const globalInputRef = useRef(null);
 
-  useEffect(() => {
-    if (!groupId) return;
+  const fetchLessons = () => {
+    if (!groupId || lessonsLoaded) return;
     api.get(`/api/v1/lessson?group_id=${groupId}`)
-      .then(res => setLessons(res.data?.data || res.data || []))
+      .then(res => {
+        setLessons(res.data?.data || res.data || []);
+        setLessonsLoaded(true);
+      })
       .catch(() => setLessons([]));
-  }, [groupId]);
+  };
 
   /* ── helpers ── */
   function addFilesToRows(files) {
@@ -237,6 +241,7 @@ export default function CreateVideo({ groupId: propGroupId, onClose }) {
                     displayEmpty
                     error={darsErr}
                     fullWidth
+                    onOpen={fetchLessons}
                     sx={{
                       borderRadius: '8px',
                       fontSize: '0.85rem',

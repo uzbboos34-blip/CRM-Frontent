@@ -81,6 +81,7 @@ export default function CreateHomeWork() {
   const { startUpload } = useUploads();
 
   const [lessons, setLessons]       = useState([]);
+  const [lessonsLoaded, setLessonsLoaded] = useState(false);
   const [lessonId, setLessonId]     = useState('');
   const [description, setDescription] = useState('');
   const [file, setFile]             = useState(null);
@@ -91,15 +92,19 @@ export default function CreateHomeWork() {
 
   const fileInputRef = useRef(null);
 
-  useEffect(() => {
-    if (!groupId) return;
+  const fetchLessons = () => {
+    if (!groupId || lessonsLoaded) return;
     api.get(`/api/v1/lessson?group_id=${groupId}`)
-      .then(res => setLessons(res.data?.data || res.data || []))
+      .then(res => {
+        setLessons(res.data?.data || res.data || []);
+        setLessonsLoaded(true);
+      })
       .catch(() => setLessons([]));
-  }, [groupId]);
+  };
 
   useEffect(() => {
     if (hwId) {
+      fetchLessons();
       api.get(`/api/v1/home-works/${hwId}`)
         .then(res => {
           const d = res.data?.data || res.data;
@@ -109,7 +114,7 @@ export default function CreateHomeWork() {
           }
         });
     }
-  }, [hwId]);
+  }, [hwId, groupId]);
 
   function validate() {
     const e = {};
@@ -167,6 +172,7 @@ export default function CreateHomeWork() {
                 setErrors(prev => ({ ...prev, lessonId: '' }));
               }} 
               displayEmpty
+              onOpen={fetchLessons}
               sx={{ borderRadius: '10px' }}
             >
               <MenuItem value="" disabled>Mavzuni tanlang</MenuItem>

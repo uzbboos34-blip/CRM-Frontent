@@ -19,6 +19,26 @@ function formatLessonDate(dateStr) {
   return `${d.getFullYear()}-yil ${d.getDate()}-${months[d.getMonth()]}`;
 }
 
+function formatDeadline(dateStr) {
+  if (!dateStr) return '—';
+  const d = new Date(dateStr);
+  if (isNaN(d.getTime())) return dateStr;
+  
+  // Add 20 hours
+  d.setHours(d.getHours() + 20);
+
+  const months = [
+    'yanvar', 'fevral', 'mart', 'aprel', 'may', 'iyun',
+    'iyul', 'avgust', 'sentabr', 'oktabr', 'noyabr', 'dekabr'
+  ];
+  const day = d.getDate();
+  const month = months[d.getMonth()];
+  const year = d.getFullYear();
+  const hh = String(d.getHours()).padStart(2, '0');
+  const mm = String(d.getMinutes()).padStart(2, '0');
+  return `${year}-yil ${day}-${month}, soat ${hh}:${mm}`;
+}
+
 // Uy vazifasi holati config
 const HW_STATUS = {
   ACCEPTED: { label: 'Qabul qilingan', bg: '#4caf50', color: '#fff' },
@@ -228,9 +248,9 @@ export default function StudentGroupLessons() {
                       </Box>
                     </TableCell>
 
-                    {/* Deadline (No deadline field is stored, so display '-' or leave empty) */}
+                    {/* Deadline (Created time + 20 hours) */}
                     <TableCell sx={{ py: 2, px: 3, fontSize: '0.83rem', color: '#4a5568', fontWeight: 600, fontFamily: "'Inter', 'Outfit', sans-serif", whiteSpace: 'nowrap' }}>
-                      -
+                      {formatDeadline(lesson.homeworkCreatedAt)}
                     </TableCell>
 
                     {/* Date */}

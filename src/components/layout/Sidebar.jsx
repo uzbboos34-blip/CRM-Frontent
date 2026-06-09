@@ -80,11 +80,11 @@ export default function Sidebar({ openSettings, setOpenSettings, isSidebarCollap
 
   const activeStyles = isStudent
     ? {
-        backgroundColor: '#c5a059',
-        color: '#fff',
+        backgroundColor: 'rgba(197, 160, 89, 0.12)',
+        color: '#c5a059',
         borderRadius: '12px',
-        '&:hover': { backgroundColor: '#b8903f' },
-        '& .MuiListItemIcon-root': { color: '#fff' }
+        '&:hover': { backgroundColor: 'rgba(197, 160, 89, 0.18)' },
+        '& .MuiListItemIcon-root': { color: '#c5a059' }
       }
     : {
         backgroundColor: '#7b61ff',
@@ -110,17 +110,18 @@ export default function Sidebar({ openSettings, setOpenSettings, isSidebarCollap
           onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
           sx={{
             display: { xs: 'none', md: 'flex' },
-            backgroundColor: '#7b61ff',
-            color: 'white',
-            borderRadius: 1,
+            backgroundColor: '#fff',
+            color: '#6b7280',
+            border: '1.5px solid #e5e7eb',
+            borderRadius: '8px',
             width: 24,
             height: 24,
-            '&:hover': { backgroundColor: '#6a50e8' },
+            '&:hover': { backgroundColor: '#f3f4f6', color: '#374151' },
             position: 'absolute',
             right: -12,
             top: 32,
             zIndex: 1500,
-            boxShadow: '0 2px 8px rgba(0,0,0,0.15)'
+            boxShadow: '0 2px 8px rgba(0,0,0,0.08)'
           }}
         >
           <ArrowBackIosNewIcon sx={{ fontSize: 12, transform: collapsed ? 'rotate(180deg)' : 'rotate(0deg)' }} />
@@ -174,12 +175,12 @@ export default function Sidebar({ openSettings, setOpenSettings, isSidebarCollap
                       minHeight: 52,
                     }}
                   >
-                    <ListItemIcon sx={{ minWidth: collapsed ? 0 : 36, justifyContent: 'center', color: isActive ? '#fff' : '#6b7280' }}>
+                    <ListItemIcon sx={{ minWidth: collapsed ? 0 : 36, justifyContent: 'center', color: isActive ? (isStudent ? '#c5a059' : '#fff') : '#6b7280' }}>
                       {item.icon}
                     </ListItemIcon>
                     {!collapsed && (
                       <Box sx={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                        <Typography sx={{ fontSize: '1rem', fontWeight: isActive ? 700 : 600, color: isActive ? '#fff' : '#374151' }}>{item.text}</Typography>
+                        <Typography sx={{ fontSize: '1rem', fontWeight: isActive ? 700 : 600, color: isActive ? (isStudent ? '#c5a059' : '#fff') : '#374151' }}>{item.text}</Typography>
                         {item.premium && <WorkspacePremiumIcon sx={{ fontSize: 16, color: '#fbbf24' }} />}
                       </Box>
                     )}

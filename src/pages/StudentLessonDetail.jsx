@@ -380,7 +380,7 @@ export default function StudentLessonDetail() {
                   gap: { xs: 2, md: 2.5 },
                 }}>
                   <Typography sx={{
-                    width: { xs: '100%', md: 170 },
+                    width: { xs: '100%', md: 190 },
                     flexShrink: 0,
                     fontSize: { xs: '1.3rem', sm: '1.5rem' },
                     fontWeight: 500,
@@ -392,19 +392,22 @@ export default function StudentLessonDetail() {
                   </Typography>
 
                   <Box sx={{
-                    flex: { xs: 'none', md: '0 1 520px' },
+                    flex: { xs: 'none', md: '1 1 460px' },
                     width: { xs: '100%', md: 'auto' },
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    gap: { xs: 1.25, sm: 1.75 },
+                    flexWrap: 'wrap',
+                    columnGap: { xs: 1, sm: 1.4 },
+                    rowGap: 0.35,
                     backgroundColor: hasSubmittedHomework ? '#ff2d12' : '#fffaf0',
                     color: hasSubmittedHomework ? '#fff' : '#4f3b10',
-                    px: { xs: 1.5, sm: 2.25 },
+                    px: { xs: 1.5, sm: 2 },
                     py: { xs: 1.25, sm: 1.25 },
                     borderRadius: '6px',
                     minHeight: 56,
                     minWidth: 0,
+                    overflow: 'hidden',
                   }}>
                     {hasSubmittedHomework ? (
                       <ErrorOutlineIcon sx={{ fontSize: 25, color: '#fff', flexShrink: 0 }} />
@@ -412,7 +415,7 @@ export default function StudentLessonDetail() {
                       <WarningIcon sx={{ fontSize: 24, color: '#e6a72d', flexShrink: 0 }} />
                     )}
                     <Typography sx={{
-                      fontSize: { xs: '0.95rem', sm: '1rem' },
+                      fontSize: { xs: '0.92rem', sm: '0.98rem' },
                       lineHeight: 1.35,
                       fontWeight: 700,
                       whiteSpace: 'nowrap',
@@ -421,10 +424,12 @@ export default function StudentLessonDetail() {
                       Uyga vazifa muddati:
                     </Typography>
                     <Typography sx={{
-                      fontSize: { xs: '0.95rem', sm: '1rem' },
+                      fontSize: { xs: '0.92rem', sm: '0.98rem' },
                       lineHeight: 1.35,
                       fontWeight: 600,
-                      whiteSpace: { xs: 'normal', sm: 'nowrap' },
+                      whiteSpace: 'normal',
+                      textAlign: 'center',
+                      overflowWrap: 'anywhere',
                       fontFamily: "'Inter', 'Outfit', sans-serif"
                     }}>
                       {hasSubmittedHomework
@@ -434,7 +439,7 @@ export default function StudentLessonDetail() {
                   </Box>
 
                   <Typography sx={{
-                    width: { xs: '100%', md: 150 },
+                    width: { xs: '100%', md: 155 },
                     flexShrink: 0,
                     textAlign: { xs: 'left', md: 'right' },
                     fontSize: { xs: '1rem', sm: '1.1rem' },
@@ -758,7 +763,7 @@ export default function StudentLessonDetail() {
 
         {/* Right side: Lesson accordion — production peach card style */}
         <Box sx={{
-          width: { xs: '100%', lg: 360 },
+          width: { xs: '100%', lg: 340 },
           flexShrink: 0,
           height: '100%',
           backgroundColor: '#ffffff',

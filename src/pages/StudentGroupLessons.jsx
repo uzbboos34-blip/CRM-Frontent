@@ -3,17 +3,16 @@ import { useParams, useNavigate } from 'react-router-dom';
 import {
   Box, Typography, Paper, Table, TableBody,
   TableCell, TableContainer, TableHead, TableRow,
-  CircularProgress, MenuItem, Select, FormControl, IconButton
+  CircularProgress, MenuItem, Select, FormControl
 } from '@mui/material';
-import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import api from '../api/axios';
 
 // Uy vazifasi holati config
 const HW_STATUS = {
-  qabul_qilingan: { label: 'Qabul qilingan', bg: '#16a34a', color: '#fff' },
-  kutayotgan: { label: 'Kutayotgan', bg: '#6366f1', color: '#fff' },
-  bajarilmagan: { label: 'Bajarilmagan', bg: '#ef4444', color: '#fff' },
-  NONE: { label: 'Berilmagan', bg: '#6b7280', color: '#fff' },
+  qabul_qilingan: { label: 'Qabul qilingan', bg: '#4caf50', color: '#fff' },
+  kutayotgan: { label: 'Kutayotganlar', bg: '#5c6bc0', color: '#fff' },
+  bajarilmagan: { label: 'Bajarilmagan', bg: '#ff3b30', color: '#fff' },
+  NONE: { label: 'Berilmagan', bg: '#78909c', color: '#fff' },
 };
 
 const STATUS_OPTIONS = [
@@ -21,72 +20,73 @@ const STATUS_OPTIONS = [
   { value: 'qabul_qilingan', label: 'Qabul qilingan' },
   { value: 'kutayotgan',  label: 'Kutayotganlar' },
   { value: 'bajarilmagan', label: 'Bajarilmagan' },
+  { value: 'NONE', label: 'Berilmagan' },
 ];
 
 const MOCK_LESSONS = [
   {
     id: 1,
     topic: "crm talaba paneli frontend uy vazifasi, darslar, videolar",
-    date: "09 Jun, 2026",
+    date: "2026-yil 9-iyun",
     state: "bajarilmagan",
     videosCount: 0,
-    deadline: "10-iyun, 2026 03:52"
+    deadline: "2026-yil 10-iyun, soat 03:52"
   },
   {
     id: 2,
     topic: "amaliyot",
-    date: "08 Jun, 2026",
-    state: "bajarilmagan",
+    date: "2026-yil 8-iyun",
+    state: "NONE",
     videosCount: 0,
-    deadline: "09-iyun, 2026 00:00"
+    deadline: "-"
   },
   {
     id: 3,
     topic: "crm talabalar paneli, uy vazifasi, darslar, videolar",
-    date: "08 Jun, 2026",
+    date: "2026-yil 8-iyun",
     state: "kutayotgan",
     videosCount: 2,
-    deadline: "09-iyun, 2026 05:35"
+    deadline: "2026-yil 9-iyun, soat 5:35"
   },
   {
     id: 4,
     topic: "CRM talabalar paneli",
-    date: "05 Jun, 2026",
-    state: "bajarilmagan",
-    videosCount: 0,
-    deadline: "—"
+    date: "2026-yil 5-iyun",
+    state: "kutayotgan",
+    videosCount: 2,
+    deadline: "2026-yil 6-iyun, soat 4:12"
   },
   {
     id: 5,
     topic: "Amaliyot",
-    date: "05 Jun, 2026",
-    state: "bajarilmagan",
+    date: "2026-yil 5-iyun",
+    state: "NONE",
     videosCount: 0,
-    deadline: "—"
+    deadline: "-"
   },
   {
     id: 6,
     topic: "Next.js amaliyot | marshrutizatsiya",
-    date: "04 Jun, 2026",
-    state: "bajarilmagan",
+    date: "2026-yil 4-iyun",
+    state: "NONE",
     videosCount: 0,
-    deadline: "—"
+    deadline: "-"
   },
   {
     id: 7,
     topic: "CRM Davom eting O'qituvchilar paneli",
-    date: "04 Jun, 2026",
-    state: "qabul_qilingan",
-    videosCount: 1,
-    deadline: "15-may, 2026 07:10"
+    date: "2026-yil 4-iyun",
+    state: "kutayotgan",
+    videosCount: 2,
+    deadline: "2026-yil 5-iyun, soat 3:59"
   },
   {
     id: 8,
     topic: "Next.js + Prisma",
-    date: "03 Jun, 2026",
+    date: "2026-yil 3-iyun",
     state: "bajarilmagan",
-    videosCount: 0,
-    deadline: "—"
+    videosCount: 2,
+    deadline: "2026-yil 4-iyun, soat 4:26"
   }
 ];
 
@@ -96,8 +96,8 @@ function HwBadge({ statusKey }) {
     <Box sx={{
       display: 'inline-flex',
       alignItems: 'center',
-      px: 1.5, py: 0.35,
-      borderRadius: '6px',
+      px: 2, py: 0.5,
+      borderRadius: '20px', // Rounded pill shape matching Screenshot 1
       backgroundColor: cfg.bg,
     }}>
       <Typography sx={{ fontSize: '0.78rem', fontWeight: 700, color: cfg.color, whiteSpace: 'nowrap' }}>
@@ -115,7 +115,6 @@ export default function StudentGroupLessons() {
   const [filter, setFilter] = useState('ALL');
 
   useEffect(() => {
-    // API request is prepared for when backend is ready
     setLoading(true);
     api.get(`/api/v1/students/my/groups/${groupId}/lessons`)
       .then(res => {
@@ -139,58 +138,33 @@ export default function StudentGroupLessons() {
   });
 
   return (
-    <Box sx={{ animation: 'fadeIn 0.3s ease-out', p: { xs: 1, md: 3 } }}>
-      {/* Sarlavha */}
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 3 }}>
-        <IconButton
-          size="small"
-          onClick={() => navigate('/student/groups')}
-          sx={{
-            backgroundColor: '#ffffff',
-            boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
-            '&:hover': { backgroundColor: '#f3f4f6' },
-            borderRadius: '8px',
-          }}
-        >
-          <ArrowBackIcon sx={{ fontSize: 18, color: '#374151' }} />
-        </IconButton>
-        <Typography sx={{ fontSize: '1.25rem', fontWeight: 800, color: '#111827' }}>
-          Darslar
-        </Typography>
-      </Box>
+    <Box sx={{ animation: 'fadeIn 0.3s ease-out', pt: 1.5, px: 1 }}>
+      {/* Title "Uy vazifasi statusi" */}
+      <Typography sx={{ fontSize: '0.85rem', fontWeight: 600, color: '#6b7280', mb: 0.8 }}>
+        Uy vazifasi statusi
+      </Typography>
 
       {/* Filter bar */}
-      <Box sx={{ mb: 3 }}>
-        <Typography sx={{ fontSize: '0.8rem', fontWeight: 700, color: '#6b7280', mb: 0.8 }}>
-          Uy vazifasi statusi
-        </Typography>
+      <Box sx={{ mb: 3.5 }}>
         <FormControl size="small">
           <Select
             value={filter}
             onChange={e => setFilter(e.target.value)}
             sx={{
-              minWidth: 180,
+              minWidth: 160,
               backgroundColor: '#fff',
-              borderRadius: '10px',
-              fontSize: '0.9rem',
+              borderRadius: '8px',
+              fontSize: '0.85rem',
               fontWeight: 600,
+              color: '#1f2937',
               '& .MuiOutlinedInput-notchedOutline': { borderColor: '#e5e7eb' },
               '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: '#c5a059' },
               '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: '#c5a059' },
             }}
           >
             {STATUS_OPTIONS.map(opt => (
-              <MenuItem key={opt.value} value={opt.value}>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  {opt.value !== 'ALL' && (
-                    <Box sx={{
-                      width: 10, height: 10, borderRadius: '50%',
-                      backgroundColor: HW_STATUS[opt.value]?.bg || '#6b7280',
-                      flexShrink: 0,
-                    }} />
-                  )}
-                  <Typography sx={{ fontSize: '0.88rem', fontWeight: 600 }}>{opt.label}</Typography>
-                </Box>
+              <MenuItem key={opt.value} value={opt.value} sx={{ fontSize: '0.85rem', fontWeight: 600 }}>
+                {opt.label}
               </MenuItem>
             ))}
           </Select>
@@ -209,16 +183,22 @@ export default function StudentGroupLessons() {
       ) : (
         <TableContainer component={Paper} elevation={0} sx={{ border: '1px solid #e5e7eb', borderRadius: '12px', overflow: 'hidden', backgroundColor: '#fff' }}>
           <Table>
-            <TableHead sx={{ backgroundColor: '#f9fafb' }}>
-              <TableRow>
-                <TableCell sx={{ fontWeight: 700, color: '#4b5563', fontSize: '0.83rem', py: 1.5, px: 2.5 }}>Mavzular</TableCell>
-                <TableCell sx={{ fontWeight: 700, color: '#4b5563', fontSize: '0.83rem', py: 1.5, px: 2.5 }}>Video</TableCell>
-                <TableCell sx={{ fontWeight: 700, color: '#4b5563', fontSize: '0.83rem', py: 1.5, px: 2.5 }}>Uyga vazifa Holati</TableCell>
-                <TableCell sx={{ fontWeight: 700, color: '#4b5563', fontSize: '0.83rem', py: 1.5, px: 2.5 }}>
-                  Uyga vazifa tugash vaqti
+            <TableHead sx={{ backgroundColor: '#ffffff' }}>
+              <TableRow sx={{ '& th': { borderBottom: '1.5px solid #f3f4f6' } }}>
+                <TableCell sx={{ fontWeight: 600, color: '#4b5563', fontSize: '0.83rem', py: 2.2, px: 3 }}>Mavzular</TableCell>
+                <TableCell sx={{ fontWeight: 600, color: '#4b5563', fontSize: '0.83rem', py: 2.2, px: 3 }}>Video</TableCell>
+                <TableCell sx={{ fontWeight: 600, color: '#4b5563', fontSize: '0.83rem', py: 2.2, px: 3 }}>Uyga vazifa Holati</TableCell>
+                <TableCell sx={{ fontWeight: 600, color: '#4b5563', fontSize: '0.83rem', py: 2.2, px: 3 }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                    Uyga vazifa tugash vaqti
+                    <Box component="span" sx={{ fontWeight: 800, fontSize: '0.95rem', color: '#111827', ml: 0.5 }}>↓</Box>
+                  </Box>
                 </TableCell>
-                <TableCell sx={{ fontWeight: 700, color: '#4b5563', fontSize: '0.83rem', py: 1.5, px: 2.5 }}>
-                  Dars sanasi
+                <TableCell sx={{ fontWeight: 600, color: '#4b5563', fontSize: '0.83rem', py: 2.2, px: 3 }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                    Dars sanasi
+                    <Box component="span" sx={{ fontWeight: 800, fontSize: '0.95rem', color: '#4caf50', ml: 0.5 }}>↑</Box>
+                  </Box>
                 </TableCell>
               </TableRow>
             </TableHead>
@@ -238,36 +218,36 @@ export default function StudentGroupLessons() {
                     }}
                   >
                     {/* Mavzu */}
-                    <TableCell sx={{ py: 1.5, px: 2.5 }}>
-                      <Typography sx={{ fontSize: '0.88rem', fontWeight: 600, color: '#111827' }}>
+                    <TableCell sx={{ py: 2, px: 3 }}>
+                      <Typography sx={{ fontSize: '0.88rem', fontWeight: 500, color: '#111827' }}>
                         {lesson.topic || `Dars #${idx + 1}`}
                       </Typography>
                     </TableCell>
 
-                    {/* Video count badge */}
-                    <TableCell sx={{ py: 1.5, px: 2.5 }}>
+                    {/* Video count circle blue badge */}
+                    <TableCell sx={{ py: 2, px: 3 }}>
                       <Box sx={{
-                        width: 28, height: 28, borderRadius: '50%',
-                        border: '1.5px solid #c5a059',
-                        color: '#c5a059', fontSize: '0.78rem', fontWeight: 700,
+                        width: 24, height: 24, borderRadius: '50%',
+                        border: '1.5px solid #2196f3',
+                        color: '#2196f3', fontSize: '0.8rem', fontWeight: 700,
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
                       }}>
                         {videoCount}
                       </Box>
                     </TableCell>
 
-                    {/* Status Badge */}
-                    <TableCell sx={{ py: 1.5, px: 2.5 }}>
+                    {/* Status Pill Badge */}
+                    <TableCell sx={{ py: 2, px: 3 }}>
                       <HwBadge statusKey={lesson.state} />
                     </TableCell>
 
                     {/* Deadline */}
-                    <TableCell sx={{ py: 1.5, px: 2.5, fontSize: '0.83rem', color: '#4b5563', fontWeight: 500, whiteSpace: 'nowrap' }}>
+                    <TableCell sx={{ py: 2, px: 3, fontSize: '0.83rem', color: '#4b5563', fontWeight: 500, whiteSpace: 'nowrap' }}>
                       {lesson.deadline}
                     </TableCell>
 
                     {/* Date */}
-                    <TableCell sx={{ py: 1.5, px: 2.5, fontSize: '0.83rem', color: '#4b5563', fontWeight: 500, whiteSpace: 'nowrap' }}>
+                    <TableCell sx={{ py: 2, px: 3, fontSize: '0.83rem', color: '#4b5563', fontWeight: 500, whiteSpace: 'nowrap' }}>
                       {lesson.date}
                     </TableCell>
                   </TableRow>

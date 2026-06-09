@@ -61,6 +61,18 @@ const shake = keyframes`
 `;
 
 export default function Login() {
+  const SHOW_TEST_LOGINS = true;
+  const TEST_LOGINS = [
+    { role: 'Student', phone: '998901234567', password: 'Sanjar04@', color: '#c5a059' },
+    { role: 'Superadmin', phone: '+998907012161', password: 'Rahmonbergan04@', color: '#1e3a5f' },
+    { role: 'Teacher', phone: '998971230998', password: '123456', color: '#10b981' }
+  ];
+
+  const handleFillDemo = (phone, pass) => {
+    setLogin(phone);
+    setPassword(pass);
+  };
+
   const [showPassword, setShowPassword] = useState(false);
   const [login, setLogin] = useState('');
   const [password, setPassword] = useState('');
@@ -407,6 +419,41 @@ export default function Login() {
             >
               {loading ? <CircularProgress size={24} color="inherit" /> : 'Kirish'}
             </Button>
+
+            {/* ==================== DEMO LOGINS SECTION (EASY TO REMOVE) ==================== */}
+            {SHOW_TEST_LOGINS && (
+              <Box sx={{ mt: 3, pt: 2, borderTop: '1px dashed #e5e7eb', width: '100%' }}>
+                <Typography sx={{ fontSize: '0.8rem', color: '#6b7280', fontWeight: 600, mb: 1.5, textAlign: 'center' }}>
+                  Test loginlar (Tanlang):
+                </Typography>
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                  {TEST_LOGINS.map((demo) => (
+                    <Button
+                      key={demo.role}
+                      size="small"
+                      variant="outlined"
+                      onClick={() => handleFillDemo(demo.phone, demo.password)}
+                      sx={{
+                        textTransform: 'none',
+                        fontSize: '0.78rem',
+                        fontWeight: 700,
+                        color: demo.color,
+                        borderColor: demo.color,
+                        py: 0.7,
+                        borderRadius: '6px',
+                        '&:hover': {
+                          backgroundColor: `${demo.color}0a`,
+                          borderColor: demo.color
+                        }
+                      }}
+                    >
+                      {demo.role} ({demo.phone})
+                    </Button>
+                  ))}
+                </Box>
+              </Box>
+            )}
+            {/* ============================================================================== */}
           </Box>
         </Box>
 

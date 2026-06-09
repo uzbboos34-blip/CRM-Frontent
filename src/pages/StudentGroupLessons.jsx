@@ -18,10 +18,20 @@ const HW_STATUS = {
 const STATUS_OPTIONS = [
   { value: 'ALL',      label: 'Barchasi' },
   { value: 'qabul_qilingan', label: 'Qabul qilingan' },
-  { value: 'kutayotgan',  label: 'Kutayotganlar' },
+  { value: 'NONE',     label: 'Berilmagan' },
+  { value: 'qaytarilgan', label: 'Qaytarilgan' },
   { value: 'bajarilmagan', label: 'Bajarilmagan' },
-  { value: 'NONE', label: 'Berilmagan' },
+  { value: 'kutayotgan',  label: 'Kutayotganlar' },
 ];
+
+const DROPDOWN_COLORS = {
+  ALL: { bg: '#ffffff', color: '#1f2937', hoverBg: '#f3f4f6' },
+  qabul_qilingan: { bg: '#4caf50', color: '#ffffff', hoverBg: '#45a049' },
+  NONE: { bg: '#78909c', color: '#ffffff', hoverBg: '#6b7280' },
+  qaytarilgan: { bg: '#ffa000', color: '#ffffff', hoverBg: '#ff8f00' },
+  bajarilmagan: { bg: '#ff3b30', color: '#ffffff', hoverBg: '#ef4444' },
+  kutayotgan: { bg: '#5c6bc0', color: '#ffffff', hoverBg: '#4f5d75' },
+};
 
 const MOCK_LESSONS = [
   {
@@ -97,7 +107,7 @@ function HwBadge({ statusKey }) {
       display: 'inline-flex',
       alignItems: 'center',
       px: 2, py: 0.5,
-      borderRadius: '20px', // Rounded pill shape matching Screenshot 1
+      borderRadius: '20px',
       backgroundColor: cfg.bg,
     }}>
       <Typography sx={{ fontSize: '0.78rem', fontWeight: 700, color: cfg.color, whiteSpace: 'nowrap' }}>
@@ -131,7 +141,6 @@ export default function StudentGroupLessons() {
       .finally(() => setLoading(false));
   }, [groupId]);
 
-  // Filter lessons
   const filtered = lessons.filter(lesson => {
     if (filter === 'ALL') return true;
     return lesson.state === filter;
@@ -150,23 +159,61 @@ export default function StudentGroupLessons() {
           <Select
             value={filter}
             onChange={e => setFilter(e.target.value)}
+            MenuProps={{
+              PaperProps: {
+                sx: {
+                  borderRadius: '8px',
+                  p: 0.5,
+                  boxShadow: '0 4px 20px rgba(0,0,0,0.1)'
+                }
+              }
+            }}
             sx={{
-              minWidth: 160,
+              minWidth: 180,
               backgroundColor: '#fff',
               borderRadius: '8px',
               fontSize: '0.85rem',
               fontWeight: 600,
-              color: '#1f2937',
+              color: '#4b5563', // Soft grey selected value matching Screenshot 3
               '& .MuiOutlinedInput-notchedOutline': { borderColor: '#e5e7eb' },
               '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: '#c5a059' },
               '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: '#c5a059' },
             }}
           >
-            {STATUS_OPTIONS.map(opt => (
-              <MenuItem key={opt.value} value={opt.value} sx={{ fontSize: '0.85rem', fontWeight: 600 }}>
-                {opt.label}
-              </MenuItem>
-            ))}
+            {STATUS_OPTIONS.map(opt => {
+              const colors = DROPDOWN_COLORS[opt.value] || DROPDOWN_COLORS.ALL;
+              return (
+                <MenuItem
+                  key={opt.value}
+                  value={opt.value}
+                  sx={{
+                    fontSize: '0.85rem',
+                    fontWeight: 700,
+                    backgroundColor: colors.bg,
+                    color: colors.color,
+                    borderRadius: '6px',
+                    my: 0.4,
+                    mx: 0.6,
+                    py: 1,
+                    transition: 'all 0.15s',
+                    '&:hover': {
+                      backgroundColor: colors.hoverBg,
+                      opacity: 0.95
+                    },
+                    '&.Mui-selected': {
+                      backgroundColor: colors.hoverBg,
+                      color: colors.color,
+                      fontWeight: 700,
+                      '&:hover': {
+                        backgroundColor: colors.hoverBg,
+                      }
+                    }
+                  }}
+                >
+                  {opt.label}
+                </MenuItem>
+              );
+            })}
           </Select>
         </FormControl>
       </Box>
@@ -191,7 +238,7 @@ export default function StudentGroupLessons() {
                 <TableCell sx={{ fontWeight: 600, color: '#4b5563', fontSize: '0.83rem', py: 2.2, px: 3 }}>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                     Uyga vazifa tugash vaqti
-                    <Box component="span" sx={{ fontWeight: 800, fontSize: '0.95rem', color: '#111827', ml: 0.5 }}>↓</Box>
+                    <Box component="span" sx={{ fontWeight: 800, fontSize: '0.95rem', color: '#4b5563', ml: 0.5 }}>↓</Box>
                   </Box>
                 </TableCell>
                 <TableCell sx={{ fontWeight: 600, color: '#4b5563', fontSize: '0.83rem', py: 2.2, px: 3 }}>
@@ -219,7 +266,7 @@ export default function StudentGroupLessons() {
                   >
                     {/* Mavzu */}
                     <TableCell sx={{ py: 2, px: 3 }}>
-                      <Typography sx={{ fontSize: '0.88rem', fontWeight: 500, color: '#111827' }}>
+                      <Typography sx={{ fontSize: '0.88rem', fontWeight: 500, color: '#4b5563' }}>
                         {lesson.topic || `Dars #${idx + 1}`}
                       </Typography>
                     </TableCell>

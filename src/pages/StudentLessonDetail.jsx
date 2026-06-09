@@ -320,11 +320,14 @@ function formatLessonDate(dateStr) {
   if (!dateStr) return '—';
   const d = new Date(dateStr);
   if (isNaN(d.getTime())) return dateStr;
-  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-  const day = String(d.getDate()).padStart(2, '0');
+  const months = [
+    'yanvar', 'fevral', 'mart', 'aprel', 'may', 'iyun',
+    'iyul', 'avgust', 'sentabr', 'oktabr', 'noyabr', 'dekabr'
+  ];
+  const day = d.getDate();
   const month = months[d.getMonth()];
   const year = d.getFullYear();
-  return `${day} ${month}, ${year}`;
+  return `${year}-yil ${day}-${month}`;
 }
 
 export default function StudentLessonDetail() {
@@ -341,29 +344,42 @@ export default function StudentLessonDetail() {
   const [isEditing, setIsEditing] = useState(false);
   const [filePreviewOpen, setFilePreviewOpen] = useState(false);
   const [previewFile, setPreviewFile] = useState('');
-  // Fetch all lessons of group
-  const fetchGroupLessons = () => {
-    return api.get(`/api/v1/students/my/groups/${groupId}/lessons`)
+
+  // Sidebar uchun yengil ro'yxat (faqat id, topic, date, videoCount)
+  const fetchLessonsList = () => {
+    return api.get(`/api/v1/students/my/groups/${groupId}/lessons-summary`)
       .then(res => {
-        const data = res.data?.data || [];
-        setLessons(data);
-        
-        const activeVids = { ...activeVideos };
-        data.forEach(l => {
-          if (l.videos?.length > 0 && !activeVids[l.id]) {
-            activeVids[l.id] = l.videos[0].id;
-          }
-        });
-        setActiveVideos(activeVids);
+        setLessons(res.data?.data || []);
       })
       .catch(err => {
-        console.error('API error fetching lessons details:', err);
+        console.error('API error fetching lessons list:', err);
+      });
+  };
+
+  // Faol darsning to'liq ma'lumotini olish
+  const [activeLesson, setActiveLesson] = useState(null);
+  const fetchActiveLesson = () => {
+    return api.get(`/api/v1/students/my/groups/${groupId}/lessons/${lessonId}`)
+      .then(res => {
+        const data = res.data?.data;
+        setActiveLesson(data);
+        // Video state ni yangilash
+        if (data?.videos?.length > 0) {
+          setActiveVideos(prev => ({
+            ...prev,
+            [data.id]: prev[data.id] ?? data.videos[0].id,
+          }));
+        }
+      })
+      .catch(err => {
+        console.error('API error fetching lesson detail:', err);
       });
   };
 
   useEffect(() => {
     setLoading(true);
-    fetchGroupLessons().finally(() => setLoading(false));
+    Promise.all([fetchLessonsList(), fetchActiveLesson()])
+      .finally(() => setLoading(false));
   }, [groupId, lessonId]);
 
   useEffect(() => {
@@ -371,7 +387,6 @@ export default function StudentLessonDetail() {
   }, [lessonId]);
 
   const activeLessonId = Number(lessonId);
-  const activeLesson = lessons.find(l => l.id === activeLessonId);
   const activeVideoId = activeLesson
     ? (activeVideos[activeLesson.id] ?? activeLesson.videos?.[0]?.id)
     : null;
@@ -398,6 +413,7 @@ export default function StudentLessonDetail() {
     }
   };
 
+
   // Submit Homework to backend
   const handleSendHomework = () => {
     const homework = activeLesson?.homeWorks?.[0];
@@ -413,7 +429,8 @@ export default function StudentLessonDetail() {
         setSubmitText('');
         setSelectedFiles([]);
         setIsEditing(false);
-        return fetchGroupLessons();
+        fetchLessonsList();
+        return fetchActiveLesson();
       })
       .catch(err => {
         console.error('Error submitting homework:', err);

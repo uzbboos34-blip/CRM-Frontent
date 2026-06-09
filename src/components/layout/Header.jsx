@@ -42,7 +42,7 @@ export default function Header({ isSidebarCollapsed, setIsSidebarCollapsed, isMa
     }
   };
 
-  const isStudent = role === 'STUDENT' || location.pathname.startsWith('/student');
+  const isStudent = role === 'STUDENT' || /^\/student(\/|$)/.test(location.pathname);
 
   if (isStudent) {
     return (

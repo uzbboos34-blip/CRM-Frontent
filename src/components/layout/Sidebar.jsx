@@ -56,7 +56,7 @@ export default function Sidebar({ openSettings, setOpenSettings, isSidebarCollap
     { text: 'Sozlamalar', icon: <SettingsIcon />, path: '/student/settings' },
   ];
 
-  const isStudent = role === 'STUDENT' || location.pathname.startsWith('/student');
+  const isStudent = role === 'STUDENT' || /^\/student(\/|$)/.test(location.pathname);
 
   const itemsToRender = isStudent
     ? studentMenuItems

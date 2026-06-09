@@ -55,7 +55,7 @@ export default function StudentGroupLessons() {
 
   useEffect(() => {
     setLoading(true);
-    api.get(`/api/v1/students/my/groups/${groupId}/lessons`)
+    api.get(`/api/v1/students/my/groups/${groupId}/lessons/list`)
       .then(res => {
         setLessons(res.data?.data || []);
       })
@@ -66,14 +66,8 @@ export default function StudentGroupLessons() {
       .finally(() => setLoading(false));
   }, [groupId]);
 
-  // Helper to extract status key from lesson data
-  const getHwStatusKey = (lesson) => {
-    const hw = lesson.homeWorks?.[0];
-    if (!hw) return 'NONE';
-    const answer = hw.homeWorkAnswers?.[0];
-    if (!answer) return 'NOT_DONE';
-    return answer.homeworkStatus || 'PENDING';
-  };
+  // Yangi API to'g'ridan-to'g'ri homeworkStatus qaytaradi
+  const getHwStatusKey = (lesson) => lesson.homeworkStatus || 'NONE';
 
   // Filter lessons
   const filtered = lessons.filter(lesson => {
@@ -186,7 +180,7 @@ export default function StudentGroupLessons() {
             </TableHead>
             <TableBody>
               {filtered.map((lesson, idx) => {
-                const videoCount = lesson._count?.videos ?? 0;
+                const videoCount = lesson.videoCount ?? 0;
                 const statusKey = getHwStatusKey(lesson);
 
                 return (

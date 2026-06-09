@@ -361,41 +361,68 @@ export default function StudentLessonDetail() {
                 }}
               >
                 <Box sx={{
-                  display: 'grid',
-                  gridTemplateColumns: { xs: '1fr', md: '1fr auto 1fr' },
+                  display: 'flex',
+                  flexDirection: { xs: 'column', md: 'row' },
                   alignItems: 'center',
-                  gap: { xs: 2, md: 3 },
+                  justifyContent: 'space-between',
+                  gap: { xs: 2, md: 2.5 },
                 }}>
-                  <Typography sx={{ fontSize: { xs: '1.25rem', sm: '1.45rem' }, fontWeight: 500, color: '#333', fontFamily: "'Inter', 'Outfit', sans-serif" }}>
+                  <Typography sx={{
+                    width: { xs: '100%', md: 170 },
+                    flexShrink: 0,
+                    fontSize: { xs: '1.3rem', sm: '1.5rem' },
+                    fontWeight: 500,
+                    color: '#333',
+                    whiteSpace: 'nowrap',
+                    fontFamily: "'Inter', 'Outfit', sans-serif"
+                  }}>
                     Uyga vazifa
                   </Typography>
 
                   <Box sx={{
-                    justifySelf: { xs: 'start', md: 'center' },
+                    flex: { xs: 'none', md: '0 1 520px' },
+                    width: { xs: '100%', md: 'auto' },
                     display: 'flex',
                     alignItems: 'center',
-                    gap: 2,
+                    justifyContent: 'center',
+                    gap: { xs: 1.25, sm: 1.75 },
                     backgroundColor: '#fffaf0',
                     color: '#333',
-                    px: { xs: 2, sm: 3 },
-                    py: { xs: 1.5, sm: 2 },
+                    px: { xs: 1.5, sm: 2.5 },
+                    py: { xs: 1.25, sm: 1.5 },
                     borderRadius: '6px',
-                    minWidth: { xs: '100%', sm: 360, md: 430 },
+                    minHeight: 56,
+                    minWidth: 0,
                   }}>
-                    <WarningIcon sx={{ fontSize: 30, color: '#e6a72d' }} />
-                    <Typography sx={{ fontSize: { xs: '1rem', sm: '1.15rem' }, lineHeight: 1.45, fontWeight: 500, fontFamily: "'Inter', 'Outfit', sans-serif" }}>
-                      Uyga vazifa<br />muddati:
+                    <WarningIcon sx={{ fontSize: 24, color: '#e6a72d', flexShrink: 0 }} />
+                    <Typography sx={{
+                      fontSize: { xs: '0.95rem', sm: '1rem' },
+                      lineHeight: 1.35,
+                      fontWeight: 600,
+                      whiteSpace: 'nowrap',
+                      fontFamily: "'Inter', 'Outfit', sans-serif"
+                    }}>
+                      Uyga vazifa muddati:
                     </Typography>
-                    <Typography sx={{ fontSize: { xs: '1rem', sm: '1.15rem' }, lineHeight: 1.45, fontWeight: 600, fontFamily: "'Inter', 'Outfit', sans-serif" }}>
+                    <Typography sx={{
+                      fontSize: { xs: '0.95rem', sm: '1rem' },
+                      lineHeight: 1.35,
+                      fontWeight: 600,
+                      whiteSpace: { xs: 'normal', sm: 'nowrap' },
+                      fontFamily: "'Inter', 'Outfit', sans-serif"
+                    }}>
                       {homework.deadline ? formatDateTime(homework.deadline) : formatDateTime(homework.created_at)}
                     </Typography>
                   </Box>
 
                   <Typography sx={{
-                    justifySelf: { xs: 'start', md: 'end' },
-                    fontSize: { xs: '1rem', sm: '1.15rem' },
+                    width: { xs: '100%', md: 150 },
+                    flexShrink: 0,
+                    textAlign: { xs: 'left', md: 'right' },
+                    fontSize: { xs: '1rem', sm: '1.1rem' },
                     color: '#333',
                     fontWeight: 500,
+                    whiteSpace: 'nowrap',
                     fontFamily: "'Inter', 'Outfit', sans-serif"
                   }}>
                     Fayllar soni: {homework.file ? 1 : 0}
@@ -438,12 +465,12 @@ export default function StudentLessonDetail() {
                     borderRadius: 0,
                     border: '1px solid #e5e7eb',
                     backgroundColor: '#ffffff',
-                    minHeight: 160,
+                    minHeight: 150,
                   }}
                 >
                   <Box sx={{
                     position: 'relative',
-                    minHeight: 160,
+                    minHeight: 150,
                     backgroundColor: '#ffffff',
                     px: { xs: 2, sm: 4 },
                     py: { xs: 2.5, sm: 3 },
@@ -464,6 +491,12 @@ export default function StudentLessonDetail() {
                       InputProps={{ disableUnderline: true }}
                       sx={{
                         pr: 8,
+                        '& .MuiInput-root:before, & .MuiInput-root:after': {
+                          display: 'none',
+                        },
+                        '& .MuiInput-root:hover:not(.Mui-disabled):before': {
+                          borderBottom: '0',
+                        },
                         '& .MuiInputBase-input': {
                           fontSize: { xs: '1rem', sm: '1.15rem' },
                           color: '#333',

@@ -13,6 +13,7 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import PlayCircleFilledWhiteOutlinedIcon from '@mui/icons-material/PlayCircleFilledWhiteOutlined';
 import PanoramaFishEyeIcon from '@mui/icons-material/PanoramaFishEye';
 import api from '../api/axios';
+import { supabaseUrl } from '../api/supabase';
 
 function getFullVideoUrl(url) {
   if (!url) return '';
@@ -21,6 +22,52 @@ function getFullVideoUrl(url) {
   if (baseUrl.endsWith('/')) baseUrl = baseUrl.slice(0, -1);
   baseUrl = baseUrl.replace(/\/api\/v1$/, '');
   return `${baseUrl}/file/${url}`;
+}
+
+function getHomeworkFileUrl(filename) {
+  if (!filename) return '';
+  if (filename.startsWith('http')) return filename;
+  if (filename.includes('/file/') || filename.startsWith('/')) {
+    return getFullVideoUrl(filename.replace(/^\//, ''));
+  }
+  return `${supabaseUrl}/storage/v1/object/public/NajotEdu/${filename}`;
+}
+
+function parseHomeworkFiles(homework) {
+  if (!homework) return [];
+  const files = [];
+  const add = (value) => {
+    if (!value) return;
+    if (Array.isArray(value)) {
+      value.filter(Boolean).forEach(add);
+      return;
+    }
+    if (typeof value !== 'string') return;
+    const trimmed = value.trim();
+    if (!trimmed) return;
+    if (trimmed.startsWith('[')) {
+      try {
+        const parsed = JSON.parse(trimmed);
+        if (Array.isArray(parsed)) {
+          parsed.filter(Boolean).forEach(add);
+          return;
+        }
+      } catch {
+        // fall through
+      }
+    }
+    files.push(trimmed);
+  };
+  add(homework.file);
+  add(homework.files);
+  add(homework.video_url);
+  return [...new Set(files)];
+}
+
+function getHomeworkFileName(path) {
+  if (!path) return 'Biriktirilgan fayl';
+  const clean = path.split('?')[0];
+  return decodeURIComponent(clean.split('/').pop() || 'Biriktirilgan fayl');
 }
 
 function VideoPlayerFrame({ video }) {
@@ -132,6 +179,7 @@ export default function StudentLessonDetail() {
   const [submitText, setSubmitText] = useState('');
   const [selectedFiles, setSelectedFiles] = useState([]);
   const [isEditing, setIsEditing] = useState(false);
+  const [homeworkFiles, setHomeworkFiles] = useState([]);
   // Fetch all lessons of group
   const fetchGroupLessons = () => {
     return api.get(`/api/v1/students/my/groups/${groupId}/lessons`)
@@ -162,6 +210,34 @@ export default function StudentLessonDetail() {
   }, [lessonId]);
 
   const activeLessonId = Number(lessonId);
+  const activeHomeworkId = lessons.find(l => l.id === activeLessonId)?.homeWorks?.[0]?.id;
+
+  useEffect(() => {
+    const hw = lessons.find(l => l.id === activeLessonId)?.homeWorks?.[0];
+    if (!hw) {
+      setHomeworkFiles([]);
+      return;
+    }
+
+    const filesFromLesson = parseHomeworkFiles(hw);
+    if (filesFromLesson.length > 0) {
+      setHomeworkFiles(filesFromLesson);
+      return;
+    }
+
+    if (!hw.id) {
+      setHomeworkFiles([]);
+      return;
+    }
+
+    api.get(`/api/v1/home-works/${hw.id}`)
+      .then(res => {
+        const detail = res.data?.data || res.data;
+        setHomeworkFiles(parseHomeworkFiles(detail));
+      })
+      .catch(() => setHomeworkFiles([]));
+  }, [activeLessonId, activeHomeworkId, lessons]);
+
   const activeLesson = lessons.find(l => l.id === activeLessonId);
   const activeVideoId = activeLesson
     ? (activeVideos[activeLesson.id] ?? activeLesson.videos?.[0]?.id)
@@ -433,7 +509,7 @@ export default function StudentLessonDetail() {
                     whiteSpace: 'nowrap',
                     fontFamily: "'Inter', 'Outfit', sans-serif"
                   }}>
-                    Fayllar soni: {homework.file ? 1 : 0}
+                    Fayllar soni: {homeworkFiles.length}
                   </Typography>
                 </Box>
 
@@ -444,16 +520,28 @@ export default function StudentLessonDetail() {
                   </Typography>
                 </Box>
 
-                {homework.file && (
-                  <Box>
-                    <Button 
-                      variant="outlined" 
-                      size="small" 
-                      onClick={() => window.open(homework.file.startsWith('http') ? homework.file : `https://supabase.co/storage/v1/object/public/NajotEdu/${homework.file}`, '_blank')}
-                      sx={{ textTransform: 'none', color: '#c5a059', borderColor: '#c5a059', '&:hover': { borderColor: '#e68a00', color: '#e68a00' } }}
-                    >
-                      Biriktirilgan fayl
-                    </Button>
+                {homeworkFiles.length > 0 && (
+                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                    {homeworkFiles.map((file, index) => (
+                      <Button
+                        key={`${file}-${index}`}
+                        variant="outlined"
+                        size="small"
+                        startIcon={<AttachFileIcon sx={{ fontSize: 16 }} />}
+                        onClick={() => window.open(getHomeworkFileUrl(file), '_blank', 'noopener,noreferrer')}
+                        sx={{
+                          alignSelf: 'flex-start',
+                          textTransform: 'none',
+                          color: '#c5a059',
+                          borderColor: '#c5a059',
+                          fontWeight: 600,
+                          maxWidth: '100%',
+                          '&:hover': { borderColor: '#e68a00', color: '#e68a00', backgroundColor: '#fffaf5' },
+                        }}
+                      >
+                        {getHomeworkFileName(file)}
+                      </Button>
+                    ))}
                   </Box>
                 )}
 

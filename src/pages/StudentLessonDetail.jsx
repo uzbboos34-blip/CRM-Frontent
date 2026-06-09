@@ -142,7 +142,6 @@ function renderHomeworkFilePreview(previewFile) {
   const isOffice = ['doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'odt', 'ods', 'odp'].includes(ext);
   const isText = ['txt', 'json', 'js', 'ts', 'jsx', 'tsx', 'html', 'css', 'md', 'csv', 'xml', 'yaml'].includes(ext);
   const isAudio = ['mp3', 'wav', 'ogg', 'm4a', 'flac'].includes(ext);
-  const isVideo = ['mp4', 'webm', 'avi', 'mov'].includes(ext);
   const isArchive = ['zip', 'rar', '7z', 'tar', 'gz'].includes(ext);
 
   if (isImg) {
@@ -183,17 +182,6 @@ function renderHomeworkFilePreview(previewFile) {
           Audio faylni tinglash
         </Typography>
         <audio controls src={url} style={{ width: '100%', maxWidth: 500 }} />
-      </Box>
-    );
-  }
-  if (isVideo) {
-    return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', p: 2, background: '#000' }}>
-        <video
-          src={url}
-          controls
-          style={{ maxWidth: '100%', maxHeight: '500px', borderRadius: 8 }}
-        />
       </Box>
     );
   }

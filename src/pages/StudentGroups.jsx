@@ -50,7 +50,7 @@ function GroupDetailModal({ item, onClose }) {
       <Box
         onClick={onClose}
         sx={{
-          position: 'fixed', inset: 0, zIndex: 1299,
+          position: 'fixed', inset: 0, zIndex: 1399,
           backgroundColor: 'rgba(0,0,0,0.45)',
           backdropFilter: 'blur(2px)',
         }}
@@ -61,7 +61,7 @@ function GroupDetailModal({ item, onClose }) {
           position: 'fixed',
           top: '50%', left: '50%',
           transform: 'translate(-50%, -50%)',
-          zIndex: 1300,
+          zIndex: 1400,
           backgroundColor: '#fff',
           borderRadius: '16px',
           boxShadow: '0 20px 60px rgba(0,0,0,0.2)',
@@ -251,35 +251,17 @@ export default function StudentGroups() {
                     <TableCell sx={{ py: 1.2, px: 2, fontSize: '0.88rem', fontWeight: 600, color: '#111827' }}>{group.name}</TableCell>
                     <TableCell sx={{ py: 1.2, px: 2, fontSize: '0.88rem', color: '#4b5563', fontWeight: 500 }}>{courseName}</TableCell>
                     <TableCell sx={{ py: 1.2, px: 2 }}>
-                      {/* Stacked avatars */}
-                      <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                        {teachers.slice(0, 3).map((t, i) => (
-                          <Box key={i} title={t.full_name} sx={{
-                            width: 26, height: 26, borderRadius: '50%',
-                            backgroundColor: 'rgba(197,160,89,0.15)',
-                            color: '#c5a059', fontWeight: 700, fontSize: '0.68rem',
-                            display: 'flex', alignItems: 'center', justifyContent: 'center',
-                            border: '2px solid #fff',
-                            ml: i === 0 ? 0 : '-7px',
-                            zIndex: 3 - i,
-                          }}>
-                            {getInitials(t.full_name || '?')}
-                          </Box>
-                        ))}
-                        {teachers.length > 3 && (
-                          <Box sx={{
-                            width: 26, height: 26, borderRadius: '50%',
-                            backgroundColor: '#f3f4f6',
-                            color: '#6b7280', fontWeight: 700, fontSize: '0.65rem',
-                            display: 'flex', alignItems: 'center', justifyContent: 'center',
-                            border: '2px solid #fff', ml: '-7px',
-                          }}>
-                            +{teachers.length - 3}
-                          </Box>
-                        )}
-                        {teachers.length === 0 && (
-                          <Typography sx={{ fontSize: '0.83rem', color: '#9ca3af' }}>—</Typography>
-                        )}
+                      {/* O'qituvchilar soni — doira badge */}
+                      <Box
+                        sx={{
+                          width: 28, height: 28, borderRadius: '50%',
+                          backgroundColor: 'rgba(197,160,89,0.18)',
+                          color: '#c5a059',
+                          fontWeight: 700, fontSize: '0.78rem',
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        }}
+                      >
+                        {teachers.length || '—'}
                       </Box>
                     </TableCell>
                     <TableCell sx={{ py: 1.2, px: 2, fontSize: '0.88rem', color: '#4b5563', fontWeight: 500 }}>

@@ -56,9 +56,9 @@ export default function StudentGroups() {
   };
 
   return (
-    <Box sx={{ p: { xs: 1.5, sm: 2 }, animation: 'fadeIn 0.3s ease-out' }}>
+    <Box sx={{ animation: 'fadeIn 0.3s ease-out' }}>
       {/* Tabs */}
-      <Box sx={{ borderBottom: '1px solid #e5e7eb', mb: 3 }}>
+      <Box sx={{ borderBottom: '1px solid #e5e7eb', mb: 2 }}>
         <Tabs
           value={activeTab}
           onChange={handleTabChange}
@@ -98,11 +98,11 @@ export default function StudentGroups() {
           <Table>
             <TableHead sx={{ backgroundColor: '#fff' }}>
               <TableRow>
-                <TableCell sx={{ fontWeight: 700, color: '#4b5563', fontSize: '0.88rem', py: 2 }}>#</TableCell>
-                <TableCell sx={{ fontWeight: 700, color: '#4b5563', fontSize: '0.88rem', py: 2 }}>Guruh nomi</TableCell>
-                <TableCell sx={{ fontWeight: 700, color: '#4b5563', fontSize: '0.88rem', py: 2 }}>Yo'nalishi</TableCell>
-                <TableCell sx={{ fontWeight: 700, color: '#4b5563', fontSize: '0.88rem', py: 2, textAlign: 'center' }}>O'qituvchi</TableCell>
-                <TableCell sx={{ fontWeight: 700, color: '#4b5563', fontSize: '0.88rem', py: 2 }}>Boshlash vaqti</TableCell>
+                <TableCell sx={{ fontWeight: 700, color: '#4b5563', fontSize: '0.83rem', py: 1.2, px: 2 }}>#</TableCell>
+                <TableCell sx={{ fontWeight: 700, color: '#4b5563', fontSize: '0.83rem', py: 1.2, px: 2 }}>Guruh nomi</TableCell>
+                <TableCell sx={{ fontWeight: 700, color: '#4b5563', fontSize: '0.83rem', py: 1.2, px: 2 }}>Yo'nalishi</TableCell>
+                <TableCell sx={{ fontWeight: 700, color: '#4b5563', fontSize: '0.83rem', py: 1.2, px: 2, textAlign: 'center' }}>O'qituvchi</TableCell>
+                <TableCell sx={{ fontWeight: 700, color: '#4b5563', fontSize: '0.83rem', py: 1.2, px: 2 }}>Boshlash vaqti</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
@@ -121,25 +121,25 @@ export default function StudentGroups() {
                       '&:last-child td': { borderBottom: 'none' }
                     }}
                   >
-                    <TableCell sx={{ py: 2, fontSize: '0.9rem', fontWeight: 600, color: '#111827' }}>
+                    <TableCell sx={{ py: 1.2, px: 2, fontSize: '0.88rem', fontWeight: 600, color: '#111827' }}>
                       {idx + 1}
                     </TableCell>
-                    <TableCell sx={{ py: 2, fontSize: '0.9rem', fontWeight: 700, color: '#111827' }}>
+                    <TableCell sx={{ py: 1.2, px: 2, fontSize: '0.88rem', fontWeight: 600, color: '#111827' }}>
                       {group.name}
                     </TableCell>
-                    <TableCell sx={{ py: 2, fontSize: '0.9rem', color: '#4b5563', fontWeight: 500 }}>
+                    <TableCell sx={{ py: 1.2, px: 2, fontSize: '0.88rem', color: '#4b5563', fontWeight: 500 }}>
                       {courseName}
                     </TableCell>
-                    <TableCell sx={{ py: 2, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                    <TableCell sx={{ py: 1.2, px: 2, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
                       <Box
                         sx={{
-                          width: 32,
-                          height: 32,
+                          width: 28,
+                          height: 28,
                           borderRadius: '50%',
                           backgroundColor: 'rgba(197, 160, 89, 0.2)',
                           color: '#c5a059',
                           fontWeight: 700,
-                          fontSize: '0.8rem',
+                          fontSize: '0.75rem',
                           display: 'flex',
                           alignItems: 'center',
                           justifyContent: 'center',
@@ -155,7 +155,7 @@ export default function StudentGroups() {
                         {getInitials(teacherName)}
                       </Box>
                     </TableCell>
-                    <TableCell sx={{ py: 2, fontSize: '0.9rem', color: '#4b5563', fontWeight: 500 }}>
+                    <TableCell sx={{ py: 1.2, px: 2, fontSize: '0.88rem', color: '#4b5563', fontWeight: 500 }}>
                       {formatDate(group.start_date)}
                     </TableCell>
                   </TableRow>

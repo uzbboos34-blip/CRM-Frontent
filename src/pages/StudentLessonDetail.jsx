@@ -2,7 +2,9 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
   Box, Typography, Paper, IconButton, Button,
-  TextField, Tooltip, CircularProgress
+  TextField, Tooltip, CircularProgress,
+  Accordion, AccordionSummary, AccordionDetails,
+  List, ListItem
 } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
@@ -15,6 +17,8 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 import PlayCircleOutlinedIcon from '@mui/icons-material/PlayCircleOutlined';
 import CircleOutlinedIcon from '@mui/icons-material/CircleOutlined';
+import PlayCircleFilledWhiteOutlinedIcon from '@mui/icons-material/PlayCircleFilledWhiteOutlined';
+import PanoramaFishEyeIcon from '@mui/icons-material/PanoramaFishEye';
 import api from '../api/axios';
 
 // Uy vazifasi holati config
@@ -241,18 +245,34 @@ export default function StudentLessonDetail() {
             p: 0, // No padding, video takes full container width!
           }}>
             {activeVideo ? (
-              <video
-                src={activeVideo.video_url?.startsWith('http') ? activeVideo.video_url : `https://mcjypffxtuoqfttoapjh.supabase.co/storage/v1/object/public/NajotEdu/${activeVideo.video_url}`}
-                controls
-                style={{
-                  width: '100%',
-                  height: '100%',
-                  objectFit: 'contain',
-                  backgroundColor: '#000000',
-                  borderRadius: '12px',
-                  display: 'block'
-                }}
-              />
+              activeVideo.video_url?.includes('embed') || activeVideo.video_url?.includes('kinescope') ? (
+                <iframe
+                  src={activeVideo.video_url}
+                  height="100%"
+                  width="100%"
+                  allow="autoplay; fullscreen; encrypted-media;"
+                  style={{
+                    border: 'none',
+                    width: '100%',
+                    height: '100%',
+                    borderRadius: '12px',
+                  }}
+                  className="player__iframe"
+                />
+              ) : (
+                <video
+                  src={activeVideo.video_url?.startsWith('http') ? activeVideo.video_url : `https://mcjypffxtuoqfttoapjh.supabase.co/storage/v1/object/public/NajotEdu/${activeVideo.video_url}`}
+                  controls
+                  style={{
+                    width: '100%',
+                    height: '100%',
+                    objectFit: 'contain',
+                    backgroundColor: '#000000',
+                    borderRadius: '12px',
+                    display: 'block'
+                  }}
+                />
+              )
             ) : (
               <Box sx={{
                 display: 'flex',
@@ -574,51 +594,114 @@ export default function StudentLessonDetail() {
         </Box>
 
         {/* Right side: Sidebar List of Lessons */}
-        <Box sx={{
-          width: { xs: '100%', lg: 360 },
-          display: 'flex',
-          flexDirection: 'column',
-          gap: 1.5,
-          p: 3, // Padded inside the scrollable container
-          backgroundColor: '#ffffff', // Solid white background behind lessons list!
-          height: '100%',
-          overflowY: 'auto',
-          '&::-webkit-scrollbar': { width: '6px' },
-          '&::-webkit-scrollbar-thumb': { backgroundColor: 'rgba(0,0,0,0.1)', borderRadius: '4px' }
-        }}>
-          {lessons.map((lesson) => {
-            const isActive = lesson.id === activeLessonId;
-            const hasVideos = lesson.videos?.length > 0;
-            const isExpanded = !!expandedLessons[lesson.id];
+        <Accordion
+          defaultExpanded
+          elevation={0}
+          sx={{
+            width: { xs: '100%', lg: 360 },
+            display: 'flex',
+            flexDirection: 'column',
+            height: '100%',
+            backgroundColor: '#ffffff',
+            borderRadius: 0,
+            overflowY: 'hidden',
+            border: 'none',
+            '&:before': { display: 'none' }, // Remove default divider
+          }}
+        >
+          <AccordionSummary
+            expandIcon={<ExpandMoreIcon sx={{ color: '#4b5563', fontSize: 24 }} />}
+            sx={{
+              flexShrink: 0,
+              px: 3,
+              py: 2,
+              borderBottom: '1.5px solid #e2e8f0',
+              '& .MuiAccordionSummary-content': { m: 0 }
+            }}
+          >
+            <Typography sx={{ fontSize: '1.05rem', fontWeight: 800, color: '#1a202c', fontFamily: "'Inter', 'Outfit', sans-serif" }}>
+              Mavzular
+            </Typography>
+          </AccordionSummary>
+          
+          <AccordionDetails 
+            sx={{ 
+              p: 0, 
+              flexGrow: 1, 
+              overflowY: 'auto',
+              '&::-webkit-scrollbar': { width: '6px' },
+              '&::-webkit-scrollbar-thumb': { backgroundColor: 'rgba(0,0,0,0.1)', borderRadius: '4px' }
+            }}
+          >
+            {lessons.map((lesson) => {
+              const isActive = lesson.id === activeLessonId;
+              const hasVideos = lesson.videos?.length > 0;
+              const isExpanded = !!expandedLessons[lesson.id];
 
-            return (
-              <Box key={lesson.id} sx={{ display: 'flex', flexDirection: 'column', gap: 0.8 }}>
-                {/* Individual Lesson Card */}
-                <Paper
-                  onClick={() => {
+              if (!hasVideos) {
+                return (
+                  <Box
+                    key={lesson.id}
+                    onClick={() => selectLesson(lesson)}
+                    sx={{
+                      px: 3,
+                      py: 2.2,
+                      borderBottom: '1.5px solid #e2e8f0',
+                      backgroundColor: isActive ? '#faede0' : '#ffffff',
+                      cursor: 'pointer',
+                      transition: 'all 0.15s ease-in-out',
+                      '&:hover': {
+                        backgroundColor: isActive ? '#f3e2d1' : '#f9fafb',
+                      }
+                    }}
+                  >
+                    <Typography sx={{
+                      fontSize: '0.9rem',
+                      fontWeight: isActive ? 700 : 600,
+                      color: '#2d3748',
+                      lineHeight: 1.4,
+                      fontFamily: "'Inter', 'Outfit', sans-serif",
+                      mb: 0.5
+                    }}>
+                      {lesson.topic || lesson.description}
+                    </Typography>
+                    <Typography sx={{ fontSize: '0.8rem', color: '#9ca3af', fontWeight: 700, fontFamily: "'Inter', 'Outfit', sans-serif" }}>
+                      Dars sanasi: {formatLessonDate(lesson.date)}
+                    </Typography>
+                  </Box>
+                );
+              }
+
+              return (
+                <Accordion
+                  key={lesson.id}
+                  expanded={isExpanded}
+                  onChange={() => {
                     selectLesson(lesson);
-                    // Also toggle expansion
                     setExpandedLessons(prev => ({ ...prev, [lesson.id]: !prev[lesson.id] }));
                   }}
                   elevation={0}
                   sx={{
-                    p: 2.2,
-                    borderRadius: '12px',
-                    border: 'none',
-                    backgroundColor: isActive ? '#ebd1b0' : '#f5f5f5', // Active gets peach, inactive gets light grey!
-                    cursor: 'pointer',
-                    position: 'relative',
-                    transition: 'all 0.15s ease-in-out',
-                    '&:hover': {
-                      backgroundColor: isActive ? '#dfc29f' : '#eaeaea',
-                    },
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: 1
+                    backgroundColor: isActive ? '#faede0' : '#ffffff',
+                    borderBottom: '1.5px solid #e2e8f0',
+                    '&:before': { display: 'none' }, // Remove default divider
+                    borderRadius: 0,
+                    margin: '0 !important' // Override default MUI margin expansion
                   }}
                 >
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
-                    <Box sx={{ flexGrow: 1 }}>
+                  <AccordionSummary
+                    expandIcon={<ExpandMoreIcon sx={{ color: '#4b5563', fontSize: 22 }} />}
+                    sx={{
+                      px: 3,
+                      py: 1.5,
+                      backgroundColor: isActive ? '#faede0' : '#ffffff',
+                      '&:hover': {
+                        backgroundColor: isActive ? '#f3e2d1' : '#f9fafb',
+                      },
+                      '& .MuiAccordionSummary-content': { m: 0 }
+                    }}
+                  >
+                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
                       <Typography sx={{
                         fontSize: '0.9rem',
                         fontWeight: isActive ? 700 : 600,
@@ -628,81 +711,70 @@ export default function StudentLessonDetail() {
                       }}>
                         {lesson.topic || lesson.description}
                       </Typography>
+                      <Typography sx={{ fontSize: '0.8rem', color: isActive ? '#6b7280' : '#9ca3af', fontWeight: 700, fontFamily: "'Inter', 'Outfit', sans-serif" }}>
+                        Dars sanasi: {formatLessonDate(lesson.date)}
+                      </Typography>
                     </Box>
-                    {hasVideos && (
-                      <Box sx={{ ml: 1.5, display: 'flex', alignItems: 'center', color: '#4b5563', flexShrink: 0 }}>
-                        {isExpanded ? <ExpandLessIcon sx={{ fontSize: 22 }} /> : <ExpandMoreIcon sx={{ fontSize: 22 }} />}
-                      </Box>
-                    )}
-                  </Box>
+                  </AccordionSummary>
 
-                  <Typography sx={{ fontSize: '0.8rem', color: isActive ? '#6b7280' : '#9ca3af', fontWeight: 700, fontFamily: "'Inter', 'Outfit', sans-serif" }}>
-                    Dars sanasi: {formatLessonDate(lesson.date)}
-                  </Typography>
-                </Paper>
-
-                {/* Dropdown list of videos */}
-                {hasVideos && isExpanded && (
-                  <Box sx={{
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: 0.8,
-                    pl: 1.5,
-                    borderLeft: '1px dashed #e2e8f0',
-                    ml: 1.5,
-                    animation: 'slideDown 0.2s ease-out',
-                    '@keyframes slideDown': {
-                      from: { opacity: 0, transform: 'translateY(-8px)' },
-                      to: { opacity: 1, transform: 'translateY(0)' }
-                    }
-                  }}>
-                    {lesson.videos.map((video, idx) => {
-                      const isVideoActive = activeVideos[lesson.id] === video.id;
-                      return (
-                        <Paper
-                          key={video.id}
-                          onClick={(e) => selectVideo(lesson.id, video.id, e)}
-                          elevation={0}
-                          sx={{
-                            p: 1.5,
-                            borderRadius: '10px',
-                            border: isVideoActive ? '1.5px solid #d4a373' : '1.5px solid #ebd9c2',
-                            backgroundColor: isVideoActive ? '#ebd1b0' : '#f8ebd9', // Peach/beige backgrounds for active/inactive videos
-                            cursor: 'pointer',
-                            '&:hover': {
-                              backgroundColor: isVideoActive ? '#dfc29f' : '#f2dfc9'
-                            },
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: 1.2,
-                            transition: 'all 0.12s'
-                          }}
-                        >
-                          {isVideoActive ? (
-                            <PlayCircleOutlinedIcon sx={{ fontSize: 20, color: '#a0783f', flexShrink: 0 }} />
-                          ) : (
-                            <CircleOutlinedIcon sx={{ fontSize: 20, color: '#a0783f', flexShrink: 0 }} />
-                          )}
-                          <Typography sx={{
-                            fontSize: '0.83rem',
-                            fontWeight: isVideoActive ? 700 : 500,
-                            color: '#2d3748',
-                            overflow: 'hidden',
-                            textOverflow: 'ellipsis',
-                            whiteSpace: 'nowrap',
-                            fontFamily: "'Inter', 'Outfit', sans-serif"
-                          }}>
-                            {idx + 1}-video: {video.title}
-                          </Typography>
-                        </Paper>
-                      );
-                    })}
-                  </Box>
-                )}
-              </Box>
-            );
-          })}
-        </Box>
+                  <AccordionDetails sx={{ p: 0, backgroundColor: '#ffffff' }}>
+                    <List sx={{ p: 0 }}>
+                      {lesson.videos.map((video, idx) => {
+                        const isVideoActive = activeVideos[lesson.id] === video.id;
+                        return (
+                          <ListItem
+                            key={video.id}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              selectVideo(lesson.id, video.id, e);
+                            }}
+                            sx={{
+                              px: 4,
+                              py: 1.8,
+                              cursor: 'pointer',
+                              backgroundColor: isVideoActive ? '#faede0' : '#ffffff',
+                              borderBottom: idx === lesson.videos.length - 1 ? 'none' : '1px solid #f3f4f6',
+                              '&:hover': {
+                                backgroundColor: isVideoActive ? '#f3e2d1' : '#f9fafb',
+                              },
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: 1.5,
+                              transition: 'background-color 0.15s ease'
+                            }}
+                          >
+                            <Box sx={{ display: 'flex', alignItems: 'center', color: '#c5a059' }}>
+                              {isVideoActive ? (
+                                <PlayCircleFilledWhiteOutlinedIcon sx={{ fontSize: 20 }} />
+                              ) : (
+                                <PanoramaFishEyeIcon sx={{ fontSize: 20 }} />
+                              )}
+                            </Box>
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, minWidth: 0 }}>
+                              <Typography sx={{ fontSize: '0.85rem', fontWeight: 700, color: '#1a202c', fontFamily: "'Inter', 'Outfit', sans-serif" }}>
+                                {idx + 1}-video:
+                              </Typography>
+                              <Typography sx={{
+                                fontSize: '0.85rem',
+                                color: '#4a5568',
+                                fontFamily: "'Inter', 'Outfit', sans-serif",
+                                overflow: 'hidden',
+                                textOverflow: 'ellipsis',
+                                whiteSpace: 'nowrap'
+                              }}>
+                                {video.title}
+                              </Typography>
+                            </Box>
+                          </ListItem>
+                        );
+                      })}
+                    </List>
+                  </AccordionDetails>
+                </Accordion>
+              );
+            })}
+          </AccordionDetails>
+        </Accordion>
 
       </Box>
     </Box>

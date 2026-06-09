@@ -162,7 +162,7 @@ export default function StudentLessonDetail() {
   // Extract homework details
   const homework = activeLesson.homeWorks?.[0];
   const answer = homework?.homeWorkAnswers?.[0];
-  const statusKey = answer ? answer.homeworkStatus : 'NONE';
+  const statusKey = homework ? (answer ? answer.homeworkStatus : 'NOT_DONE') : 'NONE';
   const score = answer?.homeWorkResults?.[0]?.grade || 0;
   const teacherComment = answer?.homeWorkResults?.[0];
 
@@ -428,7 +428,7 @@ export default function StudentLessonDetail() {
                   <Box sx={{ borderBottom: '1px dashed #e2e8f0' }} />
 
                   {/* Submission input block */}
-                  {statusKey === 'NONE' && !isEditing ? (
+                  {statusKey === 'NOT_DONE' && !isEditing ? (
                     <Box>
                       <Typography sx={{ fontSize: '0.95rem', fontWeight: 700, color: '#2d3748', mb: 1.5 }}>
                         Vazifa yuklash

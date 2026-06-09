@@ -59,7 +59,7 @@ export default function StudentGroupLessons() {
     const hw = lesson.homeWorks?.[0];
     if (!hw) return 'NONE';
     const answer = hw.homeWorkAnswers?.[0];
-    if (!answer) return 'NONE';
+    if (!answer) return 'NOT_DONE';
     return answer.homeworkStatus || 'PENDING';
   };
 

@@ -5,10 +5,18 @@ import DarkModeIcon from '@mui/icons-material/DarkMode';
 import AddIcon from '@mui/icons-material/Add';
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
-// Mobil hamburger menyu uchun icon
 import MenuIcon from '@mui/icons-material/Menu';
+import LogoutIcon from '@mui/icons-material/Logout';
+import { useTheme } from '@mui/material/styles';
+import { useMediaQuery } from '@mui/material';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 export default function Header({ isSidebarCollapsed, setIsSidebarCollapsed, isManagementActive, onMenuToggle }) {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const navigate = useNavigate();
+  const location = useLocation();
+
   const tokenVal = localStorage.getItem('token');
   let role = '';
   if (tokenVal) {
@@ -19,6 +27,100 @@ export default function Header({ isSidebarCollapsed, setIsSidebarCollapsed, isMa
       console.error(e);
     }
   }
+
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    navigate('/login');
+  };
+
+  const handleToggleClick = () => {
+    if (isMobile) {
+      onMenuToggle();
+    } else {
+      setIsSidebarCollapsed(!isSidebarCollapsed);
+    }
+  };
+
+  const isStudent = role === 'STUDENT' || location.pathname.startsWith('/student');
+
+  if (isStudent) {
+    return (
+      <Box
+        sx={{
+          height: { xs: 64, sm: 90 },
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          padding: { xs: '0 12px', sm: '0 25px' },
+          position: 'relative',
+          zIndex: 1000,
+          backgroundColor: '#ffffff', // Solid white background!
+          borderBottom: '1.5px solid #e2e8f0', // Border bottom separation!
+        }}
+      >
+        {/* Left: Golden hamburger toggle button */}
+        <IconButton
+          onClick={handleToggleClick}
+          sx={{
+            backgroundColor: '#c5a059',
+            color: '#ffffff',
+            borderRadius: '12px',
+            p: 1.2,
+            width: 42,
+            height: 42,
+            '&:hover': { backgroundColor: '#b89350' },
+            boxShadow: '0 2px 8px rgba(197, 160, 89, 0.25)',
+          }}
+        >
+          <MenuIcon sx={{ fontSize: 20 }} />
+        </IconButton>
+
+        {/* Right: Notification and Logout icons */}
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+          {/* Notifications count "33" in red circle badge */}
+          <IconButton sx={{ 
+            backgroundColor: '#ffffff',
+            border: '1px solid #e2e8f0', 
+            borderRadius: '12px',
+            p: 1.2,
+            boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
+            '&:hover': { backgroundColor: '#f9fafb' }
+          }}>
+            <Badge 
+              badgeContent={33} 
+              sx={{
+                '& .MuiBadge-badge': {
+                  backgroundColor: '#ff3b30',
+                  color: '#ffffff',
+                  fontWeight: 800,
+                  fontSize: '0.7rem'
+                }
+              }}
+            >
+              <NotificationsNoneIcon sx={{ color: '#4b5563', fontSize: 22 }} />
+            </Badge>
+          </IconButton>
+
+          {/* Logout button */}
+          <IconButton 
+            onClick={handleLogout}
+            sx={{ 
+              backgroundColor: '#ffffff',
+              border: '1px solid #e2e8f0', 
+              borderRadius: '12px',
+              p: 1.2,
+              boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
+              '&:hover': { backgroundColor: '#fef2f2', color: '#dc2626' }
+            }}
+          >
+            <LogoutIcon sx={{ color: '#4b5563', fontSize: 22 }} />
+          </IconButton>
+        </Box>
+      </Box>
+    );
+  }
+
   const showAddButton = role !== 'TEACHER' && role !== 'STUDENT';
 
   return (

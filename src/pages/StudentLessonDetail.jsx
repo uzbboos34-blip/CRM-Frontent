@@ -171,156 +171,91 @@ export default function StudentLessonDetail() {
   const activeVideo = activeLesson.videos?.find(v => v.id === activeVideoId);
 
   return (
-    <Box sx={{ animation: 'fadeIn 0.3s ease-out', p: { xs: 1, md: 3 } }}>
-      {/* Back button and page title */}
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 3 }}>
-        <IconButton
-          size="small"
-          onClick={() => navigate(`/student/groups/${groupId}/lessons`)}
-          sx={{
-            backgroundColor: '#ffffff',
-            boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
-            '&:hover': { backgroundColor: '#f3f4f6' },
-            borderRadius: '8px',
-          }}
-        >
-          <ArrowBackIcon sx={{ fontSize: 18, color: '#374151' }} />
-        </IconButton>
-        <Typography sx={{ fontSize: '1.25rem', fontWeight: 800, color: '#2d3748' }}>
-          Darslar va Uy vazifalari
-        </Typography>
-      </Box>
-
+    <Box sx={{
+      animation: 'fadeIn 0.3s ease-out',
+      p: { xs: 1, md: 3 },
+      pt: { xs: 1, md: 1.5 },
+      height: { xs: 'auto', lg: 'calc(100vh - 120px)' },
+      display: 'flex',
+      flexDirection: 'column',
+      overflow: 'hidden'
+    }}>
       {/* Main split grid */}
       <Box sx={{
         display: 'flex',
         flexDirection: { xs: 'column', lg: 'row' },
         gap: 3,
-        alignItems: 'stretch'
+        alignItems: 'stretch',
+        flexGrow: 1,
+        minHeight: 0,
+        overflow: 'hidden'
       }}>
         
         {/* Left column (Player + Title + Vazifalar card) */}
-        <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 2 }}>
+        <Box sx={{ 
+          flex: 1, 
+          display: 'flex', 
+          flexDirection: 'column', 
+          gap: 2,
+          borderRight: { lg: '2.5px solid #c5a059' },
+          pr: { lg: 3.5 },
+          height: '100%',
+          overflowY: 'auto',
+          pb: 2,
+          '&::-webkit-scrollbar': { width: '6px' },
+          '&::-webkit-scrollbar-thumb': { backgroundColor: 'rgba(0,0,0,0.1)', borderRadius: '4px' }
+        }}>
           
-          {/* Custom Video Player */}
+          {/* Custom Video Player Container */}
           <Box sx={{
             width: '100%',
-            height: { xs: 220, sm: 360, md: 400 },
-            backgroundColor: activeVideo ? '#0f172a' : '#ffffff',
+            height: { xs: 240, sm: 360, md: 400 },
+            backgroundColor: '#ffffff', // Always white background!
             borderRadius: '16px',
-            boxShadow: '0 4px 20px rgba(0,0,0,0.04)',
-            border: activeVideo ? 'none' : '1px solid #e2e8f0',
+            boxShadow: '0 4px 20px rgba(0,0,0,0.02)',
+            border: '1px solid #e2e8f0',
             overflow: 'hidden',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            position: 'relative',
+            p: { xs: 1, sm: 2, md: 2.5 }, // Padding to create a white border/frame around the video player screen
           }}>
             {activeVideo ? (
-              <Box sx={{
-                position: 'relative',
-                width: '100%',
-                height: '100%',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                background: 'linear-gradient(135deg, #1e293b 0%, #0f172a 100%)',
-              }}>
-                <Box sx={{
-                  opacity: 0.08,
-                  position: 'absolute',
-                  width: '80%',
-                  height: '80%',
-                  backgroundImage: 'radial-gradient(circle, #c5a059 1px, transparent 1px)',
-                  backgroundSize: '16px 16px',
-                }} />
-                
-                <Typography sx={{
-                  position: 'absolute',
-                  color: 'rgba(255,255,255,0.03)',
-                  fontWeight: 900,
-                  fontSize: { xs: '3rem', sm: '5rem' },
-                  letterSpacing: 2,
-                  userSelect: 'none'
-                }}>
-                  NAJOT TA'LIM
-                </Typography>
-
-                {/* Simulated center Play button */}
-                <Box 
-                  onClick={() => {
-                    // Simulating playing file path
-                    if (activeVideo.video_url) {
-                      window.open(activeVideo.video_url.startsWith('http') ? activeVideo.video_url : `https://supabase.co/storage/v1/object/public/NajotEdu/${activeVideo.video_url}`, '_blank');
-                    }
-                  }}
-                  sx={{
-                    width: 76,
-                    height: 76,
-                    borderRadius: '50%',
-                    backgroundColor: '#ff9800',
-                    color: '#ffffff',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    cursor: 'pointer',
-                    '&:hover': {
-                      backgroundColor: '#e68a00',
-                      transform: 'scale(1.08)',
-                    },
-                    transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
-                    boxShadow: '0 8px 25px rgba(255, 152, 0, 0.4)',
-                    zIndex: 2,
-                  }}
-                >
-                  <PlayArrowIcon sx={{ fontSize: 40, ml: 0.5 }} />
-                </Box>
-
-                {/* Player Bottom Bar */}
-                <Box sx={{
-                  position: 'absolute',
-                  bottom: 0,
-                  left: 0,
-                  right: 0,
-                  p: 1.5,
-                  background: 'linear-gradient(to top, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0) 100%)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  zIndex: 2,
-                }}>
-                  <Typography sx={{ color: 'rgba(255,255,255,0.75)', fontSize: '0.75rem', fontWeight: 600 }}>
-                    {activeVideo.title}
-                  </Typography>
-                  <Typography sx={{ color: '#fff', fontSize: '0.8rem', fontWeight: 700 }}>
-                    {activeVideo.created_at ? new Date(activeVideo.created_at).toLocaleDateString('uz-UZ') : ''}
-                  </Typography>
-                </Box>
-              </Box>
+              <video
+                src={activeVideo.video_url?.startsWith('http') ? activeVideo.video_url : `https://mcjypffxtuoqfttoapjh.supabase.co/storage/v1/object/public/NajotEdu/${activeVideo.video_url}`}
+                controls
+                style={{
+                  width: '100%',
+                  height: '100%',
+                  objectFit: 'contain',
+                  backgroundColor: '#000000',
+                  borderRadius: '12px',
+                }}
+              />
             ) : (
               <Box sx={{
                 display: 'flex',
                 flexDirection: 'column',
                 alignItems: 'center',
-                gap: 2,
-                p: 4,
+                justifyContent: 'center',
+                gap: 2.5,
+                py: 6,
+                px: 4,
                 textAlign: 'center'
               }}>
                 <Box sx={{
-                  width: 90,
-                  height: 90,
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  opacity: 0.7
+                  opacity: 0.95
                 }}>
-                  <svg width="80" height="80" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M40 5L15 25L40 45L65 25L40 5Z" stroke="#c5a059" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                    <path d="M22.5 31L15 37L40 57L65 37L57.5 31" stroke="#c5a059" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                    <path d="M30 49L40 57L50 49" stroke="#c5a059" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  <svg width="150" height="150" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M40 5L15 25L40 45L65 25L40 5Z" stroke="#c5a059" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+                    <path d="M22.5 31L15 37L40 57L65 37L57.5 31" stroke="#c5a059" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+                    <path d="M30 49L40 57L50 49" stroke="#c5a059" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
                   </svg>
                 </Box>
-                <Typography sx={{ fontSize: '1.2rem', fontWeight: 700, color: '#4b5563' }}>
+                <Typography sx={{ fontSize: '1.25rem', fontWeight: 700, color: '#2d3748', fontFamily: "'Inter', 'Outfit', sans-serif" }}>
                   Video mavzu emas
                 </Typography>
               </Box>
@@ -330,11 +265,11 @@ export default function StudentLessonDetail() {
           {/* Active Lesson Title display */}
           <Paper elevation={0} sx={{
             p: 2.5,
-            borderRadius: '16px',
+            borderRadius: '12px',
             border: '1px solid #e2e8f0',
             backgroundColor: '#ffffff'
           }}>
-            <Typography sx={{ fontSize: '1rem', fontWeight: 700, color: '#2d3748' }}>
+            <Typography sx={{ fontSize: '1rem', fontWeight: 700, color: '#2d3748', fontFamily: "'Inter', 'Outfit', sans-serif" }}>
               {activeLesson.topic || activeLesson.description} {activeVideo ? `(${activeVideo.title})` : ''}
             </Typography>
           </Paper>
@@ -393,8 +328,8 @@ export default function StudentLessonDetail() {
                       mb: 2.5
                     }}>
                       <WarningIcon sx={{ fontSize: 20, color: '#ff9800' }} />
-                      <Typography sx={{ fontSize: '0.88rem', fontWeight: 700 }}>
-                        Uyga vazifa berildi: {formatDateTime(homework.created_at)}
+                      <Typography sx={{ fontSize: '0.88rem', fontWeight: 700, fontFamily: "'Inter', 'Outfit', sans-serif" }}>
+                        Uyga vazifa muddati: {homework.deadline ? formatDateTime(homework.deadline) : formatDateTime(homework.created_at)}
                       </Typography>
                     </Box>
 
@@ -623,7 +558,12 @@ export default function StudentLessonDetail() {
           width: { xs: '100%', lg: 360 },
           display: 'flex',
           flexDirection: 'column',
-          gap: 1.5
+          gap: 1.5,
+          pl: { lg: 0.5 },
+          height: '100%',
+          overflowY: 'auto',
+          '&::-webkit-scrollbar': { width: '6px' },
+          '&::-webkit-scrollbar-thumb': { backgroundColor: 'rgba(0,0,0,0.1)', borderRadius: '4px' }
         }}>
           {lessons.map((lesson) => {
             const isActive = lesson.id === activeLessonId;
@@ -639,37 +579,24 @@ export default function StudentLessonDetail() {
                   sx={{
                     p: 2.2,
                     borderRadius: '12px',
-                    border: '1px solid #e2e8f0',
-                    backgroundColor: isActive ? '#faede0' : '#ffffff',
+                    border: 'none',
+                    backgroundColor: isActive ? '#faede0' : '#f5f5f5', // Active gets peach, inactive gets light grey!
                     cursor: 'pointer',
                     position: 'relative',
                     transition: 'all 0.15s ease-in-out',
                     '&:hover': {
-                      backgroundColor: isActive ? '#f8e7d8' : '#f9fafb',
+                      backgroundColor: isActive ? '#f3e2d1' : '#eaeaea',
                     },
                     display: 'flex',
                     flexDirection: 'column',
                     gap: 1
                   }}
                 >
-                  {isActive && (
-                    <Box sx={{
-                      position: 'absolute',
-                      right: 0,
-                      top: 0,
-                      bottom: 0,
-                      width: 5,
-                      backgroundColor: '#c5a059',
-                      borderTopRightRadius: '12px',
-                      borderBottomRightRadius: '12px',
-                    }} />
-                  )}
-
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', pr: isActive ? 1.5 : 0 }}>
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                     <Typography sx={{
                       fontSize: '0.9rem',
-                      fontWeight: isActive ? 700 : 500,
-                      color: '#2d3748', // Darker crisp text
+                      fontWeight: isActive ? 700 : 600,
+                      color: '#2d3748',
                       lineHeight: 1.4,
                       display: '-webkit-box',
                       WebkitLineClamp: 2,
@@ -691,7 +618,7 @@ export default function StudentLessonDetail() {
                     )}
                   </Box>
 
-                  <Typography sx={{ fontSize: '0.8rem', color: '#9ca3af', fontWeight: 600 }}>
+                  <Typography sx={{ fontSize: '0.8rem', color: '#9ca3af', fontWeight: 700, fontFamily: "'Inter', 'Outfit', sans-serif" }}>
                     Dars sanasi: {lesson.date ? new Date(lesson.date).toLocaleDateString('uz-UZ') : '—'}
                   </Typography>
                 </Paper>
@@ -721,11 +648,11 @@ export default function StudentLessonDetail() {
                           sx={{
                             p: 1.5,
                             borderRadius: '10px',
-                            border: '1px solid #e2e8f0',
+                            border: 'none',
                             backgroundColor: isVideoActive ? '#f6e3cf' : '#ffffff',
                             cursor: 'pointer',
                             '&:hover': {
-                              backgroundColor: isVideoActive ? '#f4dbbe' : '#f9fafb'
+                              backgroundColor: isVideoActive ? '#f4dbbe' : '#f5f5f5'
                             },
                             display: 'flex',
                             alignItems: 'center',

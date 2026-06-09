@@ -56,13 +56,15 @@ export default function Sidebar({ openSettings, setOpenSettings, isSidebarCollap
     { text: 'Sozlamalar', icon: <SettingsIcon />, path: '/student/settings' },
   ];
 
-  const itemsToRender = role === 'TEACHER'
+  const isStudent = role === 'STUDENT' || location.pathname.startsWith('/student');
+
+  const itemsToRender = isStudent
+    ? studentMenuItems
+    : role === 'TEACHER'
     ? [
         { text: 'Guruhlar', icon: <GroupsIcon />, path: '/groups' },
         { text: 'Profil', icon: <AccountCircleIcon />, path: '/profile' }
       ]
-    : role === 'STUDENT'
-    ? studentMenuItems
     : menuItems;
 
   const handleLogout = () => {
@@ -76,14 +78,12 @@ export default function Sidebar({ openSettings, setOpenSettings, isSidebarCollap
     if (onMobileClose) onMobileClose();
   };
 
-  const isStudent = role === 'STUDENT';
-
   const activeStyles = isStudent
     ? {
-        backgroundColor: 'rgba(197, 160, 89, 0.12)',
+        backgroundColor: '#faede0',
         color: '#c5a059',
         borderRadius: '12px',
-        '&:hover': { backgroundColor: 'rgba(197, 160, 89, 0.18)' },
+        '&:hover': { backgroundColor: '#f3e2d1' },
         '& .MuiListItemIcon-root': { color: '#c5a059' }
       }
     : {
@@ -109,7 +109,7 @@ export default function Sidebar({ openSettings, setOpenSettings, isSidebarCollap
           size="small"
           onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
           sx={{
-            display: { xs: 'none', md: 'flex' },
+            display: isStudent ? 'none' : { xs: 'none', md: 'flex' },
             backgroundColor: '#fff',
             color: '#6b7280',
             border: '1.5px solid #e5e7eb',
@@ -223,29 +223,31 @@ export default function Sidebar({ openSettings, setOpenSettings, isSidebarCollap
           )}
 
           {/* Logout Button */}
-          <Box sx={{ p: 2, mt: 'auto', borderTop: '1px solid #f3f4f6' }}>
-            <ListItem disablePadding>
-              <ListItemButton
-                onClick={handleLogout}
-                sx={{
-                  ...defaultStyles,
-                  justifyContent: collapsed ? 'center' : 'flex-start',
-                  px: collapsed ? 0 : 2,
-                  minHeight: 52,
-                  color: '#ef4444',
-                  '&:hover': { backgroundColor: '#fef2f2', color: '#dc2626' },
-                  '& .MuiListItemIcon-root': { color: '#ef4444' }
-                }}
-              >
-                <ListItemIcon sx={{ minWidth: collapsed ? 0 : 36, justifyContent: 'center' }}>
-                  <LogoutIcon sx={{ fontSize: 22 }} />
-                </ListItemIcon>
-                {!collapsed && (
-                  <Typography sx={{ fontSize: '1rem', fontWeight: 700 }}>Chiqish</Typography>
-                )}
-              </ListItemButton>
-            </ListItem>
-          </Box>
+          {!isStudent && (
+            <Box sx={{ p: 2, mt: 'auto', borderTop: '1px solid #f3f4f6' }}>
+              <ListItem disablePadding>
+                <ListItemButton
+                  onClick={handleLogout}
+                  sx={{
+                    ...defaultStyles,
+                    justifyContent: collapsed ? 'center' : 'flex-start',
+                    px: collapsed ? 0 : 2,
+                    minHeight: 52,
+                    color: '#ef4444',
+                    '&:hover': { backgroundColor: '#fef2f2', color: '#dc2626' },
+                    '& .MuiListItemIcon-root': { color: '#ef4444' }
+                  }}
+                >
+                  <ListItemIcon sx={{ minWidth: collapsed ? 0 : 36, justifyContent: 'center' }}>
+                    <LogoutIcon sx={{ fontSize: 22 }} />
+                  </ListItemIcon>
+                  {!collapsed && (
+                    <Typography sx={{ fontSize: '1rem', fontWeight: 700 }}>Chiqish</Typography>
+                  )}
+                </ListItemButton>
+              </ListItem>
+            </Box>
+          )}
         </Box>
       </Box>
     </Box>

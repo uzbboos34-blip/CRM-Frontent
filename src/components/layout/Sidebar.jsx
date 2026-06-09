@@ -133,7 +133,7 @@ export default function Sidebar({ openSettings, setOpenSettings, isSidebarCollap
             flexShrink: 0,
             height: '100%',
             backgroundColor: '#ffffff',
-            borderRadius: '0 30px 30px 0',
+            borderRadius: '0 0 30px 0',
             borderRight: '1px solid #e5e7eb',
             display: 'flex',
             flexDirection: 'column',
@@ -141,7 +141,17 @@ export default function Sidebar({ openSettings, setOpenSettings, isSidebarCollap
           }}
         >
           {/* Logo Area */}
-          <Box sx={{ p: 2.5, pb: 3, display: 'flex', alignItems: 'center', gap: 1.5, justifyContent: collapsed ? 'center' : 'flex-start' }}>
+          <Box sx={{
+            height: isStudent ? { xs: 56, sm: 64 } : undefined,
+            p: isStudent ? { xs: '0 16px', sm: '0 20px' } : 2.5,
+            pb: isStudent ? 0 : 3,
+            display: 'flex',
+            alignItems: 'center',
+            gap: 1.5,
+            justifyContent: collapsed ? 'center' : 'flex-start',
+            borderBottom: isStudent ? '1.5px solid #e2e8f0' : 'none',
+            flexShrink: 0,
+          }}>
             <Box component="img" src="/dl3Zf.jpg" sx={{ height: 32 }} onError={(e) => { e.target.src = 'https://edu-coin.uz/assets/logo-BveCYX-f.png'; }} />
             {!collapsed && (
               <Typography sx={{ fontWeight: 800, color: '#111827', fontSize: '1.2rem', letterSpacing: -0.5 }}>NajotEdu</Typography>

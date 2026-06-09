@@ -48,15 +48,15 @@ export default function Header({ isSidebarCollapsed, setIsSidebarCollapsed, isMa
     return (
       <Box
         sx={{
-          height: { xs: 64, sm: 90 },
+          height: { xs: 56, sm: 64 },
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          padding: { xs: '0 12px', sm: '0 25px' },
+          padding: { xs: '0 12px', sm: '0 20px' },
           position: 'relative',
           zIndex: 1000,
-          backgroundColor: '#ffffff', // Solid white background!
-          borderBottom: '1.5px solid #e2e8f0', // Border bottom separation!
+          backgroundColor: '#ffffff',
+          borderBottom: '1.5px solid #e2e8f0',
         }}
       >
         {/* Left: Golden hamburger toggle button */}

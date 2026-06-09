@@ -6,7 +6,6 @@ import {
   CircularProgress, MenuItem, Select, FormControl, IconButton
 } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
-import PlayCircleOutlineIcon from '@mui/icons-material/PlayCircleOutline';
 import api from '../api/axios';
 
 // Uy vazifasi holati config

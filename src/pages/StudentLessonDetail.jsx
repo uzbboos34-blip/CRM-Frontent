@@ -278,13 +278,13 @@ export default function StudentLessonDetail() {
           display: 'flex', 
           flexDirection: 'column', 
           gap: 2,
-          p: 3, // Padded inside the scrollable area
-          borderRight: { lg: '2.5px solid #c5a059' },
+          p: 3,
           height: '100%',
           overflowY: 'auto',
           pb: 4,
-          '&::-webkit-scrollbar': { width: '6px' },
-          '&::-webkit-scrollbar-thumb': { backgroundColor: 'rgba(0,0,0,0.1)', borderRadius: '4px' }
+          '&::-webkit-scrollbar': { width: '8px' },
+          '&::-webkit-scrollbar-track': { backgroundColor: 'transparent' },
+          '&::-webkit-scrollbar-thumb': { backgroundColor: '#c5a059', borderRadius: '8px' },
         }}>
           
           {/* Video player — fixed 16:9 frame, always visible */}
@@ -687,9 +687,9 @@ export default function StudentLessonDetail() {
           display: 'flex',
           flexDirection: 'column',
           gap: 1.25,
-          borderLeft: { lg: '1px solid #ece7e1' },
-          '&::-webkit-scrollbar': { width: '5px' },
-          '&::-webkit-scrollbar-thumb': { backgroundColor: 'rgba(0,0,0,0.15)', borderRadius: '4px' },
+          '&::-webkit-scrollbar': { width: '8px' },
+          '&::-webkit-scrollbar-track': { backgroundColor: 'transparent' },
+          '&::-webkit-scrollbar-thumb': { backgroundColor: '#c5a059', borderRadius: '8px' },
         }}>
           {lessons.map((lesson) => {
             const isActive = lesson.id === activeLessonId;

@@ -130,7 +130,7 @@ export default function StudentLessonDetail() {
   const [lessons, setLessons] = useState([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
-  const [expandedLessons, setExpandedLessons] = useState({});
+  const [expandedLessonId, setExpandedLessonId] = useState(null);
   const [activeVideos, setActiveVideos] = useState({}); // lessonId -> videoId mapping
   const [submitText, setSubmitText] = useState('');
   const [isEditing, setIsEditing] = useState(false);
@@ -141,18 +141,12 @@ export default function StudentLessonDetail() {
         const data = res.data?.data || [];
         setLessons(data);
         
-        // Auto expand active lesson and default to first video if any
-        const exp = {};
         const activeVids = { ...activeVideos };
         data.forEach(l => {
-          if (l.id === Number(lessonId)) {
-            exp[l.id] = true;
-          }
           if (l.videos?.length > 0 && !activeVids[l.id]) {
             activeVids[l.id] = l.videos[0].id;
           }
         });
-        setExpandedLessons(prev => ({ ...prev, ...exp }));
         setActiveVideos(activeVids);
       })
       .catch(err => {
@@ -164,6 +158,10 @@ export default function StudentLessonDetail() {
     setLoading(true);
     fetchGroupLessons().finally(() => setLoading(false));
   }, [groupId, lessonId]);
+
+  useEffect(() => {
+    setExpandedLessonId(Number(lessonId));
+  }, [lessonId]);
 
   const activeLessonId = Number(lessonId);
   const activeLesson = lessons.find(l => l.id === activeLessonId);
@@ -178,6 +176,7 @@ export default function StudentLessonDetail() {
   const selectLesson = (lesson) => {
     setSubmitText('');
     setIsEditing(false);
+    setExpandedLessonId(lesson.id);
     navigate(`/student/groups/${groupId}/lessons/${lesson.id}`);
   };
 
@@ -185,7 +184,7 @@ export default function StudentLessonDetail() {
   const selectVideo = (lessonId, videoId, e) => {
     e.stopPropagation();
     setActiveVideos(prev => ({ ...prev, [lessonId]: videoId }));
-    setExpandedLessons(prev => ({ ...prev, [lessonId]: true }));
+    setExpandedLessonId(lessonId);
     if (lessonId !== activeLessonId) {
       navigate(`/student/groups/${groupId}/lessons/${lessonId}`);
     }
@@ -695,8 +694,8 @@ export default function StudentLessonDetail() {
           {lessons.map((lesson) => {
             const isActive = lesson.id === activeLessonId;
             const hasVideos = lesson.videos?.length > 0;
-            const isExpanded = !!expandedLessons[lesson.id];
-            const isOpen = hasVideos && isExpanded;
+            const isExpanded = expandedLessonId === lesson.id;
+            const isOpen = isActive && hasVideos && isExpanded;
 
             return (
               <Box
@@ -710,10 +709,11 @@ export default function StudentLessonDetail() {
               >
                 <Box
                   onClick={() => {
-                    selectLesson(lesson);
-                    if (hasVideos) {
-                      setExpandedLessons(prev => ({ ...prev, [lesson.id]: !prev[lesson.id] }));
+                    if (lesson.id === activeLessonId && hasVideos) {
+                      setExpandedLessonId(isExpanded ? null : lesson.id);
+                      return;
                     }
+                    selectLesson(lesson);
                   }}
                   sx={{
                     px: 2.25,

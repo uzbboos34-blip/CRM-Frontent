@@ -995,11 +995,11 @@ export default function StudentLessonDetail() {
           height: '100%',
           backgroundColor: '#ffffff',
           overflowY: 'auto',
-          p: { xs: 2, lg: 2.5 },
+          p: { xs: 1.5, lg: 2 },
           display: 'flex',
           flexDirection: 'column',
-          gap: 1.25,
-          '&::-webkit-scrollbar': { width: '8px' },
+          gap: 0,
+          '&::-webkit-scrollbar': { width: '6px' },
           '&::-webkit-scrollbar-track': { backgroundColor: 'transparent' },
           '&::-webkit-scrollbar-thumb': { backgroundColor: '#c5a059', borderRadius: '8px' },
         }}>
@@ -1012,13 +1012,9 @@ export default function StudentLessonDetail() {
             return (
               <Box
                 key={lesson.id}
-                sx={{
-                  borderRadius: '14px',
-                  overflow: 'hidden',
-                  backgroundColor: isOpen ? '#ebc9a4' : '#f9f5f1',
-                  transition: 'background-color 0.2s ease',
-                }}
+                sx={{ mb: 1.5 }}
               >
+                {/* Lesson header card */}
                 <Box
                   onClick={() => {
                     if (lesson.id === activeLessonId && hasVideos) {
@@ -1029,12 +1025,16 @@ export default function StudentLessonDetail() {
                   }}
                   sx={{
                     px: 2.25,
-                    py: 2,
+                    py: 1.75,
+                    borderRadius: '14px',
                     cursor: 'pointer',
                     display: 'flex',
                     alignItems: 'flex-start',
                     justifyContent: 'space-between',
                     gap: 1.5,
+                    backgroundColor: isActive ? '#ebc9a4' : '#f9f5f1',
+                    transition: 'background-color 0.2s ease',
+                    '&:hover': { backgroundColor: isActive ? '#e5be99' : '#f0ebe5' },
                   }}
                 >
                   <Box sx={{ flex: 1, minWidth: 0 }}>
@@ -1043,7 +1043,7 @@ export default function StudentLessonDetail() {
                       fontWeight: 700,
                       color: '#1a1a1a',
                       lineHeight: 1.4,
-                      mb: 0.75,
+                      mb: 0.5,
                       overflow: 'hidden',
                       textOverflow: 'ellipsis',
                       display: '-webkit-box',
@@ -1053,8 +1053,8 @@ export default function StudentLessonDetail() {
                       {lesson.topic || lesson.description}
                     </Typography>
                     <Typography sx={{
-                      fontSize: '0.8rem',
-                      color: '#3d3d3d',
+                      fontSize: '0.78rem',
+                      color: '#5a5a5a',
                       fontWeight: 500,
                       lineHeight: 1.3,
                     }}>
@@ -1064,8 +1064,8 @@ export default function StudentLessonDetail() {
                   {hasVideos && (
                     <ExpandMoreIcon sx={{
                       color: '#2d2d2d',
-                      fontSize: 24,
-                      mt: 0.1,
+                      fontSize: 22,
+                      mt: 0.2,
                       flexShrink: 0,
                       transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)',
                       transition: 'transform 0.2s ease',
@@ -1073,13 +1073,13 @@ export default function StudentLessonDetail() {
                   )}
                 </Box>
 
+                {/* Video items — each as a separate card with white gap */}
                 {isOpen && (
                   <Box sx={{
-                    px: 1.75,
-                    pb: 1.75,
                     display: 'flex',
                     flexDirection: 'column',
-                    gap: 1,
+                    gap: 0,
+                    mt: 0,
                   }}>
                     {lesson.videos.map((video, idx) => {
                       const isVideoActive =
@@ -1089,25 +1089,27 @@ export default function StudentLessonDetail() {
                           key={video.id}
                           onClick={(e) => selectVideo(lesson.id, video.id, e)}
                           sx={{
-                            px: 1.75,
-                            py: 1.35,
+                            mt: 1,
+                            px: 2,
+                            py: 1.25,
                             borderRadius: '12px',
                             cursor: 'pointer',
                             display: 'flex',
                             alignItems: 'center',
                             gap: 1.25,
-                            backgroundColor: isVideoActive ? '#f2d4b8' : '#efd2ae',
-                            transition: 'background-color 0.15s ease',
-                            '&:hover': { backgroundColor: isVideoActive ? '#edd0b0' : '#e8c89e' },
+                            backgroundColor: isVideoActive ? '#f2d4b8' : '#f9efe4',
+                            border: isVideoActive ? '1.5px solid #e0a870' : '1.5px solid transparent',
+                            transition: 'all 0.15s ease',
+                            '&:hover': { backgroundColor: isVideoActive ? '#edd0b0' : '#f0e4d2', border: '1.5px solid #e0a870' },
                           }}
                         >
-                          <Box sx={{ color: '#1a1a1a', display: 'flex', flexShrink: 0 }}>
+                          <Box sx={{ color: isVideoActive ? '#c5702a' : '#7a6a5a', display: 'flex', flexShrink: 0 }}>
                             {isVideoActive
-                              ? <PlayCircleFilledWhiteOutlinedIcon sx={{ fontSize: 20 }} />
+                              ? <PlayCircleFilledWhiteOutlinedIcon sx={{ fontSize: 20, color: '#c5702a' }} />
                               : <PanoramaFishEyeIcon sx={{ fontSize: 20 }} />}
                           </Box>
                           <Typography sx={{
-                            fontSize: '0.86rem',
+                            fontSize: '0.84rem',
                             color: '#1a1a1a',
                             fontWeight: isVideoActive ? 700 : 500,
                             overflow: 'hidden',

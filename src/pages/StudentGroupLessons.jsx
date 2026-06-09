@@ -234,15 +234,15 @@ export default function StudentGroupLessons() {
               <TableRow sx={{ '& th': { borderBottom: '1.5px solid #e2e8f0' } }}>
                 <TableCell sx={{ fontWeight: 700, color: '#2d3748', fontSize: '0.85rem', py: 2.2, px: 3 }}>Mavzular</TableCell>
                 <TableCell sx={{ fontWeight: 700, color: '#2d3748', fontSize: '0.85rem', py: 2.2, px: 3 }}>Video</TableCell>
-                <TableCell sx={{ fontWeight: 700, color: '#2d3748', fontSize: '0.85rem', py: 2.2, px: 3 }}>Uyga vazifa Holati</TableCell>
-                <TableCell sx={{ fontWeight: 700, color: '#2d3748', fontSize: '0.85rem', py: 2.2, px: 3 }}>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                <TableCell sx={{ fontWeight: 700, color: '#2d3748', fontSize: '0.85rem', py: 2.2, px: 3, whiteSpace: 'nowrap' }}>Uyga vazifa Holati</TableCell>
+                <TableCell sx={{ fontWeight: 700, color: '#2d3748', fontSize: '0.85rem', py: 2.2, px: 3, whiteSpace: 'nowrap' }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, whiteSpace: 'nowrap' }}>
                     Uyga vazifa tugash vaqti
                     <Box component="span" sx={{ fontWeight: 800, fontSize: '0.95rem', color: '#1a202c', ml: 0.5 }}>↓</Box>
                   </Box>
                 </TableCell>
-                <TableCell sx={{ fontWeight: 700, color: '#2d3748', fontSize: '0.85rem', py: 2.2, px: 3 }}>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                <TableCell sx={{ fontWeight: 700, color: '#2d3748', fontSize: '0.85rem', py: 2.2, px: 3, whiteSpace: 'nowrap' }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, whiteSpace: 'nowrap' }}>
                     Dars sanasi
                     <Box component="span" sx={{ fontWeight: 800, fontSize: '0.95rem', color: '#38a169', ml: 0.5 }}>↑</Box>
                   </Box>
@@ -284,7 +284,7 @@ export default function StudentGroupLessons() {
                     </TableCell>
 
                     {/* Status Pill Badge */}
-                    <TableCell sx={{ py: 2, px: 3 }}>
+                    <TableCell sx={{ py: 2, px: 3, whiteSpace: 'nowrap' }}>
                       <HwBadge statusKey={lesson.state} />
                     </TableCell>
 

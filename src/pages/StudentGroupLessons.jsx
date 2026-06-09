@@ -9,118 +9,35 @@ import api from '../api/axios';
 
 // Uy vazifasi holati config
 const HW_STATUS = {
-  qabul_qilingan: { label: 'Qabul qilingan', bg: '#4caf50', color: '#fff' },
-  kutayotgan: { label: 'Kutayotganlar', bg: '#5c6bc0', color: '#fff' },
-  bajarilmagan: { label: 'Bajarilmagan', bg: '#ff3b30', color: '#fff' },
+  ACCEPTED: { label: 'Qabul qilingan', bg: '#4caf50', color: '#fff' },
+  PENDING: { label: 'Kutayotganlar', bg: '#5c6bc0', color: '#fff' },
+  RETURNED: { label: 'Qaytarilgan', bg: '#ffa000', color: '#fff' },
+  NOT_DONE: { label: 'Bajarilmagan', bg: '#ff3b30', color: '#fff' },
   NONE: { label: 'Berilmagan', bg: '#78909c', color: '#fff' },
 };
 
 const STATUS_OPTIONS = [
   { value: 'ALL',      label: 'Barchasi' },
-  { value: 'qabul_qilingan', label: 'Qabul qilingan' },
+  { value: 'ACCEPTED', label: 'Qabul qilingan' },
   { value: 'NONE',     label: 'Berilmagan' },
-  { value: 'qaytarilgan', label: 'Qaytarilgan' },
-  { value: 'bajarilmagan', label: 'Bajarilmagan' },
-  { value: 'kutayotgan',  label: 'Kutayotganlar' },
+  { value: 'RETURNED', label: 'Qaytarilgan' },
+  { value: 'NOT_DONE', label: 'Bajarilmagan' },
+  { value: 'PENDING',  label: 'Kutayotganlar' },
 ];
 
 const DROPDOWN_COLORS = {
   ALL: { bg: '#ffffff', color: '#1a202c', hoverBg: '#f7fafc' },
-  qabul_qilingan: { bg: '#4caf50', color: '#ffffff', hoverBg: '#45a049' },
+  ACCEPTED: { bg: '#4caf50', color: '#ffffff', hoverBg: '#45a049' },
   NONE: { bg: '#78909c', color: '#ffffff', hoverBg: '#6b7280' },
-  qaytarilgan: { bg: '#ffa000', color: '#ffffff', hoverBg: '#ff8f00' },
-  bajarilmagan: { bg: '#ff3b30', color: '#ffffff', hoverBg: '#ef4444' },
-  kutayotgan: { bg: '#5c6bc0', color: '#ffffff', hoverBg: '#4f5d75' },
+  RETURNED: { bg: '#ffa000', color: '#ffffff', hoverBg: '#ff8f00' },
+  NOT_DONE: { bg: '#ff3b30', color: '#ffffff', hoverBg: '#ef4444' },
+  PENDING: { bg: '#5c6bc0', color: '#ffffff', hoverBg: '#4f5d75' },
 };
-
-const MOCK_LESSONS = [
-  {
-    id: 1,
-    topic: "crm talaba paneli frontend uy vazifasi, darslar, videolar",
-    date: "2026-yil 9-iyun",
-    state: "bajarilmagan",
-    videosCount: 0,
-    deadline: "2026-yil 10-iyun, soat 03:52"
-  },
-  {
-    id: 2,
-    topic: "amaliyot",
-    date: "2026-yil 8-iyun",
-    state: "NONE",
-    videosCount: 0,
-    deadline: "-"
-  },
-  {
-    id: 3,
-    topic: "crm talabalar paneli, uy vazifasi, darslar, videolar",
-    date: "2026-yil 8-iyun",
-    state: "kutayotgan",
-    videosCount: 2,
-    deadline: "2026-yil 9-iyun, soat 5:35"
-  },
-  {
-    id: 4,
-    topic: "CRM talabalar paneli",
-    date: "2026-yil 5-iyun",
-    state: "kutayotgan",
-    videosCount: 2,
-    deadline: "2026-yil 6-iyun, soat 4:12"
-  },
-  {
-    id: 5,
-    topic: "Amaliyot",
-    date: "2026-yil 5-iyun",
-    state: "NONE",
-    videosCount: 0,
-    deadline: "-"
-  },
-  {
-    id: 6,
-    topic: "Next.js amaliyot | marshrutizatsiya",
-    date: "2026-yil 4-iyun",
-    state: "NONE",
-    videosCount: 0,
-    deadline: "-"
-  },
-  {
-    id: 7,
-    topic: "CRM Davom eting O'qituvchilar paneli",
-    date: "2026-yil 4-iyun",
-    state: "kutayotgan",
-    videosCount: 2,
-    deadline: "2026-yil 5-iyun, soat 3:59"
-  },
-  {
-    id: 8,
-    topic: "Next.js + Prisma",
-    date: "2026-yil 3-iyun",
-    state: "bajarilmagan",
-    videosCount: 2,
-    deadline: "2026-yil 4-iyun, soat 4:26"
-  }
-];
-
-function HwBadge({ statusKey }) {
-  const cfg = HW_STATUS[statusKey] || HW_STATUS.NONE;
-  return (
-    <Box sx={{
-      display: 'inline-flex',
-      alignItems: 'center',
-      px: 2, py: 0.5,
-      borderRadius: '20px',
-      backgroundColor: cfg.bg,
-    }}>
-      <Typography sx={{ fontSize: '0.78rem', fontWeight: 700, color: cfg.color, whiteSpace: 'nowrap' }}>
-        {cfg.label}
-      </Typography>
-    </Box>
-  );
-}
 
 export default function StudentGroupLessons() {
   const { groupId } = useParams();
   const navigate = useNavigate();
-  const [lessons, setLessons] = useState(MOCK_LESSONS);
+  const [lessons, setLessons] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('ALL');
 
@@ -128,32 +45,38 @@ export default function StudentGroupLessons() {
     setLoading(true);
     api.get(`/api/v1/students/my/groups/${groupId}/lessons`)
       .then(res => {
-        if (res.data?.data && res.data.data.length > 0) {
-          setLessons(res.data.data);
-        } else {
-          setLessons(MOCK_LESSONS);
-        }
+        setLessons(res.data?.data || []);
       })
       .catch(err => {
-        console.warn('API error, using mock lessons:', err);
-        setLessons(MOCK_LESSONS);
+        console.error('API error while fetching group lessons:', err);
+        setLessons([]);
       })
       .finally(() => setLoading(false));
   }, [groupId]);
 
+  // Helper to extract status key from lesson data
+  const getHwStatusKey = (lesson) => {
+    const hw = lesson.homeWorks?.[0];
+    if (!hw) return 'NONE';
+    const answer = hw.homeWorkAnswers?.[0];
+    if (!answer) return 'NONE';
+    return answer.homeworkStatus || 'PENDING';
+  };
+
+  // Filter lessons
   const filtered = lessons.filter(lesson => {
     if (filter === 'ALL') return true;
-    return lesson.state === filter;
+    return getHwStatusKey(lesson) === filter;
   });
 
   return (
     <Box sx={{ animation: 'fadeIn 0.3s ease-out', pt: 0.5, px: 1 }}>
-      {/* Title "Uy vazifasi statusi" - moved up by setting small margins */}
+      {/* Title "Uy vazifasi statusi" */}
       <Typography sx={{ fontSize: '0.85rem', fontWeight: 700, color: '#4a5568', mb: 0.4 }}>
         Uy vazifasi statusi
       </Typography>
 
-      {/* Filter bar - tighter spacing */}
+      {/* Filter bar */}
       <Box sx={{ mb: 2.2 }}>
         <FormControl size="small">
           <Select
@@ -174,7 +97,7 @@ export default function StudentGroupLessons() {
               borderRadius: '8px',
               fontSize: '0.85rem',
               fontWeight: 700,
-              color: '#2d3748', // Darker, crisp text for selected value
+              color: '#2d3748',
               '& .MuiOutlinedInput-notchedOutline': { borderColor: '#e2e8f0' },
               '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: '#c5a059' },
               '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: '#c5a059' },
@@ -232,8 +155,8 @@ export default function StudentGroupLessons() {
           <Table>
             <TableHead sx={{ backgroundColor: '#ffffff' }}>
               <TableRow sx={{ '& th': { borderBottom: '1.5px solid #e2e8f0' } }}>
-                <TableCell sx={{ fontWeight: 700, color: '#2d3748', fontSize: '0.85rem', py: 2.2, px: 3 }}>Mavzular</TableCell>
-                <TableCell sx={{ fontWeight: 700, color: '#2d3748', fontSize: '0.85rem', py: 2.2, px: 3 }}>Video</TableCell>
+                <TableCell sx={{ fontWeight: 700, color: '#2d3748', fontSize: '0.85rem', py: 2.2, px: 3, whiteSpace: 'nowrap' }}>Mavzular</TableCell>
+                <TableCell sx={{ fontWeight: 700, color: '#2d3748', fontSize: '0.85rem', py: 2.2, px: 3, whiteSpace: 'nowrap' }}>Video</TableCell>
                 <TableCell sx={{ fontWeight: 700, color: '#2d3748', fontSize: '0.85rem', py: 2.2, px: 3, whiteSpace: 'nowrap' }}>Uyga vazifa Holati</TableCell>
                 <TableCell sx={{ fontWeight: 700, color: '#2d3748', fontSize: '0.85rem', py: 2.2, px: 3, whiteSpace: 'nowrap' }}>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, whiteSpace: 'nowrap' }}>
@@ -251,7 +174,8 @@ export default function StudentGroupLessons() {
             </TableHead>
             <TableBody>
               {filtered.map((lesson, idx) => {
-                const videoCount = lesson.videosCount ?? 0;
+                const videoCount = lesson._count?.videos ?? 0;
+                const statusKey = getHwStatusKey(lesson);
 
                 return (
                   <TableRow
@@ -264,10 +188,10 @@ export default function StudentGroupLessons() {
                       transition: 'background 0.12s',
                     }}
                   >
-                    {/* Mavzu - Crisp dark slate text with 600 weight */}
+                    {/* Mavzu */}
                     <TableCell sx={{ py: 2, px: 3 }}>
                       <Typography sx={{ fontSize: '0.88rem', fontWeight: 600, color: '#2d3748', fontFamily: "'Inter', 'Outfit', sans-serif" }}>
-                        {lesson.topic || `Dars #${idx + 1}`}
+                        {lesson.topic || lesson.description || `Dars #${idx + 1}`}
                       </Typography>
                     </TableCell>
 
@@ -285,17 +209,27 @@ export default function StudentGroupLessons() {
 
                     {/* Status Pill Badge */}
                     <TableCell sx={{ py: 2, px: 3, whiteSpace: 'nowrap' }}>
-                      <HwBadge statusKey={lesson.state} />
+                      <Box sx={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        px: 2, py: 0.5,
+                        borderRadius: '20px',
+                        backgroundColor: HW_STATUS[statusKey]?.bg || '#78909c',
+                      }}>
+                        <Typography sx={{ fontSize: '0.78rem', fontWeight: 700, color: HW_STATUS[statusKey]?.color || '#fff', whiteSpace: 'nowrap' }}>
+                          {HW_STATUS[statusKey]?.label || 'Berilmagan'}
+                        </Typography>
+                      </Box>
                     </TableCell>
 
-                    {/* Deadline - Crisp dark text with 600 weight */}
+                    {/* Deadline (No deadline field is stored, so display '-' or leave empty) */}
                     <TableCell sx={{ py: 2, px: 3, fontSize: '0.83rem', color: '#4a5568', fontWeight: 600, fontFamily: "'Inter', 'Outfit', sans-serif", whiteSpace: 'nowrap' }}>
-                      {lesson.deadline}
+                      -
                     </TableCell>
 
-                    {/* Date - Crisp dark text with 600 weight */}
+                    {/* Date */}
                     <TableCell sx={{ py: 2, px: 3, fontSize: '0.83rem', color: '#4a5568', fontWeight: 600, fontFamily: "'Inter', 'Outfit', sans-serif", whiteSpace: 'nowrap' }}>
-                      {lesson.date}
+                      {lesson.date || '—'}
                     </TableCell>
                   </TableRow>
                 );

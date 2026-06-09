@@ -1,25 +1,27 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
   Box, Typography, Paper, IconButton, Button,
   TextField, Tooltip, CircularProgress,
-  Accordion, AccordionSummary, AccordionDetails,
-  List, ListItem
 } from '@mui/material';
-import ArrowBackIcon from '@mui/icons-material/ArrowBack';
-import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import SendIcon from '@mui/icons-material/Send';
 import AttachFileIcon from '@mui/icons-material/AttachFile';
 import EditIcon from '@mui/icons-material/Edit';
 import WarningIcon from '@mui/icons-material/Warning';
 import ErrorIcon from '@mui/icons-material/Error';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import ExpandLessIcon from '@mui/icons-material/ExpandLess';
-import PlayCircleOutlinedIcon from '@mui/icons-material/PlayCircleOutlined';
-import CircleOutlinedIcon from '@mui/icons-material/CircleOutlined';
 import PlayCircleFilledWhiteOutlinedIcon from '@mui/icons-material/PlayCircleFilledWhiteOutlined';
 import PanoramaFishEyeIcon from '@mui/icons-material/PanoramaFishEye';
 import api from '../api/axios';
+
+function getFullVideoUrl(url) {
+  if (!url) return '';
+  if (url.startsWith('http')) return url;
+  let baseUrl = api.defaults.baseURL || import.meta.env.VITE_API_URL || 'https://crm-backend-l7jq.onrender.com';
+  if (baseUrl.endsWith('/')) baseUrl = baseUrl.slice(0, -1);
+  baseUrl = baseUrl.replace(/\/api\/v1$/, '');
+  return `${baseUrl}/file/${url}`;
+}
 
 // Uy vazifasi holati config
 const HW_STATUS = {
@@ -57,17 +59,6 @@ function formatDeadlineDate(dateStr) {
 
 function formatLessonDate(dateStr) {
   if (!dateStr) return '—';
-  const parts = dateStr.split('-');
-  if (parts.length === 3) {
-    const year = parts[0];
-    const monthIndex = parseInt(parts[1], 10) - 1;
-    const day = parts[2].padStart(2, '0');
-    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    const month = months[monthIndex];
-    if (month) {
-      return `${day} ${month}, ${year}`;
-    }
-  }
   const d = new Date(dateStr);
   if (isNaN(d.getTime())) return dateStr;
   const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
@@ -88,6 +79,8 @@ export default function StudentLessonDetail() {
   const [activeVideos, setActiveVideos] = useState({}); // lessonId -> videoId mapping
   const [submitText, setSubmitText] = useState('');
   const [isEditing, setIsEditing] = useState(false);
+  const [videoPlaying, setVideoPlaying] = useState(false);
+  const videoRef = useRef(null);
 
   // Fetch all lessons of group
   const fetchGroupLessons = () => {
@@ -122,11 +115,22 @@ export default function StudentLessonDetail() {
 
   const activeLessonId = Number(lessonId);
   const activeLesson = lessons.find(l => l.id === activeLessonId);
+  const activeVideoId = activeLesson
+    ? (activeVideos[activeLesson.id] ?? activeLesson.videos?.[0]?.id)
+    : null;
+  const activeVideo = activeLesson
+    ? (activeLesson.videos?.find(v => v.id === activeVideoId) ?? activeLesson.videos?.[0])
+    : null;
 
-  // Toggle expanded lesson card
-  const toggleExpand = (id, e) => {
-    e.stopPropagation();
-    setExpandedLessons(prev => ({ ...prev, [id]: !prev[id] }));
+  useEffect(() => {
+    setVideoPlaying(false);
+  }, [activeLessonId, activeVideoId]);
+
+  const handlePlayVideo = () => {
+    setVideoPlaying(true);
+    requestAnimationFrame(() => {
+      videoRef.current?.play?.();
+    });
   };
 
   // Navigates to selected lesson URL
@@ -140,6 +144,7 @@ export default function StudentLessonDetail() {
   const selectVideo = (lessonId, videoId, e) => {
     e.stopPropagation();
     setActiveVideos(prev => ({ ...prev, [lessonId]: videoId }));
+    setExpandedLessons(prev => ({ ...prev, [lessonId]: true }));
     if (lessonId !== activeLessonId) {
       navigate(`/student/groups/${groupId}/lessons/${lessonId}`);
     }
@@ -206,10 +211,6 @@ export default function StudentLessonDetail() {
   const score = answer?.homeWorkResults?.[0]?.grade || 0;
   const teacherComment = answer?.homeWorkResults?.[0];
 
-  // Extract selected video
-  const activeVideoId = activeVideos[activeLesson.id];
-  const activeVideo = activeLesson.videos?.find(v => v.id === activeVideoId);
-
   return (
     <Box sx={{
       animation: 'fadeIn 0.3s ease-out',
@@ -249,13 +250,10 @@ export default function StudentLessonDetail() {
           <Box sx={{
             width: '100%',
             aspectRatio: '16/9',
-            backgroundColor: '#000000', // Solid black background for the video box!
+            backgroundColor: '#1a1a1a',
             borderRadius: '12px',
             overflow: 'hidden',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            p: 0, // No padding, video takes full container width!
+            position: 'relative',
           }}>
             {activeVideo ? (
               activeVideo.video_url?.includes('embed') || activeVideo.video_url?.includes('kinescope') ? (
@@ -272,19 +270,85 @@ export default function StudentLessonDetail() {
                   }}
                   className="player__iframe"
                 />
-              ) : (
+              ) : videoPlaying ? (
                 <video
-                  src={activeVideo.video_url?.startsWith('http') ? activeVideo.video_url : `https://mcjypffxtuoqfttoapjh.supabase.co/storage/v1/object/public/NajotEdu/${activeVideo.video_url}`}
+                  ref={videoRef}
+                  src={getFullVideoUrl(activeVideo.video_url)}
                   controls
+                  autoPlay
                   style={{
                     width: '100%',
                     height: '100%',
                     objectFit: 'contain',
-                    backgroundColor: '#000000',
-                    borderRadius: '12px',
-                    display: 'block'
+                    backgroundColor: '#000',
+                    display: 'block',
                   }}
                 />
+              ) : (
+                <Box
+                  onClick={handlePlayVideo}
+                  sx={{
+                    width: '100%',
+                    height: '100%',
+                    cursor: 'pointer',
+                    position: 'relative',
+                    backgroundColor: '#2d2d2d',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                >
+                  <video
+                    src={getFullVideoUrl(activeVideo.video_url)}
+                    preload="metadata"
+                    muted
+                    style={{
+                      width: '100%',
+                      height: '100%',
+                      objectFit: 'contain',
+                      pointerEvents: 'none',
+                    }}
+                  />
+                  <Box sx={{
+                    position: 'absolute',
+                    inset: 0,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    backgroundColor: 'rgba(0,0,0,0.25)',
+                  }}>
+                    <Box sx={{
+                      width: 72,
+                      height: 72,
+                      borderRadius: '50%',
+                      backgroundColor: '#ff9800',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      boxShadow: '0 4px 20px rgba(0,0,0,0.35)',
+                    }}>
+                      <Box sx={{
+                        width: 0,
+                        height: 0,
+                        borderTop: '12px solid transparent',
+                        borderBottom: '12px solid transparent',
+                        borderLeft: '20px solid #fff',
+                        ml: '4px',
+                      }} />
+                    </Box>
+                  </Box>
+                  <Typography sx={{
+                    position: 'absolute',
+                    top: 12,
+                    left: 16,
+                    color: '#fff',
+                    fontSize: '0.85rem',
+                    fontWeight: 600,
+                    textShadow: '0 1px 4px rgba(0,0,0,0.6)',
+                  }}>
+                    {activeVideo.title}
+                  </Typography>
+                </Box>
               )
             ) : (
               <Box sx={{
@@ -293,24 +357,16 @@ export default function StudentLessonDetail() {
                 alignItems: 'center',
                 justifyContent: 'center',
                 gap: 2.5,
-                py: 6,
-                px: 4,
-                textAlign: 'center'
+                height: '100%',
+                textAlign: 'center',
               }}>
-                <Box sx={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  opacity: 0.95
-                }}>
-                  <svg width="150" height="150" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M40 5L15 25L40 45L65 25L40 5Z" stroke="#c5a059" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
-                    <path d="M22.5 31L15 37L40 57L65 37L57.5 31" stroke="#c5a059" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
-                    <path d="M30 49L40 57L50 49" stroke="#c5a059" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
-                  </svg>
-                </Box>
-                <Typography sx={{ fontSize: '1.25rem', fontWeight: 700, color: '#2d3748', fontFamily: "'Inter', 'Outfit', sans-serif" }}>
-                  Video mavzu emas
+                <svg width="120" height="120" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M40 5L15 25L40 45L65 25L40 5Z" stroke="#c5a059" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+                  <path d="M22.5 31L15 37L40 57L65 37L57.5 31" stroke="#c5a059" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+                  <path d="M30 49L40 57L50 49" stroke="#c5a059" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+                <Typography sx={{ fontSize: '1.1rem', fontWeight: 700, color: '#9ca3af' }}>
+                  Video mavjud emas
                 </Typography>
               </Box>
             )}
@@ -669,188 +725,126 @@ export default function StudentLessonDetail() {
           )}
         </Box>
 
-        {/* Right side: Sidebar List of Lessons */}
-        <Accordion
-          defaultExpanded
-          elevation={0}
-          sx={{
-            width: { xs: '100%', lg: 360 },
-            display: 'flex',
-            flexDirection: 'column',
-            height: '100%',
-            backgroundColor: '#ffffff',
-            borderRadius: 0,
-            overflowY: 'hidden',
-            border: 'none',
-            '&:before': { display: 'none' }, // Remove default divider
-          }}
-        >
-          <AccordionSummary
-            expandIcon={<ExpandMoreIcon sx={{ color: '#4b5563', fontSize: 24 }} />}
-            sx={{
-              flexShrink: 0,
-              px: 3,
-              py: 2,
-              borderBottom: '1.5px solid #e2e8f0',
-              '& .MuiAccordionSummary-content': { m: 0 }
-            }}
-          >
-            <Typography sx={{ fontSize: '1.05rem', fontWeight: 800, color: '#1a202c', fontFamily: "'Inter', 'Outfit', sans-serif" }}>
-              Mavzular
-            </Typography>
-          </AccordionSummary>
-          
-          <AccordionDetails 
-            sx={{ 
-              p: 0, 
-              flexGrow: 1, 
-              overflowY: 'auto',
-              '&::-webkit-scrollbar': { width: '6px' },
-              '&::-webkit-scrollbar-thumb': { backgroundColor: 'rgba(0,0,0,0.1)', borderRadius: '4px' }
-            }}
-          >
-            {lessons.map((lesson) => {
-              const isActive = lesson.id === activeLessonId;
-              const hasVideos = lesson.videos?.length > 0;
-              const isExpanded = !!expandedLessons[lesson.id];
+        {/* Right side: Lesson cards */}
+        <Box sx={{
+          width: { xs: '100%', lg: 340 },
+          flexShrink: 0,
+          height: '100%',
+          backgroundColor: '#f5f0ea',
+          overflowY: 'auto',
+          p: 2,
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 1.5,
+          '&::-webkit-scrollbar': { width: '6px' },
+          '&::-webkit-scrollbar-thumb': { backgroundColor: 'rgba(0,0,0,0.12)', borderRadius: '4px' },
+        }}>
+          {lessons.map((lesson) => {
+            const isActive = lesson.id === activeLessonId;
+            const hasVideos = lesson.videos?.length > 0;
+            const isExpanded = !!expandedLessons[lesson.id];
 
-              if (!hasVideos) {
-                return (
-                  <Box
-                    key={lesson.id}
-                    onClick={() => selectLesson(lesson)}
-                    sx={{
-                      px: 3,
-                      py: 2.2,
-                      borderBottom: '1.5px solid #e2e8f0',
-                      backgroundColor: isActive ? '#faede0' : '#ffffff',
-                      cursor: 'pointer',
-                      transition: 'all 0.15s ease-in-out',
-                      '&:hover': {
-                        backgroundColor: isActive ? '#f3e2d1' : '#f9fafb',
-                      }
-                    }}
-                  >
+            return (
+              <Paper
+                key={lesson.id}
+                elevation={0}
+                sx={{
+                  borderRadius: '12px',
+                  overflow: 'hidden',
+                  backgroundColor: isActive ? '#faede0' : '#ffffff',
+                  border: isActive ? '1.5px solid #e8d5b7' : '1px solid #ebe6df',
+                  transition: 'all 0.15s ease',
+                }}
+              >
+                <Box
+                  onClick={() => {
+                    selectLesson(lesson);
+                    if (hasVideos) {
+                      setExpandedLessons(prev => ({ ...prev, [lesson.id]: !prev[lesson.id] }));
+                    }
+                  }}
+                  sx={{
+                    px: 2,
+                    py: 1.8,
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'flex-start',
+                    justifyContent: 'space-between',
+                    gap: 1,
+                    '&:hover': { backgroundColor: isActive ? '#f3e2d1' : '#fafafa' },
+                  }}
+                >
+                  <Box sx={{ flex: 1, minWidth: 0 }}>
                     <Typography sx={{
-                      fontSize: '0.9rem',
+                      fontSize: '0.88rem',
                       fontWeight: isActive ? 700 : 600,
-                      color: '#2d3748',
-                      lineHeight: 1.4,
-                      fontFamily: "'Inter', 'Outfit', sans-serif",
-                      mb: 0.5
+                      color: '#1a202c',
+                      lineHeight: 1.45,
+                      mb: 0.6,
                     }}>
                       {lesson.topic || lesson.description}
                     </Typography>
-                    <Typography sx={{ fontSize: '0.8rem', color: '#9ca3af', fontWeight: 700, fontFamily: "'Inter', 'Outfit', sans-serif" }}>
+                    <Typography sx={{ fontSize: '0.78rem', color: '#9ca3af', fontWeight: 600 }}>
                       Dars sanasi: {formatLessonDate(lesson.date)}
                     </Typography>
                   </Box>
-                );
-              }
+                  {hasVideos && (
+                    <ExpandMoreIcon sx={{
+                      color: '#6b7280',
+                      fontSize: 22,
+                      mt: 0.2,
+                      flexShrink: 0,
+                      transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)',
+                      transition: 'transform 0.2s ease',
+                    }} />
+                  )}
+                </Box>
 
-              return (
-                <Accordion
-                  key={lesson.id}
-                  expanded={isExpanded}
-                  onChange={() => {
-                    selectLesson(lesson);
-                    setExpandedLessons(prev => ({ ...prev, [lesson.id]: !prev[lesson.id] }));
-                  }}
-                  elevation={0}
-                  sx={{
-                    backgroundColor: isActive ? '#faede0' : '#ffffff',
-                    borderBottom: '1.5px solid #e2e8f0',
-                    '&:before': { display: 'none' }, // Remove default divider
-                    borderRadius: 0,
-                    margin: '0 !important' // Override default MUI margin expansion
-                  }}
-                >
-                  <AccordionSummary
-                    expandIcon={<ExpandMoreIcon sx={{ color: '#4b5563', fontSize: 22 }} />}
-                    sx={{
-                      px: 3,
-                      py: 1.5,
-                      backgroundColor: isActive ? '#faede0' : '#ffffff',
-                      '&:hover': {
-                        backgroundColor: isActive ? '#f3e2d1' : '#f9fafb',
-                      },
-                      '& .MuiAccordionSummary-content': { m: 0 }
-                    }}
-                  >
-                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
-                      <Typography sx={{
-                        fontSize: '0.9rem',
-                        fontWeight: isActive ? 700 : 600,
-                        color: '#2d3748',
-                        lineHeight: 1.4,
-                        fontFamily: "'Inter', 'Outfit', sans-serif"
-                      }}>
-                        {lesson.topic || lesson.description}
-                      </Typography>
-                      <Typography sx={{ fontSize: '0.8rem', color: isActive ? '#6b7280' : '#9ca3af', fontWeight: 700, fontFamily: "'Inter', 'Outfit', sans-serif" }}>
-                        Dars sanasi: {formatLessonDate(lesson.date)}
-                      </Typography>
-                    </Box>
-                  </AccordionSummary>
-
-                  <AccordionDetails sx={{ p: 0, backgroundColor: '#ffffff' }}>
-                    <List sx={{ p: 0 }}>
-                      {lesson.videos.map((video, idx) => {
-                        const isVideoActive = activeVideos[lesson.id] === video.id;
-                        return (
-                          <ListItem
-                            key={video.id}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              selectVideo(lesson.id, video.id, e);
-                            }}
-                            sx={{
-                              px: 4,
-                              py: 1.8,
-                              cursor: 'pointer',
-                              backgroundColor: isVideoActive ? '#faede0' : '#ffffff',
-                              borderBottom: idx === lesson.videos.length - 1 ? 'none' : '1px solid #f3f4f6',
-                              '&:hover': {
-                                backgroundColor: isVideoActive ? '#f3e2d1' : '#f9fafb',
-                              },
-                              display: 'flex',
-                              alignItems: 'center',
-                              gap: 1.5,
-                              transition: 'background-color 0.15s ease'
-                            }}
-                          >
-                            <Box sx={{ display: 'flex', alignItems: 'center', color: '#c5a059' }}>
-                              {isVideoActive ? (
-                                <PlayCircleFilledWhiteOutlinedIcon sx={{ fontSize: 20 }} />
-                              ) : (
-                                <PanoramaFishEyeIcon sx={{ fontSize: 20 }} />
-                              )}
-                            </Box>
-                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, minWidth: 0 }}>
-                              <Typography sx={{ fontSize: '0.85rem', fontWeight: 700, color: '#1a202c', fontFamily: "'Inter', 'Outfit', sans-serif" }}>
-                                {idx + 1}-video:
-                              </Typography>
-                              <Typography sx={{
-                                fontSize: '0.85rem',
-                                color: '#4a5568',
-                                fontFamily: "'Inter', 'Outfit', sans-serif",
-                                overflow: 'hidden',
-                                textOverflow: 'ellipsis',
-                                whiteSpace: 'nowrap'
-                              }}>
-                                {video.title}
-                              </Typography>
-                            </Box>
-                          </ListItem>
-                        );
-                      })}
-                    </List>
-                  </AccordionDetails>
-                </Accordion>
-              );
-            })}
-          </AccordionDetails>
-        </Accordion>
+                {hasVideos && isExpanded && (
+                  <Box sx={{ borderTop: '1px solid #f0ebe4', backgroundColor: '#fff' }}>
+                    {lesson.videos.map((video, idx) => {
+                      const isVideoActive =
+                        isActive && (activeVideos[lesson.id] ?? lesson.videos[0]?.id) === video.id;
+                      return (
+                        <Box
+                          key={video.id}
+                          onClick={(e) => selectVideo(lesson.id, video.id, e)}
+                          sx={{
+                            px: 2.5,
+                            py: 1.5,
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 1.2,
+                            backgroundColor: isVideoActive ? '#faede0' : '#fff',
+                            borderBottom: idx < lesson.videos.length - 1 ? '1px solid #f5f0ea' : 'none',
+                            '&:hover': { backgroundColor: isVideoActive ? '#f3e2d1' : '#faf8f5' },
+                          }}
+                        >
+                          <Box sx={{ color: '#c5a059', display: 'flex' }}>
+                            {isVideoActive
+                              ? <PlayCircleFilledWhiteOutlinedIcon sx={{ fontSize: 18 }} />
+                              : <PanoramaFishEyeIcon sx={{ fontSize: 18 }} />}
+                          </Box>
+                          <Typography sx={{
+                            fontSize: '0.82rem',
+                            color: '#374151',
+                            fontWeight: isVideoActive ? 700 : 500,
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                            whiteSpace: 'nowrap',
+                          }}>
+                            {idx + 1}-video: {video.title}
+                          </Typography>
+                        </Box>
+                      );
+                    })}
+                  </Box>
+                )}
+              </Paper>
+            );
+          })}
+        </Box>
 
       </Box>
     </Box>

@@ -8,7 +8,6 @@ import SendIcon from '@mui/icons-material/Send';
 import AttachFileIcon from '@mui/icons-material/AttachFile';
 import EditIcon from '@mui/icons-material/Edit';
 import WarningIcon from '@mui/icons-material/Warning';
-import ErrorIcon from '@mui/icons-material/Error';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import PlayCircleFilledWhiteOutlinedIcon from '@mui/icons-material/PlayCircleFilledWhiteOutlined';
 import PanoramaFishEyeIcon from '@mui/icons-material/PanoramaFishEye';
@@ -99,19 +98,6 @@ function formatDateTime(dateStr) {
   return `${d.getFullYear()}-yil ${d.getDate()}-${months[d.getMonth()]}, soat ${hh}:${mm}`;
 }
 
-function formatDeadlineDate(dateStr) {
-  if (!dateStr) return '—';
-  const d = new Date(dateStr);
-  if (isNaN(d.getTime())) return dateStr;
-  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-  const day = d.getDate();
-  const month = months[d.getMonth()];
-  const year = d.getFullYear();
-  const hh = String(d.getHours()).padStart(2, '0');
-  const mm = String(d.getMinutes()).padStart(2, '0');
-  return `${day} ${month}, ${year} ${hh}:${mm}`;
-}
-
 function formatLessonDate(dateStr) {
   if (!dateStr) return '—';
   const d = new Date(dateStr);
@@ -133,6 +119,7 @@ export default function StudentLessonDetail() {
   const [expandedLessonId, setExpandedLessonId] = useState(null);
   const [activeVideos, setActiveVideos] = useState({}); // lessonId -> videoId mapping
   const [submitText, setSubmitText] = useState('');
+  const [selectedFiles, setSelectedFiles] = useState([]);
   const [isEditing, setIsEditing] = useState(false);
   // Fetch all lessons of group
   const fetchGroupLessons = () => {
@@ -175,6 +162,7 @@ export default function StudentLessonDetail() {
   // Navigates to selected lesson URL
   const selectLesson = (lesson) => {
     setSubmitText('');
+    setSelectedFiles([]);
     setIsEditing(false);
     setExpandedLessonId(lesson.id);
     navigate(`/student/groups/${groupId}/lessons/${lesson.id}`);
@@ -193,15 +181,17 @@ export default function StudentLessonDetail() {
   // Submit Homework to backend
   const handleSendHomework = () => {
     const homework = activeLesson?.homeWorks?.[0];
-    if (!homework || !submitText.trim()) return;
+    if (!homework || (!submitText.trim() && selectedFiles.length === 0)) return;
 
     setSubmitting(true);
     const formData = new FormData();
     formData.append('comment', submitText);
+    selectedFiles.forEach((file) => formData.append('files', file));
 
     api.post(`/api/v1/home-works/${homework.id}/submit`, formData)
       .then(() => {
         setSubmitText('');
+        setSelectedFiles([]);
         setIsEditing(false);
         return fetchGroupLessons();
       })
@@ -360,43 +350,61 @@ export default function StudentLessonDetail() {
               <Paper
                 elevation={0}
                 sx={{
-                  p: 3,
-                  borderRadius: '12px',
-                  border: '1px solid #e2e8f0',
-                  backgroundColor: '#ffffff',
+                  px: { xs: 2.5, sm: 4 },
+                  py: { xs: 3, sm: 4 },
+                  borderRadius: '2px',
+                  border: 'none',
+                  backgroundColor: '#f8f3ef',
                   display: 'flex',
                   flexDirection: 'column',
-                  gap: 2
+                  gap: { xs: 3, sm: 4 }
                 }}
               >
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                  <Typography sx={{ fontSize: '1.15rem', fontWeight: 800, color: '#2d3748', fontFamily: "'Inter', 'Outfit', sans-serif" }}>
+                <Box sx={{
+                  display: 'grid',
+                  gridTemplateColumns: { xs: '1fr', md: '1fr auto 1fr' },
+                  alignItems: 'center',
+                  gap: { xs: 2, md: 3 },
+                }}>
+                  <Typography sx={{ fontSize: { xs: '1.25rem', sm: '1.45rem' }, fontWeight: 500, color: '#333', fontFamily: "'Inter', 'Outfit', sans-serif" }}>
                     Uyga vazifa
                   </Typography>
-                  <Typography sx={{ fontSize: '0.85rem', color: '#6b7280', fontWeight: 600, fontFamily: "'Inter', 'Outfit', sans-serif" }}>
-                    Fayllar soni: {homework.file ? 1 : 0}
-                  </Typography>
-                </Box>
 
-                {/* Deadline/creation status */}
-                <Box sx={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 1.5,
-                  backgroundColor: '#ff3b30', // Bright red background!
-                  color: '#ffffff', // White text!
-                  p: 2,
-                  borderRadius: '8px',
-                }}>
-                  <ErrorIcon sx={{ fontSize: 20, color: '#ffffff' }} />
-                  <Typography sx={{ fontSize: '0.88rem', fontWeight: 700, fontFamily: "'Inter', 'Outfit', sans-serif" }}>
-                    Uyga vazifa muddati: {homework.deadline ? formatDeadlineDate(homework.deadline) : formatDeadlineDate(homework.created_at)}
+                  <Box sx={{
+                    justifySelf: { xs: 'start', md: 'center' },
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 2,
+                    backgroundColor: '#fffaf0',
+                    color: '#333',
+                    px: { xs: 2, sm: 3 },
+                    py: { xs: 1.5, sm: 2 },
+                    borderRadius: '6px',
+                    minWidth: { xs: '100%', sm: 360, md: 430 },
+                  }}>
+                    <WarningIcon sx={{ fontSize: 30, color: '#e6a72d' }} />
+                    <Typography sx={{ fontSize: { xs: '1rem', sm: '1.15rem' }, lineHeight: 1.45, fontWeight: 500, fontFamily: "'Inter', 'Outfit', sans-serif" }}>
+                      Uyga vazifa<br />muddati:
+                    </Typography>
+                    <Typography sx={{ fontSize: { xs: '1rem', sm: '1.15rem' }, lineHeight: 1.45, fontWeight: 600, fontFamily: "'Inter', 'Outfit', sans-serif" }}>
+                      {homework.deadline ? formatDateTime(homework.deadline) : formatDateTime(homework.created_at)}
+                    </Typography>
+                  </Box>
+
+                  <Typography sx={{
+                    justifySelf: { xs: 'start', md: 'end' },
+                    fontSize: { xs: '1rem', sm: '1.15rem' },
+                    color: '#333',
+                    fontWeight: 500,
+                    fontFamily: "'Inter', 'Outfit', sans-serif"
+                  }}>
+                    Fayllar soni: {homework.file ? 1 : 0}
                   </Typography>
                 </Box>
 
                 {/* HW details description */}
                 <Box>
-                  <Typography sx={{ fontSize: '0.92rem', color: '#4a5568', lineHeight: 1.6, fontWeight: 500, fontFamily: "'Inter', 'Outfit', sans-serif" }}>
+                  <Typography sx={{ fontSize: { xs: '1rem', sm: '1.12rem' }, color: '#333', lineHeight: 1.6, fontWeight: 500, fontFamily: "'Inter', 'Outfit', sans-serif" }}>
                     {homework.description || homework.title}
                   </Typography>
                 </Box>
@@ -415,7 +423,7 @@ export default function StudentLessonDetail() {
                 )}
 
                 <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
-                  <Typography sx={{ fontSize: '0.78rem', color: '#9ca3af', fontWeight: 600, fontFamily: "'Inter', 'Outfit', sans-serif" }}>
+                  <Typography sx={{ fontSize: { xs: '0.95rem', sm: '1.1rem' }, color: '#333', fontWeight: 500, fontFamily: "'Inter', 'Outfit', sans-serif" }}>
                     {homework.created_at ? formatDateTime(homework.created_at) : ''}
                   </Typography>
                 </Box>
@@ -426,69 +434,85 @@ export default function StudentLessonDetail() {
                 <Paper
                   elevation={0}
                   sx={{
-                    p: 3,
-                    borderRadius: '12px',
-                    border: '1px solid #e2e8f0',
+                    p: 0,
+                    borderRadius: 0,
+                    border: '1px solid #e5e7eb',
                     backgroundColor: '#ffffff',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: 2
+                    minHeight: 160,
                   }}
                 >
-                  <Typography sx={{ fontSize: '0.95rem', fontWeight: 700, color: '#2d3748', fontFamily: "'Inter', 'Outfit', sans-serif" }}>
-                    Vazifa yuklash
-                  </Typography>
                   <Box sx={{
                     position: 'relative',
-                    border: '1px solid #e2e8f0',
-                    borderRadius: '12px',
-                    backgroundColor: '#fafafa',
-                    p: 1.5,
+                    minHeight: 160,
+                    backgroundColor: '#ffffff',
+                    px: { xs: 2, sm: 4 },
+                    py: { xs: 2.5, sm: 3 },
                     display: 'flex',
                     flexDirection: 'column',
-                    gap: 1
+                    justifyContent: 'space-between',
+                    gap: 2
                   }}>
                     <TextField
                       multiline
-                      rows={3}
+                      minRows={2}
                       fullWidth
                       variant="standard"
                       disabled={submitting}
-                      placeholder="Havola (link) yoki vazifa izohini qoldiring..."
+                      placeholder="Fayl yig'ish va izoh qo'lga"
                       value={submitText}
-                      onChange={(e) => setSubmitText(e.target.value)}
+                      onChange={(e) => setSubmitText(e.target.value.slice(0, 1000))}
                       InputProps={{ disableUnderline: true }}
-                      sx={{ '& .MuiInputBase-input': { fontSize: '0.9rem', color: '#2d3748' } }}
+                      sx={{
+                        pr: 8,
+                        '& .MuiInputBase-input': {
+                          fontSize: { xs: '1rem', sm: '1.15rem' },
+                          color: '#333',
+                          fontWeight: 500,
+                        },
+                        '& .MuiInputBase-input::placeholder': {
+                          color: '#8b8b8b',
+                          opacity: 0.85,
+                        }
+                      }}
                     />
+                    {selectedFiles.length > 0 && (
+                      <Typography sx={{ fontSize: '0.9rem', color: '#6b7280', fontWeight: 600 }}>
+                        Tanlangan fayllar: {selectedFiles.length}
+                      </Typography>
+                    )}
                     <Box sx={{
                       display: 'flex',
                       alignItems: 'center',
-                      justifyContent: 'space-between',
-                      mt: 1
+                      justifyContent: 'flex-end',
+                      gap: 2,
                     }}>
                       <Tooltip title="Fayl yuklash">
-                        <IconButton size="small" sx={{ color: '#9ca3af', '&:hover': { color: '#4a5568' } }}>
-                          <AttachFileIcon sx={{ fontSize: 20 }} />
+                        <IconButton component="label" sx={{ color: '#70757a', '&:hover': { color: '#333' } }}>
+                          <AttachFileIcon sx={{ fontSize: 30 }} />
+                          <input
+                            hidden
+                            multiple
+                            type="file"
+                            onChange={(e) => setSelectedFiles(Array.from(e.target.files || []))}
+                          />
                         </IconButton>
                       </Tooltip>
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                        <Typography sx={{ fontSize: '0.78rem', color: '#9ca3af', fontWeight: 600 }}>
-                          {submitText.length} / 1000
-                        </Typography>
-                        <IconButton 
-                          onClick={handleSendHomework}
-                          disabled={!submitText.trim() || submitting}
-                          sx={{
-                            backgroundColor: submitText.trim() ? '#ff9800' : 'rgba(0,0,0,0.04)',
-                            color: '#ffffff',
-                            '&:hover': { backgroundColor: '#e68a00' },
-                            '&.Mui-disabled': { color: '#9ca3af' },
-                            width: 34, height: 34,
-                          }}
-                        >
-                          {submitting ? <CircularProgress size={16} sx={{ color: '#fff' }} /> : <SendIcon sx={{ fontSize: 16 }} />}
-                        </IconButton>
-                      </Box>
+                      <IconButton 
+                        onClick={handleSendHomework}
+                        disabled={(!submitText.trim() && selectedFiles.length === 0) || submitting}
+                        sx={{
+                          color: '#70757a',
+                          '&:hover': { color: '#333', backgroundColor: 'transparent' },
+                          '&.Mui-disabled': { color: '#b4b4b4' },
+                        }}
+                      >
+                        {submitting ? <CircularProgress size={24} sx={{ color: '#70757a' }} /> : <SendIcon sx={{ fontSize: 34 }} />}
+                      </IconButton>
+                    </Box>
+                    <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
+                      <Typography sx={{ fontSize: { xs: '1rem', sm: '1.1rem' }, color: '#333', fontWeight: 500 }}>
+                        {submitText.length} / 1000
+                      </Typography>
                     </Box>
                   </Box>
                 </Paper>
@@ -525,7 +549,7 @@ export default function StudentLessonDetail() {
                       disabled={submitting}
                       placeholder="Havola (link) yoki vazifa izohini qoldiring..."
                       value={submitText}
-                      onChange={(e) => setSubmitText(e.target.value)}
+                      onChange={(e) => setSubmitText(e.target.value.slice(0, 1000))}
                       InputProps={{ disableUnderline: true }}
                       sx={{ '& .MuiInputBase-input': { fontSize: '0.9rem', color: '#2d3748' } }}
                     />

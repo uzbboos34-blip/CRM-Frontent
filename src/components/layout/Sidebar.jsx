@@ -80,11 +80,11 @@ export default function Sidebar({ openSettings, setOpenSettings, isSidebarCollap
 
   const activeStyles = isStudent
     ? {
-        backgroundColor: 'rgba(197, 160, 89, 0.1)',
-        color: '#c5a059',
+        backgroundColor: '#c5a059',
+        color: '#fff',
         borderRadius: '12px',
-        '&:hover': { backgroundColor: 'rgba(197, 160, 89, 0.15)' },
-        '& .MuiListItemIcon-root': { color: '#c5a059' }
+        '&:hover': { backgroundColor: '#b8903f' },
+        '& .MuiListItemIcon-root': { color: '#fff' }
       }
     : {
         backgroundColor: '#7b61ff',
@@ -174,12 +174,12 @@ export default function Sidebar({ openSettings, setOpenSettings, isSidebarCollap
                       minHeight: 52,
                     }}
                   >
-                    <ListItemIcon sx={{ minWidth: collapsed ? 0 : 36, justifyContent: 'center', color: isActive ? '#fff' : '#111827' }}>
+                    <ListItemIcon sx={{ minWidth: collapsed ? 0 : 36, justifyContent: 'center', color: isActive ? '#fff' : '#6b7280' }}>
                       {item.icon}
                     </ListItemIcon>
                     {!collapsed && (
                       <Box sx={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                        <Typography sx={{ fontSize: '1rem', fontWeight: isActive ? 700 : 600, color: isActive ? '#fff' : '#111827' }}>{item.text}</Typography>
+                        <Typography sx={{ fontSize: '1rem', fontWeight: isActive ? 700 : 600, color: isActive ? '#fff' : '#374151' }}>{item.text}</Typography>
                         {item.premium && <WorkspacePremiumIcon sx={{ fontSize: 16, color: '#fbbf24' }} />}
                       </Box>
                     )}

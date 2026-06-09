@@ -56,7 +56,7 @@ export default function StudentGroups() {
   };
 
   return (
-    <Box sx={{ p: { xs: 2, sm: 4 }, animation: 'fadeIn 0.3s ease-out' }}>
+    <Box sx={{ p: { xs: 1.5, sm: 2 }, animation: 'fadeIn 0.3s ease-out' }}>
       {/* Tabs */}
       <Box sx={{ borderBottom: '1px solid #e5e7eb', mb: 3 }}>
         <Tabs
@@ -94,7 +94,7 @@ export default function StudentGroups() {
           </Typography>
         </Box>
       ) : (
-        <TableContainer component={Paper} elevation={0} sx={{ border: '1px solid #e5e7eb', borderRadius: '16px', overflow: 'hidden' }}>
+        <TableContainer component={Paper} elevation={0} sx={{ border: '1px solid #e5e7eb', borderRadius: '12px', overflow: 'hidden' }}>
           <Table>
             <TableHead sx={{ backgroundColor: '#fff' }}>
               <TableRow>

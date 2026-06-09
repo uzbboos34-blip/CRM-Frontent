@@ -1014,7 +1014,8 @@ export default function StudentLessonDetail() {
         }}>
           {lessons.map((lesson) => {
             const isActive = lesson.id === activeLessonId;
-            const hasVideos = lesson.videos?.length > 0;
+            const currentLesson = isActive && activeLesson ? activeLesson : lesson;
+            const hasVideos = isActive ? (activeLesson?.videos?.length > 0) : (lesson.videoCount > 0);
             const isExpanded = expandedLessonId === lesson.id;
             const isOpen = isActive && hasVideos && isExpanded;
 
@@ -1090,9 +1091,9 @@ export default function StudentLessonDetail() {
                     gap: 0,
                     mt: 0,
                   }}>
-                    {lesson.videos.map((video, idx) => {
+                    {currentLesson.videos?.map((video, idx) => {
                       const isVideoActive =
-                        isActive && (activeVideos[lesson.id] ?? lesson.videos[0]?.id) === video.id;
+                        isActive && (activeVideos[lesson.id] ?? currentLesson.videos[0]?.id) === video.id;
                       return (
                         <Box
                           key={video.id}

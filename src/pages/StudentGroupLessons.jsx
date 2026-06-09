@@ -55,7 +55,7 @@ export default function StudentGroupLessons() {
 
   useEffect(() => {
     setLoading(true);
-    api.get(`/api/v1/students/my/groups/${groupId}/lessons/list`)
+    api.get(`/api/v1/students/my/groups/${groupId}/lessons-summary`)
       .then(res => {
         setLessons(res.data?.data || []);
       })

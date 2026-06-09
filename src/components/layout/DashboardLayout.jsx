@@ -204,7 +204,8 @@ export default function DashboardLayout() {
           backgroundColor: isStudentLessonDetail ? '#f5f6fa' : (isManagementActive ? '#f9fafb' : '#f5f6fa'),
           minHeight: 0,
           display: 'flex',
-          flexDirection: 'column'
+          flexDirection: 'column',
+          '& > *': isStudentLessonDetail ? { flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' } : undefined,
         }}>
           <Outlet />
         </Box>

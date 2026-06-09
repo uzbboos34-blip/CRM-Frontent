@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
   Box, Typography, Paper, IconButton, Button,
@@ -21,6 +21,61 @@ function getFullVideoUrl(url) {
   if (baseUrl.endsWith('/')) baseUrl = baseUrl.slice(0, -1);
   baseUrl = baseUrl.replace(/\/api\/v1$/, '');
   return `${baseUrl}/file/${url}`;
+}
+
+function VideoPlayerFrame({ video }) {
+  const isEmbed =
+    video.video_url?.includes('embed') || video.video_url?.includes('kinescope');
+
+  return (
+    <Box sx={{
+      width: '100%',
+      flexShrink: 0,
+      position: 'relative',
+      borderRadius: '12px',
+      overflow: 'hidden',
+      backgroundColor: '#111',
+      minHeight: { xs: 200, sm: 260, md: 320 },
+      '&::before': {
+        content: '""',
+        display: 'block',
+        paddingTop: '56.25%',
+      },
+    }}>
+      <Box sx={{
+        position: 'absolute',
+        inset: 0,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: '#111',
+      }}>
+        {isEmbed ? (
+          <iframe
+            src={video.video_url}
+            title={video.title || 'Video'}
+            allow="autoplay; fullscreen; encrypted-media; picture-in-picture"
+            style={{ border: 'none', width: '100%', height: '100%' }}
+          />
+        ) : (
+          <video
+            key={video.id}
+            src={getFullVideoUrl(video.video_url)}
+            controls
+            playsInline
+            preload="metadata"
+            style={{
+              width: '100%',
+              height: '100%',
+              objectFit: 'contain',
+              display: 'block',
+              backgroundColor: '#000',
+            }}
+          />
+        )}
+      </Box>
+    </Box>
+  );
 }
 
 // Uy vazifasi holati config
@@ -79,9 +134,6 @@ export default function StudentLessonDetail() {
   const [activeVideos, setActiveVideos] = useState({}); // lessonId -> videoId mapping
   const [submitText, setSubmitText] = useState('');
   const [isEditing, setIsEditing] = useState(false);
-  const [videoPlaying, setVideoPlaying] = useState(false);
-  const videoRef = useRef(null);
-
   // Fetch all lessons of group
   const fetchGroupLessons = () => {
     return api.get(`/api/v1/students/my/groups/${groupId}/lessons`)
@@ -121,17 +173,6 @@ export default function StudentLessonDetail() {
   const activeVideo = activeLesson
     ? (activeLesson.videos?.find(v => v.id === activeVideoId) ?? activeLesson.videos?.[0])
     : null;
-
-  useEffect(() => {
-    setVideoPlaying(false);
-  }, [activeLessonId, activeVideoId]);
-
-  const handlePlayVideo = () => {
-    setVideoPlaying(true);
-    requestAnimationFrame(() => {
-      videoRef.current?.play?.();
-    });
-  };
 
   // Navigates to selected lesson URL
   const selectLesson = (lesson) => {
@@ -214,11 +255,12 @@ export default function StudentLessonDetail() {
   return (
     <Box sx={{
       animation: 'fadeIn 0.3s ease-out',
-      p: 0, // No padding on the edges!
-      height: '100%', // Full height of parent container
+      p: 0,
+      flex: 1,
+      minHeight: 0,
       display: 'flex',
       flexDirection: 'column',
-      overflow: 'hidden'
+      overflow: 'hidden',
     }}>
       {/* Main split grid */}
       <Box sx={{
@@ -246,131 +288,41 @@ export default function StudentLessonDetail() {
           '&::-webkit-scrollbar-thumb': { backgroundColor: 'rgba(0,0,0,0.1)', borderRadius: '4px' }
         }}>
           
-          {/* Custom Video Player Container */}
-          <Box sx={{
-            width: '100%',
-            aspectRatio: '16/9',
-            backgroundColor: '#1a1a1a',
-            borderRadius: '12px',
-            overflow: 'hidden',
-            position: 'relative',
-          }}>
-            {activeVideo ? (
-              activeVideo.video_url?.includes('embed') || activeVideo.video_url?.includes('kinescope') ? (
-                <iframe
-                  src={activeVideo.video_url}
-                  height="100%"
-                  width="100%"
-                  allow="autoplay; fullscreen; encrypted-media;"
-                  style={{
-                    border: 'none',
-                    width: '100%',
-                    height: '100%',
-                    borderRadius: '12px',
-                  }}
-                  className="player__iframe"
-                />
-              ) : videoPlaying ? (
-                <video
-                  ref={videoRef}
-                  src={getFullVideoUrl(activeVideo.video_url)}
-                  controls
-                  autoPlay
-                  style={{
-                    width: '100%',
-                    height: '100%',
-                    objectFit: 'contain',
-                    backgroundColor: '#000',
-                    display: 'block',
-                  }}
-                />
-              ) : (
-                <Box
-                  onClick={handlePlayVideo}
-                  sx={{
-                    width: '100%',
-                    height: '100%',
-                    cursor: 'pointer',
-                    position: 'relative',
-                    backgroundColor: '#2d2d2d',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                  }}
-                >
-                  <video
-                    src={getFullVideoUrl(activeVideo.video_url)}
-                    preload="metadata"
-                    muted
-                    style={{
-                      width: '100%',
-                      height: '100%',
-                      objectFit: 'contain',
-                      pointerEvents: 'none',
-                    }}
-                  />
-                  <Box sx={{
-                    position: 'absolute',
-                    inset: 0,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    backgroundColor: 'rgba(0,0,0,0.25)',
-                  }}>
-                    <Box sx={{
-                      width: 72,
-                      height: 72,
-                      borderRadius: '50%',
-                      backgroundColor: '#ff9800',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      boxShadow: '0 4px 20px rgba(0,0,0,0.35)',
-                    }}>
-                      <Box sx={{
-                        width: 0,
-                        height: 0,
-                        borderTop: '12px solid transparent',
-                        borderBottom: '12px solid transparent',
-                        borderLeft: '20px solid #fff',
-                        ml: '4px',
-                      }} />
-                    </Box>
-                  </Box>
-                  <Typography sx={{
-                    position: 'absolute',
-                    top: 12,
-                    left: 16,
-                    color: '#fff',
-                    fontSize: '0.85rem',
-                    fontWeight: 600,
-                    textShadow: '0 1px 4px rgba(0,0,0,0.6)',
-                  }}>
-                    {activeVideo.title}
-                  </Typography>
-                </Box>
-              )
-            ) : (
+          {/* Video player — fixed 16:9 frame, always visible */}
+          {activeVideo ? (
+            <VideoPlayerFrame video={activeVideo} />
+          ) : (
+            <Box sx={{
+              width: '100%',
+              flexShrink: 0,
+              position: 'relative',
+              borderRadius: '12px',
+              overflow: 'hidden',
+              backgroundColor: '#1a1a1a',
+              minHeight: { xs: 200, sm: 260, md: 320 },
+              '&::before': { content: '""', display: 'block', paddingTop: '56.25%' },
+            }}>
               <Box sx={{
+                position: 'absolute',
+                inset: 0,
                 display: 'flex',
                 flexDirection: 'column',
                 alignItems: 'center',
                 justifyContent: 'center',
-                gap: 2.5,
-                height: '100%',
-                textAlign: 'center',
+                gap: 2,
+                color: '#9ca3af',
               }}>
-                <svg width="120" height="120" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <svg width="80" height="80" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <path d="M40 5L15 25L40 45L65 25L40 5Z" stroke="#c5a059" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
                   <path d="M22.5 31L15 37L40 57L65 37L57.5 31" stroke="#c5a059" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
                   <path d="M30 49L40 57L50 49" stroke="#c5a059" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
                 </svg>
-                <Typography sx={{ fontSize: '1.1rem', fontWeight: 700, color: '#9ca3af' }}>
+                <Typography sx={{ fontSize: '1rem', fontWeight: 700 }}>
                   Video mavjud emas
                 </Typography>
               </Box>
-            )}
-          </Box>
+            </Box>
+          )}
 
           {/* Active Lesson Title display */}
           <Paper elevation={0} sx={{

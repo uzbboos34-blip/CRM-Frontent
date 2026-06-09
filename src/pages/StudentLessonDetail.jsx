@@ -8,6 +8,7 @@ import SendIcon from '@mui/icons-material/Send';
 import AttachFileIcon from '@mui/icons-material/AttachFile';
 import EditIcon from '@mui/icons-material/Edit';
 import WarningIcon from '@mui/icons-material/Warning';
+import ErrorOutlineIcon from '@mui/icons-material/ErrorOutlineOutlined';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import PlayCircleFilledWhiteOutlinedIcon from '@mui/icons-material/PlayCircleFilledWhiteOutlined';
 import PanoramaFishEyeIcon from '@mui/icons-material/PanoramaFishEye';
@@ -96,6 +97,16 @@ function formatDateTime(dateStr) {
   const hh = String(d.getHours()).padStart(2, '0');
   const mm = String(d.getMinutes()).padStart(2, '0');
   return `${d.getFullYear()}-yil ${d.getDate()}-${months[d.getMonth()]}, soat ${hh}:${mm}`;
+}
+
+function formatDeadlineShort(dateStr) {
+  if (!dateStr) return '—';
+  const d = new Date(dateStr);
+  if (isNaN(d.getTime())) return dateStr;
+  const months = ['Yan', 'Fev', 'Mar', 'Apr', 'May', 'Iyn', 'Iyl', 'Avg', 'Sen', 'Okt', 'Noy', 'Dek'];
+  const hh = String(d.getHours()).padStart(2, '0');
+  const mm = String(d.getMinutes()).padStart(2, '0');
+  return `${d.getDate()} ${months[d.getMonth()]}, ${d.getFullYear()} ${hh}:${mm}`;
 }
 
 function formatLessonDate(dateStr) {
@@ -238,6 +249,7 @@ export default function StudentLessonDetail() {
   const homework = activeLesson.homeWorks?.[0];
   const answer = homework?.homeWorkAnswers?.[0];
   const statusKey = homework ? (answer ? answer.homeworkStatus : 'NOT_DONE') : 'NONE';
+  const hasSubmittedHomework = Boolean(answer);
   const score = answer?.homeWorkResults?.[0]?.grade || 0;
   const teacherComment = answer?.homeWorkResults?.[0];
 
@@ -386,19 +398,23 @@ export default function StudentLessonDetail() {
                     alignItems: 'center',
                     justifyContent: 'center',
                     gap: { xs: 1.25, sm: 1.75 },
-                    backgroundColor: '#fffaf0',
-                    color: '#333',
-                    px: { xs: 1.5, sm: 2.5 },
-                    py: { xs: 1.25, sm: 1.5 },
+                    backgroundColor: hasSubmittedHomework ? '#ff2d12' : '#fffaf0',
+                    color: hasSubmittedHomework ? '#fff' : '#4f3b10',
+                    px: { xs: 1.5, sm: 2.25 },
+                    py: { xs: 1.25, sm: 1.25 },
                     borderRadius: '6px',
                     minHeight: 56,
                     minWidth: 0,
                   }}>
-                    <WarningIcon sx={{ fontSize: 24, color: '#e6a72d', flexShrink: 0 }} />
+                    {hasSubmittedHomework ? (
+                      <ErrorOutlineIcon sx={{ fontSize: 25, color: '#fff', flexShrink: 0 }} />
+                    ) : (
+                      <WarningIcon sx={{ fontSize: 24, color: '#e6a72d', flexShrink: 0 }} />
+                    )}
                     <Typography sx={{
                       fontSize: { xs: '0.95rem', sm: '1rem' },
                       lineHeight: 1.35,
-                      fontWeight: 600,
+                      fontWeight: 700,
                       whiteSpace: 'nowrap',
                       fontFamily: "'Inter', 'Outfit', sans-serif"
                     }}>
@@ -411,7 +427,9 @@ export default function StudentLessonDetail() {
                       whiteSpace: { xs: 'normal', sm: 'nowrap' },
                       fontFamily: "'Inter', 'Outfit', sans-serif"
                     }}>
-                      {homework.deadline ? formatDateTime(homework.deadline) : formatDateTime(homework.created_at)}
+                      {hasSubmittedHomework
+                        ? (homework.deadline ? formatDeadlineShort(homework.deadline) : formatDeadlineShort(homework.created_at))
+                        : (homework.deadline ? formatDateTime(homework.deadline) : formatDateTime(homework.created_at))}
                     </Typography>
                   </Box>
 
@@ -613,24 +631,27 @@ export default function StudentLessonDetail() {
                 <Paper
                   elevation={0}
                   sx={{
-                    p: 3,
-                    borderRadius: '12px',
-                    border: '1px solid #e2e8f0',
-                    backgroundColor: '#ffffff',
+                    px: { xs: 2.5, sm: 4 },
+                    py: { xs: 3, sm: 4 },
+                    minHeight: 230,
+                    borderRadius: 0,
+                    border: 'none',
+                    backgroundColor: '#f8f3ef',
                     display: 'flex',
                     flexDirection: 'column',
-                    gap: 2
+                    justifyContent: 'space-between',
+                    gap: 3
                   }}
                 >
                   <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <Box sx={{ display: 'flex', gap: 1.5, alignItems: 'center' }}>
-                      <Typography sx={{ fontSize: '1.05rem', fontWeight: 800, color: '#2d3748', fontFamily: "'Inter', 'Outfit', sans-serif" }}>
+                    <Box sx={{ display: 'flex', gap: 1.5, alignItems: 'center', flexWrap: 'wrap' }}>
+                      <Typography sx={{ fontSize: { xs: '1.25rem', sm: '1.45rem' }, fontWeight: 500, color: '#333', fontFamily: "'Inter', 'Outfit', sans-serif" }}>
                         Mening jo'natmalarim
                       </Typography>
-                      <Typography sx={{ fontSize: '0.8rem', color: '#6b7280', fontWeight: 600, fontFamily: "'Inter', 'Outfit', sans-serif" }}>
-                        Fayllar soni: {answer.file ? JSON.parse(answer.file || '[]').length : 0}
-                      </Typography>
                     </Box>
+                    <Typography sx={{ fontSize: { xs: '1rem', sm: '1.1rem' }, color: '#333', fontWeight: 500, whiteSpace: 'nowrap', fontFamily: "'Inter', 'Outfit', sans-serif" }}>
+                      Fayllar soni: {answer.file ? JSON.parse(answer.file || '[]').length : 0}
+                    </Typography>
                     {statusKey === 'PENDING' && (
                       <IconButton size="small" onClick={handleStartEdit} sx={{ border: '1px solid #e2e8f0', borderRadius: '8px' }}>
                         <EditIcon sx={{ fontSize: 16, color: '#6b7280' }} />
@@ -640,18 +661,16 @@ export default function StudentLessonDetail() {
 
                   {/* Submitted response text */}
                   <Box sx={{
-                    p: 2,
-                    borderRadius: '10px',
-                    backgroundColor: '#f9fafb',
-                    border: '1px solid #f3f4f6',
+                    p: 0,
+                    backgroundColor: 'transparent',
                   }}>
-                    <Typography sx={{ fontSize: '0.9rem', color: '#2563eb', fontWeight: 600, wordBreak: 'break-all', fontFamily: "'Inter', 'Outfit', sans-serif" }}>
+                    <Typography sx={{ fontSize: { xs: '1rem', sm: '1.05rem' }, color: '#333', fontWeight: 500, wordBreak: 'break-word', fontFamily: "'Inter', 'Outfit', sans-serif" }}>
                       {answer.title}
                     </Typography>
                   </Box>
 
                   <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
-                    <Typography sx={{ fontSize: '0.78rem', color: '#9ca3af', fontWeight: 600, fontFamily: "'Inter', 'Outfit', sans-serif" }}>
+                    <Typography sx={{ fontSize: { xs: '0.95rem', sm: '1.1rem' }, color: '#333', fontWeight: 500, fontFamily: "'Inter', 'Outfit', sans-serif" }}>
                       {formatDateTime(answer.updated_at || answer.created_at)}
                     </Typography>
                   </Box>
@@ -663,20 +682,22 @@ export default function StudentLessonDetail() {
                 <Paper
                   elevation={0}
                   sx={{
-                    p: 3,
-                    borderRadius: '12px',
-                    border: '1px solid #e2e8f0',
-                    backgroundColor: '#ffffff',
+                    px: { xs: 2.5, sm: 4 },
+                    py: { xs: 3, sm: 4 },
+                    minHeight: 360,
+                    borderRadius: '10px',
+                    border: 'none',
+                    backgroundColor: '#f8f3ef',
                     display: 'flex',
                     flexDirection: 'column',
-                    gap: 2
+                    gap: 4
                   }}
                 >
                   <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <Typography sx={{ fontSize: '1.05rem', fontWeight: 800, color: '#2d3748', fontFamily: "'Inter', 'Outfit', sans-serif" }}>
+                    <Typography sx={{ fontSize: { xs: '1.1rem', sm: '1.25rem' }, fontWeight: 500, color: '#333', fontFamily: "'Inter', 'Outfit', sans-serif" }}>
                       O'qituvchi izohi
                     </Typography>
-                    <Typography sx={{ fontSize: '0.85rem', color: statusKey === 'ACCEPTED' ? '#16a34a' : '#ef4444', fontWeight: 800, fontFamily: "'Inter', 'Outfit', sans-serif" }}>
+                    <Typography sx={{ fontSize: { xs: '1rem', sm: '1.1rem' }, color: statusKey === 'ACCEPTED' ? '#078600' : '#ef4444', fontWeight: 500, fontFamily: "'Inter', 'Outfit', sans-serif" }}>
                       {statusKey === 'ACCEPTED' ? 'Vazifa qabul qilindi' : 'Vazifa qaytarildi'}
                     </Typography>
                   </Box>
@@ -688,13 +709,15 @@ export default function StudentLessonDetail() {
                       alignItems: 'center',
                       gap: 1.5,
                       backgroundColor: '#fff9e6',
-                      border: '1px solid #ffeeba',
+                      border: 'none',
                       color: '#b25e00',
-                      p: 2,
-                      borderRadius: '10px'
+                      px: 2,
+                      py: 1.5,
+                      borderRadius: 0,
+                      alignSelf: 'flex-start'
                     }}>
                       <WarningIcon sx={{ fontSize: 20, color: '#ff9800' }} />
-                      <Typography sx={{ fontSize: '0.88rem', fontWeight: 700, fontFamily: "'Inter', 'Outfit', sans-serif" }}>
+                      <Typography sx={{ fontSize: '1rem', fontWeight: 500, fontFamily: "'Inter', 'Outfit', sans-serif" }}>
                         {teacherComment.title}
                       </Typography>
                     </Box>
@@ -702,13 +725,13 @@ export default function StudentLessonDetail() {
 
                   {/* Checker teacher details */}
                   <Box sx={{ mt: 0.5, display: 'flex', flexDirection: 'column', gap: 0.8 }}>
-                    <Typography sx={{ fontSize: '0.88rem', color: '#4a5568', fontWeight: 600, fontFamily: "'Inter', 'Outfit', sans-serif" }}>
+                    <Typography sx={{ fontSize: { xs: '1rem', sm: '1.08rem' }, color: '#333', fontWeight: 500, fontFamily: "'Inter', 'Outfit', sans-serif" }}>
                       Tekshiruvchi: {teacherComment.teachers?.full_name || teacherComment.users?.full_name || 'O\'qituvchi'}
                     </Typography>
                   </Box>
 
                   <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
-                    <Typography sx={{ fontSize: '0.78rem', color: '#9ca3af', fontWeight: 600, fontFamily: "'Inter', 'Outfit', sans-serif" }}>
+                    <Typography sx={{ fontSize: { xs: '0.95rem', sm: '1.1rem' }, color: '#333', fontWeight: 500, fontFamily: "'Inter', 'Outfit', sans-serif" }}>
                       {teacherComment.created_at ? formatDateTime(teacherComment.created_at) : ''}
                     </Typography>
                   </Box>

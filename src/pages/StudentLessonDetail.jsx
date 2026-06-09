@@ -14,6 +14,7 @@ import ErrorIcon from '@mui/icons-material/Error';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 import PlayCircleOutlinedIcon from '@mui/icons-material/PlayCircleOutlined';
+import CircleOutlinedIcon from '@mui/icons-material/CircleOutlined';
 import api from '../api/axios';
 
 // Uy vazifasi holati config
@@ -35,6 +36,28 @@ function formatDateTime(dateStr) {
   const hh = String(d.getHours()).padStart(2, '0');
   const mm = String(d.getMinutes()).padStart(2, '0');
   return `${d.getFullYear()}-yil ${d.getDate()}-${months[d.getMonth()]}, soat ${hh}:${mm}`;
+}
+
+function formatLessonDate(dateStr) {
+  if (!dateStr) return '—';
+  const parts = dateStr.split('-');
+  if (parts.length === 3) {
+    const year = parts[0];
+    const monthIndex = parseInt(parts[1], 10) - 1;
+    const day = parts[2].padStart(2, '0');
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const month = months[monthIndex];
+    if (month) {
+      return `${day} ${month}, ${year}`;
+    }
+  }
+  const d = new Date(dateStr);
+  if (isNaN(d.getTime())) return dateStr;
+  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  const day = String(d.getDate()).padStart(2, '0');
+  const month = months[d.getMonth()];
+  const year = d.getFullYear();
+  return `${day} ${month}, ${year}`;
 }
 
 export default function StudentLessonDetail() {
@@ -173,9 +196,8 @@ export default function StudentLessonDetail() {
   return (
     <Box sx={{
       animation: 'fadeIn 0.3s ease-out',
-      p: { xs: 1, md: 3 },
-      pt: { xs: 1, md: 1.5 },
-      height: { xs: 'auto', lg: 'calc(100vh - 120px)' },
+      p: 0, // No padding on the edges!
+      height: '100%', // Full height of parent container
       display: 'flex',
       flexDirection: 'column',
       overflow: 'hidden'
@@ -184,7 +206,7 @@ export default function StudentLessonDetail() {
       <Box sx={{
         display: 'flex',
         flexDirection: { xs: 'column', lg: 'row' },
-        gap: 3,
+        gap: 0, // No gap between columns!
         alignItems: 'stretch',
         flexGrow: 1,
         minHeight: 0,
@@ -197,11 +219,11 @@ export default function StudentLessonDetail() {
           display: 'flex', 
           flexDirection: 'column', 
           gap: 2,
+          p: 3, // Padded inside the scrollable area
           borderRight: { lg: '2.5px solid #c5a059' },
-          pr: { lg: 3.5 },
           height: '100%',
           overflowY: 'auto',
-          pb: 2,
+          pb: 4,
           '&::-webkit-scrollbar': { width: '6px' },
           '&::-webkit-scrollbar-thumb': { backgroundColor: 'rgba(0,0,0,0.1)', borderRadius: '4px' }
         }}>
@@ -209,16 +231,14 @@ export default function StudentLessonDetail() {
           {/* Custom Video Player Container */}
           <Box sx={{
             width: '100%',
-            height: { xs: 240, sm: 360, md: 400 },
-            backgroundColor: '#ffffff', // Always white background!
-            borderRadius: '16px',
-            boxShadow: '0 4px 20px rgba(0,0,0,0.02)',
-            border: '1px solid #e2e8f0',
+            aspectRatio: '16/9',
+            backgroundColor: '#000000', // Solid black background for the video box!
+            borderRadius: '12px',
             overflow: 'hidden',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            p: { xs: 1, sm: 2, md: 2.5 }, // Padding to create a white border/frame around the video player screen
+            p: 0, // No padding, video takes full container width!
           }}>
             {activeVideo ? (
               <video
@@ -230,6 +250,7 @@ export default function StudentLessonDetail() {
                   objectFit: 'contain',
                   backgroundColor: '#000000',
                   borderRadius: '12px',
+                  display: 'block'
                 }}
               />
             ) : (
@@ -320,14 +341,13 @@ export default function StudentLessonDetail() {
                       display: 'flex',
                       alignItems: 'center',
                       gap: 1.5,
-                      backgroundColor: '#fff9e6',
-                      border: '1px solid #ffeeba',
-                      color: '#b25e00',
+                      backgroundColor: '#ff3b30', // Bright red background!
+                      color: '#ffffff', // White text!
                       p: 2,
-                      borderRadius: '10px',
+                      borderRadius: '8px',
                       mb: 2.5
                     }}>
-                      <WarningIcon sx={{ fontSize: 20, color: '#ff9800' }} />
+                      <ErrorIcon sx={{ fontSize: 20, color: '#ffffff' }} />
                       <Typography sx={{ fontSize: '0.88rem', fontWeight: 700, fontFamily: "'Inter', 'Outfit', sans-serif" }}>
                         Uyga vazifa muddati: {homework.deadline ? formatDateTime(homework.deadline) : formatDateTime(homework.created_at)}
                       </Typography>
@@ -559,7 +579,8 @@ export default function StudentLessonDetail() {
           display: 'flex',
           flexDirection: 'column',
           gap: 1.5,
-          pl: { lg: 0.5 },
+          p: 3, // Padded inside the scrollable container
+          backgroundColor: '#ffffff', // Solid white background behind lessons list!
           height: '100%',
           overflowY: 'auto',
           '&::-webkit-scrollbar': { width: '6px' },
@@ -574,52 +595,49 @@ export default function StudentLessonDetail() {
               <Box key={lesson.id} sx={{ display: 'flex', flexDirection: 'column', gap: 0.8 }}>
                 {/* Individual Lesson Card */}
                 <Paper
-                  onClick={() => selectLesson(lesson)}
+                  onClick={() => {
+                    selectLesson(lesson);
+                    // Also toggle expansion
+                    setExpandedLessons(prev => ({ ...prev, [lesson.id]: !prev[lesson.id] }));
+                  }}
                   elevation={0}
                   sx={{
                     p: 2.2,
                     borderRadius: '12px',
                     border: 'none',
-                    backgroundColor: isActive ? '#faede0' : '#f5f5f5', // Active gets peach, inactive gets light grey!
+                    backgroundColor: isActive ? '#ebd1b0' : '#f5f5f5', // Active gets peach, inactive gets light grey!
                     cursor: 'pointer',
                     position: 'relative',
                     transition: 'all 0.15s ease-in-out',
                     '&:hover': {
-                      backgroundColor: isActive ? '#f3e2d1' : '#eaeaea',
+                      backgroundColor: isActive ? '#dfc29f' : '#eaeaea',
                     },
                     display: 'flex',
                     flexDirection: 'column',
                     gap: 1
                   }}
                 >
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                    <Typography sx={{
-                      fontSize: '0.9rem',
-                      fontWeight: isActive ? 700 : 600,
-                      color: '#2d3748',
-                      lineHeight: 1.4,
-                      display: '-webkit-box',
-                      WebkitLineClamp: 2,
-                      WebkitBoxOrient: 'vertical',
-                      overflow: 'hidden',
-                      fontFamily: "'Inter', 'Outfit', sans-serif"
-                    }}>
-                      {lesson.topic || lesson.description}
-                    </Typography>
-                    
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
+                    <Box sx={{ flexGrow: 1 }}>
+                      <Typography sx={{
+                        fontSize: '0.9rem',
+                        fontWeight: isActive ? 700 : 600,
+                        color: '#2d3748',
+                        lineHeight: 1.4,
+                        fontFamily: "'Inter', 'Outfit', sans-serif"
+                      }}>
+                        {lesson.topic || lesson.description}
+                      </Typography>
+                    </Box>
                     {hasVideos && (
-                      <IconButton
-                        size="small"
-                        onClick={(e) => toggleExpand(lesson.id, e)}
-                        sx={{ p: 0.2, ml: 1, flexShrink: 0, color: '#9ca3af' }}
-                      >
-                        {isExpanded ? <ExpandLessIcon sx={{ fontSize: 20 }} /> : <ExpandMoreIcon sx={{ fontSize: 20 }} />}
-                      </IconButton>
+                      <Box sx={{ ml: 1.5, display: 'flex', alignItems: 'center', color: '#4b5563', flexShrink: 0 }}>
+                        {isExpanded ? <ExpandLessIcon sx={{ fontSize: 22 }} /> : <ExpandMoreIcon sx={{ fontSize: 22 }} />}
+                      </Box>
                     )}
                   </Box>
 
-                  <Typography sx={{ fontSize: '0.8rem', color: '#9ca3af', fontWeight: 700, fontFamily: "'Inter', 'Outfit', sans-serif" }}>
-                    Dars sanasi: {lesson.date ? new Date(lesson.date).toLocaleDateString('uz-UZ') : '—'}
+                  <Typography sx={{ fontSize: '0.8rem', color: isActive ? '#6b7280' : '#9ca3af', fontWeight: 700, fontFamily: "'Inter', 'Outfit', sans-serif" }}>
+                    Dars sanasi: {formatLessonDate(lesson.date)}
                   </Typography>
                 </Paper>
 
@@ -648,11 +666,11 @@ export default function StudentLessonDetail() {
                           sx={{
                             p: 1.5,
                             borderRadius: '10px',
-                            border: 'none',
-                            backgroundColor: isVideoActive ? '#f6e3cf' : '#ffffff',
+                            border: isVideoActive ? '1.5px solid #d4a373' : '1.5px solid #ebd9c2',
+                            backgroundColor: isVideoActive ? '#ebd1b0' : '#f8ebd9', // Peach/beige backgrounds for active/inactive videos
                             cursor: 'pointer',
                             '&:hover': {
-                              backgroundColor: isVideoActive ? '#f4dbbe' : '#f5f5f5'
+                              backgroundColor: isVideoActive ? '#dfc29f' : '#f2dfc9'
                             },
                             display: 'flex',
                             alignItems: 'center',
@@ -660,7 +678,11 @@ export default function StudentLessonDetail() {
                             transition: 'all 0.12s'
                           }}
                         >
-                          <PlayCircleOutlinedIcon sx={{ fontSize: 20, color: '#c5a059', flexShrink: 0 }} />
+                          {isVideoActive ? (
+                            <PlayCircleOutlinedIcon sx={{ fontSize: 20, color: '#a0783f', flexShrink: 0 }} />
+                          ) : (
+                            <CircleOutlinedIcon sx={{ fontSize: 20, color: '#a0783f', flexShrink: 0 }} />
+                          )}
                           <Typography sx={{
                             fontSize: '0.83rem',
                             fontWeight: isVideoActive ? 700 : 500,

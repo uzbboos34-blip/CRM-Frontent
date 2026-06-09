@@ -90,6 +90,7 @@ export default function DashboardLayout() {
     }
   }, [location.pathname, userRole, navigate]);
   const isManagementActive = location.pathname.startsWith('/management');
+  const isStudentLessonDetail = /^\/student\/groups\/[^/]+\/lessons\/[^/]+$/.test(location.pathname);
 
   // Shared Sidebar props
   const sidebarProps = {
@@ -197,10 +198,13 @@ export default function DashboardLayout() {
           />
         </Box>
         <Box sx={{ 
-          p: { xs: 2, sm: isManagementActive ? 4 : 3 }, 
+          p: isStudentLessonDetail ? 0 : { xs: 2, sm: isManagementActive ? 4 : 3 }, 
           flexGrow: 1, 
-          overflowY: 'auto',
-          backgroundColor: isManagementActive ? '#f9fafb' : '#f5f6fa'
+          overflowY: isStudentLessonDetail ? 'hidden' : 'auto',
+          backgroundColor: isStudentLessonDetail ? '#f5f6fa' : (isManagementActive ? '#f9fafb' : '#f5f6fa'),
+          minHeight: 0,
+          display: 'flex',
+          flexDirection: 'column'
         }}>
           <Outlet />
         </Box>

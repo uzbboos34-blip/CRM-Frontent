@@ -72,6 +72,7 @@ export default function DashboardLayout() {
     } else if (userRole === 'STUDENT') {
       const allowedPatterns = [
         /^\/student\/groups$/,
+        /^\/student\/groups\/\d+\/lessons$/,
         /^\/student\/dashboard$/,
         /^\/student\/payments$/,
         /^\/student\/indicators$/,

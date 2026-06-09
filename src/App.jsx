@@ -17,6 +17,7 @@ import StudentExamDetail from './pages/StudentExamDetail';
 import Profile from './pages/Profile';
 import StudentGroups from './pages/StudentGroups';
 import StudentPlaceholder from './pages/StudentPlaceholder';
+import StudentGroupLessons from './pages/StudentGroupLessons';
 
 import { UploadProvider } from './context/UploadContext';
 
@@ -67,6 +68,7 @@ function App() {
 
             {/* Student routes */}
             <Route path="student/groups" element={<StudentGroups />} />
+            <Route path="student/groups/:groupId/lessons" element={<StudentGroupLessons />} />
             <Route path="student/dashboard" element={<StudentPlaceholder />} />
             <Route path="student/payments" element={<StudentPlaceholder />} />
             <Route path="student/indicators" element={<StudentPlaceholder />} />

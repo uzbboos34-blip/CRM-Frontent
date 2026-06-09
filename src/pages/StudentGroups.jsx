@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Box, Typography, Paper, Tab, Tabs, Table, TableBody,
   TableCell, TableContainer, TableHead, TableRow, CircularProgress
 } from '@mui/material';
-import CloseIcon from '@mui/icons-material/Close';
 import api from '../api/axios';
 
 // Kun qisqartmalari mapping
@@ -171,7 +171,7 @@ export default function StudentGroups() {
   const [activeTab, setActiveTab] = useState(0);
   const [groups, setGroups] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [selectedItem, setSelectedItem] = useState(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     setLoading(true);
@@ -238,7 +238,7 @@ export default function StudentGroups() {
                 return (
                   <TableRow
                     key={item.id}
-                    onClick={() => setSelectedItem(item)}
+                    onClick={() => navigate(`/student/groups/${group.id}/lessons`)}
                     sx={{
                       cursor: 'pointer',
                       '&:hover': { backgroundColor: '#fdf8f0' },
@@ -273,11 +273,6 @@ export default function StudentGroups() {
             </TableBody>
           </Table>
         </TableContainer>
-      )}
-
-      {/* Modal */}
-      {selectedItem && (
-        <GroupDetailModal item={selectedItem} onClose={() => setSelectedItem(null)} />
       )}
     </Box>
   );

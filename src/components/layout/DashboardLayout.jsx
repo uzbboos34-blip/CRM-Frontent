@@ -73,6 +73,7 @@ export default function DashboardLayout() {
       const allowedPatterns = [
         /^\/student\/groups$/,
         /^\/student\/groups\/\d+\/lessons$/,
+        /^\/student\/groups\/\d+\/lessons\/\d+$/,
         /^\/student\/dashboard$/,
         /^\/student\/payments$/,
         /^\/student\/indicators$/,

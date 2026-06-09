@@ -677,35 +677,35 @@ export default function StudentLessonDetail() {
           )}
         </Box>
 
-        {/* Right side: Lesson cards */}
+        {/* Right side: Lesson accordion — production peach card style */}
         <Box sx={{
-          width: { xs: '100%', lg: 340 },
+          width: { xs: '100%', lg: 360 },
           flexShrink: 0,
           height: '100%',
-          backgroundColor: '#f5f0ea',
+          backgroundColor: '#ffffff',
           overflowY: 'auto',
-          p: 2,
+          p: { xs: 2, lg: 2.5 },
           display: 'flex',
           flexDirection: 'column',
-          gap: 1.5,
-          '&::-webkit-scrollbar': { width: '6px' },
-          '&::-webkit-scrollbar-thumb': { backgroundColor: 'rgba(0,0,0,0.12)', borderRadius: '4px' },
+          gap: 1.25,
+          borderLeft: { lg: '1px solid #ece7e1' },
+          '&::-webkit-scrollbar': { width: '5px' },
+          '&::-webkit-scrollbar-thumb': { backgroundColor: 'rgba(0,0,0,0.15)', borderRadius: '4px' },
         }}>
           {lessons.map((lesson) => {
             const isActive = lesson.id === activeLessonId;
             const hasVideos = lesson.videos?.length > 0;
             const isExpanded = !!expandedLessons[lesson.id];
+            const isOpen = hasVideos && isExpanded;
 
             return (
-              <Paper
+              <Box
                 key={lesson.id}
-                elevation={0}
                 sx={{
-                  borderRadius: '12px',
+                  borderRadius: '14px',
                   overflow: 'hidden',
-                  backgroundColor: isActive ? '#faede0' : '#ffffff',
-                  border: isActive ? '1.5px solid #e8d5b7' : '1px solid #ebe6df',
-                  transition: 'all 0.15s ease',
+                  backgroundColor: isOpen ? '#ebc9a4' : '#f9f5f1',
+                  transition: 'background-color 0.2s ease',
                 }}
               >
                 <Box
@@ -716,35 +716,44 @@ export default function StudentLessonDetail() {
                     }
                   }}
                   sx={{
-                    px: 2,
-                    py: 1.8,
+                    px: 2.25,
+                    py: 2,
                     cursor: 'pointer',
                     display: 'flex',
                     alignItems: 'flex-start',
                     justifyContent: 'space-between',
-                    gap: 1,
-                    '&:hover': { backgroundColor: isActive ? '#f3e2d1' : '#fafafa' },
+                    gap: 1.5,
                   }}
                 >
                   <Box sx={{ flex: 1, minWidth: 0 }}>
                     <Typography sx={{
-                      fontSize: '0.88rem',
-                      fontWeight: isActive ? 700 : 600,
-                      color: '#1a202c',
-                      lineHeight: 1.45,
-                      mb: 0.6,
+                      fontSize: '0.92rem',
+                      fontWeight: 700,
+                      color: '#1a1a1a',
+                      lineHeight: 1.4,
+                      mb: 0.75,
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      display: '-webkit-box',
+                      WebkitLineClamp: 2,
+                      WebkitBoxOrient: 'vertical',
                     }}>
                       {lesson.topic || lesson.description}
                     </Typography>
-                    <Typography sx={{ fontSize: '0.78rem', color: '#9ca3af', fontWeight: 600 }}>
+                    <Typography sx={{
+                      fontSize: '0.8rem',
+                      color: '#3d3d3d',
+                      fontWeight: 500,
+                      lineHeight: 1.3,
+                    }}>
                       Dars sanasi: {formatLessonDate(lesson.date)}
                     </Typography>
                   </Box>
                   {hasVideos && (
                     <ExpandMoreIcon sx={{
-                      color: '#6b7280',
-                      fontSize: 22,
-                      mt: 0.2,
+                      color: '#2d2d2d',
+                      fontSize: 24,
+                      mt: 0.1,
                       flexShrink: 0,
                       transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)',
                       transition: 'transform 0.2s ease',
@@ -752,8 +761,14 @@ export default function StudentLessonDetail() {
                   )}
                 </Box>
 
-                {hasVideos && isExpanded && (
-                  <Box sx={{ borderTop: '1px solid #f0ebe4', backgroundColor: '#fff' }}>
+                {isOpen && (
+                  <Box sx={{
+                    px: 1.75,
+                    pb: 1.75,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: 1,
+                  }}>
                     {lesson.videos.map((video, idx) => {
                       const isVideoActive =
                         isActive && (activeVideos[lesson.id] ?? lesson.videos[0]?.id) === video.id;
@@ -762,29 +777,31 @@ export default function StudentLessonDetail() {
                           key={video.id}
                           onClick={(e) => selectVideo(lesson.id, video.id, e)}
                           sx={{
-                            px: 2.5,
-                            py: 1.5,
+                            px: 1.75,
+                            py: 1.35,
+                            borderRadius: '12px',
                             cursor: 'pointer',
                             display: 'flex',
                             alignItems: 'center',
-                            gap: 1.2,
-                            backgroundColor: isVideoActive ? '#faede0' : '#fff',
-                            borderBottom: idx < lesson.videos.length - 1 ? '1px solid #f5f0ea' : 'none',
-                            '&:hover': { backgroundColor: isVideoActive ? '#f3e2d1' : '#faf8f5' },
+                            gap: 1.25,
+                            backgroundColor: isVideoActive ? '#f2d4b8' : '#efd2ae',
+                            transition: 'background-color 0.15s ease',
+                            '&:hover': { backgroundColor: isVideoActive ? '#edd0b0' : '#e8c89e' },
                           }}
                         >
-                          <Box sx={{ color: '#c5a059', display: 'flex' }}>
+                          <Box sx={{ color: '#1a1a1a', display: 'flex', flexShrink: 0 }}>
                             {isVideoActive
-                              ? <PlayCircleFilledWhiteOutlinedIcon sx={{ fontSize: 18 }} />
-                              : <PanoramaFishEyeIcon sx={{ fontSize: 18 }} />}
+                              ? <PlayCircleFilledWhiteOutlinedIcon sx={{ fontSize: 20 }} />
+                              : <PanoramaFishEyeIcon sx={{ fontSize: 20 }} />}
                           </Box>
                           <Typography sx={{
-                            fontSize: '0.82rem',
-                            color: '#374151',
+                            fontSize: '0.86rem',
+                            color: '#1a1a1a',
                             fontWeight: isVideoActive ? 700 : 500,
                             overflow: 'hidden',
                             textOverflow: 'ellipsis',
                             whiteSpace: 'nowrap',
+                            lineHeight: 1.3,
                           }}>
                             {idx + 1}-video: {video.title}
                           </Typography>
@@ -793,7 +810,7 @@ export default function StudentLessonDetail() {
                     })}
                   </Box>
                 )}
-              </Paper>
+              </Box>
             );
           })}
         </Box>

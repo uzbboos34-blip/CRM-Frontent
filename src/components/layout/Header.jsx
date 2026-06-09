@@ -87,19 +87,7 @@ export default function Header({ isSidebarCollapsed, setIsSidebarCollapsed, isMa
             boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
             '&:hover': { backgroundColor: '#f9fafb' }
           }}>
-            <Badge 
-              badgeContent={33} 
-              sx={{
-                '& .MuiBadge-badge': {
-                  backgroundColor: '#ff3b30',
-                  color: '#ffffff',
-                  fontWeight: 800,
-                  fontSize: '0.7rem'
-                }
-              }}
-            >
-              <NotificationsNoneIcon sx={{ color: '#4b5563', fontSize: 22 }} />
-            </Badge>
+            <NotificationsNoneIcon sx={{ color: '#4b5563', fontSize: 22 }} />
           </IconButton>
 
           {/* Logout button */}
@@ -241,9 +229,7 @@ export default function Header({ isSidebarCollapsed, setIsSidebarCollapsed, isMa
 
         {/* Bildirishnomalar */}
         <IconButton sx={{ border: '1px solid #e5e7eb', borderRadius: '10px' }}>
-          <Badge badgeContent={1} color="error">
-            <NotificationsNoneIcon sx={{ color: '#4b5563', fontSize: 20 }} />
-          </Badge>
+          <NotificationsNoneIcon sx={{ color: '#4b5563', fontSize: 20 }} />
         </IconButton>
 
         {/* Dark mode — faqat sm+ da */}

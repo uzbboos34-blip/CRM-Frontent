@@ -397,39 +397,38 @@ export default function StudentLessonDetail() {
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    flexWrap: 'wrap',
-                    columnGap: { xs: 1, sm: 1.4 },
-                    rowGap: 0.35,
+                    flexWrap: 'nowrap',
+                    gap: { xs: 0.6, sm: 0.75 },
                     backgroundColor: hasSubmittedHomework ? '#ff2d12' : '#fffaf0',
                     color: hasSubmittedHomework ? '#fff' : '#4f3b10',
-                    px: { xs: 1.5, sm: 2 },
-                    py: { xs: 1.25, sm: 1.25 },
+                    px: { xs: 1.25, sm: 1.5 },
+                    py: { xs: 0.75, sm: 0.85 },
                     borderRadius: '6px',
-                    minHeight: 56,
+                    minHeight: 40,
                     minWidth: 0,
                     overflow: 'hidden',
                   }}>
                     {hasSubmittedHomework ? (
-                      <ErrorOutlineIcon sx={{ fontSize: 25, color: '#fff', flexShrink: 0 }} />
+                      <ErrorOutlineIcon sx={{ fontSize: 18, color: '#fff', flexShrink: 0 }} />
                     ) : (
-                      <WarningIcon sx={{ fontSize: 24, color: '#e6a72d', flexShrink: 0 }} />
+                      <WarningIcon sx={{ fontSize: 18, color: '#e6a72d', flexShrink: 0 }} />
                     )}
                     <Typography sx={{
-                      fontSize: { xs: '0.92rem', sm: '0.98rem' },
-                      lineHeight: 1.35,
+                      fontSize: { xs: '0.72rem', sm: '0.78rem' },
+                      lineHeight: 1.2,
                       fontWeight: 700,
                       whiteSpace: 'nowrap',
+                      flexShrink: 0,
                       fontFamily: "'Inter', 'Outfit', sans-serif"
                     }}>
                       Uyga vazifa muddati:
                     </Typography>
                     <Typography sx={{
-                      fontSize: { xs: '0.92rem', sm: '0.98rem' },
-                      lineHeight: 1.35,
+                      fontSize: { xs: '0.72rem', sm: '0.78rem' },
+                      lineHeight: 1.2,
                       fontWeight: 600,
-                      whiteSpace: 'normal',
-                      textAlign: 'center',
-                      overflowWrap: 'anywhere',
+                      whiteSpace: 'nowrap',
+                      flexShrink: 0,
                       fontFamily: "'Inter', 'Outfit', sans-serif"
                     }}>
                       {hasSubmittedHomework

@@ -111,38 +111,72 @@ export default function Login() {
 
         let teacherData = await teacherResponse.json();
 
-        // If direct teacher login fails, try alternate phone format (+ prefix)
         if (!teacherResponse.ok) {
-          const alternatePhone = login.startsWith('+') ? login.substring(1) : `+${login}`;
-          const altResponse = await fetch("https://crm-backend-l7jq.onrender.com/api/v1/auth/teacher/login", {
+          // If teacher login fails, try student login
+          let studentResponse = await fetch("https://crm-backend-l7jq.onrender.com/api/v1/auth/student/login", {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
             },
             body: JSON.stringify({
-              phone: alternatePhone,
+              phone: login,
               password: password,
             }),
           });
 
-          if (altResponse.ok) {
-            teacherResponse = altResponse;
-            teacherData = await altResponse.json();
-          }
-        }
+          let studentData = await studentResponse.json();
 
-        if (!teacherResponse.ok) {
-          let msg = teacherData.message || 'Login xatosi yuz berdi';
-          if (msg.includes('Unauthorized') || msg.includes('Incorrect') || msg.toLowerCase().includes('invalid')) {
-            msg = 'Login yoki parol xato kiritildi';
-          } else if (msg.includes('Teacher not found') || msg.includes('not found') || msg.includes('User not found')) {
-            msg = 'Bunday foydalanuvchi yoki o\'qituvchi mavjud emas';
-          }
-          throw new Error(msg);
-        }
+          if (!studentResponse.ok) {
+            // Try alternate phone format (+ prefix) for teacher and student
+            const alternatePhone = login.startsWith('+') ? login.substring(1) : `+${login}`;
+            
+            // Try student with alternate phone
+            let altStudentResponse = await fetch("https://crm-backend-l7jq.onrender.com/api/v1/auth/student/login", {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                phone: alternatePhone,
+                password: password,
+              }),
+            });
 
-        response = teacherResponse;
-        data = teacherData;
+            if (altStudentResponse.ok) {
+              response = altStudentResponse;
+              data = await altStudentResponse.json();
+            } else {
+              // Try teacher with alternate phone
+              let altTeacherResponse = await fetch("https://crm-backend-l7jq.onrender.com/api/v1/auth/teacher/login", {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                  phone: alternatePhone,
+                  password: password,
+                }),
+              });
+
+              if (altTeacherResponse.ok) {
+                response = altTeacherResponse;
+                data = await altTeacherResponse.json();
+              } else {
+                let msg = studentData.message || 'Login yoki parol xato kiritildi';
+                if (msg.includes('Unauthorized') || msg.includes('Incorrect') || msg.toLowerCase().includes('invalid')) {
+                  msg = 'Login yoki parol xato kiritildi';
+                }
+                throw new Error(msg);
+              }
+            }
+          } else {
+            response = studentResponse;
+            data = studentData;
+          }
+        } else {
+          response = teacherResponse;
+          data = teacherData;
+        }
       }
 
       setSuccess(true);
@@ -163,6 +197,8 @@ export default function Login() {
       setTimeout(() => {
         if (role === 'TEACHER') {
           navigate('/groups');
+        } else if (role === 'STUDENT') {
+          navigate('/student/groups');
         } else {
           navigate('/dashboard');
         }

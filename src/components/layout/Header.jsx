@@ -9,6 +9,18 @@ import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import MenuIcon from '@mui/icons-material/Menu';
 
 export default function Header({ isSidebarCollapsed, setIsSidebarCollapsed, isManagementActive, onMenuToggle }) {
+  const tokenVal = localStorage.getItem('token');
+  let role = '';
+  if (tokenVal) {
+    try {
+      const payload = JSON.parse(atob(tokenVal.split('.')[1]));
+      role = payload.role;
+    } catch (e) {
+      console.error(e);
+    }
+  }
+  const showAddButton = role !== 'TEACHER' && role !== 'STUDENT';
+
   return (
     <Box
       sx={{
@@ -50,24 +62,26 @@ export default function Header({ isSidebarCollapsed, setIsSidebarCollapsed, isMa
         {/* Qo'shish tugmasi va Qidiruv */}
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
           {/* Qo'shish tugmasi */}
-          <Button 
-            variant="contained"
-            startIcon={<AddIcon />}
-            endIcon={<KeyboardArrowDownIcon sx={{ display: { xs: 'none', sm: 'block' } }} />}
-            sx={{ 
-              backgroundColor: '#7b61ff', 
-              color: 'white', 
-              borderRadius: '12px', 
-              textTransform: 'none',
-              fontWeight: 700,
-              padding: { xs: '6px 14px', sm: '8px 24px' },
-              fontSize: { xs: '0.8rem', sm: '0.875rem' },
-              '&:hover': { backgroundColor: '#6a50e8' },
-              boxShadow: '0 4px 10px rgba(123, 97, 255, 0.2)'
-            }}
-          >
-            Qo'shish
-          </Button>
+          {showAddButton && (
+            <Button 
+              variant="contained"
+              startIcon={<AddIcon />}
+              endIcon={<KeyboardArrowDownIcon sx={{ display: { xs: 'none', sm: 'block' } }} />}
+              sx={{ 
+                backgroundColor: '#7b61ff', 
+                color: 'white', 
+                borderRadius: '12px', 
+                textTransform: 'none',
+                fontWeight: 700,
+                padding: { xs: '6px 14px', sm: '8px 24px' },
+                fontSize: { xs: '0.8rem', sm: '0.875rem' },
+                '&:hover': { backgroundColor: '#6a50e8' },
+                boxShadow: '0 4px 10px rgba(123, 97, 255, 0.2)'
+              }}
+            >
+              Qo'shish
+            </Button>
+          )}
 
           {/* Qidiruv satri — kichik ekranlarda yashiriladi */}
           <Box

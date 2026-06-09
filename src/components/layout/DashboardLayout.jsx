@@ -58,7 +58,6 @@ export default function DashboardLayout() {
       console.error(e);
     }
   }
-
   useEffect(() => {
     if (userRole === 'TEACHER') {
       const allowedPatterns = [
@@ -70,9 +69,24 @@ export default function DashboardLayout() {
       if (!isAllowed) {
         navigate('/groups', { replace: true });
       }
+    } else if (userRole === 'STUDENT') {
+      const allowedPatterns = [
+        /^\/student\/groups$/,
+        /^\/student\/dashboard$/,
+        /^\/student\/payments$/,
+        /^\/student\/indicators$/,
+        /^\/student\/rating$/,
+        /^\/student\/shop$/,
+        /^\/student\/extra-lessons$/,
+        /^\/student\/settings$/,
+        /^\/profile$/
+      ];
+      const isAllowed = allowedPatterns.some(pattern => pattern.test(location.pathname));
+      if (!isAllowed) {
+        navigate('/student/groups', { replace: true });
+      }
     }
   }, [location.pathname, userRole, navigate]);
-
   const isManagementActive = location.pathname.startsWith('/management');
 
   // Shared Sidebar props

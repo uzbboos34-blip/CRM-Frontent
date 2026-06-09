@@ -45,11 +45,24 @@ export default function Sidebar({ openSettings, setOpenSettings, isSidebarCollap
     }
   }
 
+  const studentMenuItems = [
+    { text: 'Bosh sahifa', icon: <DashboardIcon />, path: '/student/dashboard' },
+    { text: "To'lovlarim", icon: <PaymentsIcon />, path: '/student/payments' },
+    { text: 'Guruxlarim', icon: <GroupsIcon />, path: '/student/groups' },
+    { text: "Ko'rsatkichlarim", icon: <AssignmentIcon />, path: '/student/indicators' },
+    { text: 'Reyting', icon: <WorkspacePremiumIcon />, path: '/student/rating' },
+    { text: "Do'kon", icon: <CardGiftcardIcon />, path: '/student/shop' },
+    { text: 'Qo\'shimcha darslar', icon: <SchoolIcon />, path: '/student/extra-lessons' },
+    { text: 'Sozlamalar', icon: <SettingsIcon />, path: '/student/settings' },
+  ];
+
   const itemsToRender = role === 'TEACHER'
     ? [
         { text: 'Guruhlar', icon: <GroupsIcon />, path: '/groups' },
         { text: 'Profil', icon: <AccountCircleIcon />, path: '/profile' }
       ]
+    : role === 'STUDENT'
+    ? studentMenuItems
     : menuItems;
 
   const handleLogout = () => {
@@ -63,13 +76,23 @@ export default function Sidebar({ openSettings, setOpenSettings, isSidebarCollap
     if (onMobileClose) onMobileClose();
   };
 
-  const activeStyles = {
-    backgroundColor: '#7b61ff',
-    color: '#fff',
-    borderRadius: '12px',
-    '&:hover': { backgroundColor: '#6a50e8' },
-    '& .MuiListItemIcon-root': { color: '#fff' }
-  };
+  const isStudent = role === 'STUDENT';
+
+  const activeStyles = isStudent
+    ? {
+        backgroundColor: 'rgba(197, 160, 89, 0.1)',
+        color: '#c5a059',
+        borderRadius: '12px',
+        '&:hover': { backgroundColor: 'rgba(197, 160, 89, 0.15)' },
+        '& .MuiListItemIcon-root': { color: '#c5a059' }
+      }
+    : {
+        backgroundColor: '#7b61ff',
+        color: '#fff',
+        borderRadius: '12px',
+        '&:hover': { backgroundColor: '#6a50e8' },
+        '& .MuiListItemIcon-root': { color: '#fff' }
+      };
 
   const defaultStyles = {
     borderRadius: '12px',
@@ -167,7 +190,7 @@ export default function Sidebar({ openSettings, setOpenSettings, isSidebarCollap
           </List>
 
           {/* Subscription Box */}
-          {!collapsed && role !== 'TEACHER' && (
+          {!collapsed && role !== 'TEACHER' && role !== 'STUDENT' && (
             <Box sx={{ p: 2, mb: 2, mx: 1.5, backgroundColor: '#f9fafb', borderRadius: '16px', border: '1px solid #f3f4f6' }}>
               <Box sx={{ display: 'flex', gap: 1.5, mb: 1.5 }}>
                 <Box sx={{ width: 36, height: 36, backgroundColor: '#fff', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 2px 5px rgba(0,0,0,0.05)' }}>

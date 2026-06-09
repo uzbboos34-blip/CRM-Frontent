@@ -15,6 +15,8 @@ import StudentHomeworkDetail from './pages/StudentHomeworkDetail';
 import ExamDetail from './pages/ExamDetail';
 import StudentExamDetail from './pages/StudentExamDetail';
 import Profile from './pages/Profile';
+import StudentGroups from './pages/StudentGroups';
+import StudentPlaceholder from './pages/StudentPlaceholder';
 
 import { UploadProvider } from './context/UploadContext';
 
@@ -62,6 +64,16 @@ function App() {
 
             <Route path="students" element={<Students />} />
             <Route path="profile" element={<Profile />} />
+
+            {/* Student routes */}
+            <Route path="student/groups" element={<StudentGroups />} />
+            <Route path="student/dashboard" element={<StudentPlaceholder />} />
+            <Route path="student/payments" element={<StudentPlaceholder />} />
+            <Route path="student/indicators" element={<StudentPlaceholder />} />
+            <Route path="student/rating" element={<StudentPlaceholder />} />
+            <Route path="student/shop" element={<StudentPlaceholder />} />
+            <Route path="student/extra-lessons" element={<StudentPlaceholder />} />
+            <Route path="student/settings" element={<StudentPlaceholder />} />
           </Route>
 
           {/* Catch all */}

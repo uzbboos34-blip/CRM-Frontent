@@ -473,23 +473,21 @@ export default function StudentLessonDetail() {
                     borderRadius: 0,
                     border: '1px solid #e5e7eb',
                     backgroundColor: '#ffffff',
-                    minHeight: 150,
                   }}
                 >
                   <Box sx={{
                     position: 'relative',
-                    minHeight: 150,
                     backgroundColor: '#ffffff',
-                    px: { xs: 2, sm: 4 },
-                    py: { xs: 2.5, sm: 3 },
+                    px: { xs: 1.5, sm: 2 },
+                    py: { xs: 1.25, sm: 1.5 },
                     display: 'flex',
                     flexDirection: 'column',
-                    justifyContent: 'space-between',
-                    gap: 2
+                    gap: 0.75,
                   }}>
                     <TextField
                       multiline
-                      minRows={2}
+                      minRows={1}
+                      maxRows={4}
                       fullWidth
                       variant="standard"
                       disabled={submitting}
@@ -498,17 +496,21 @@ export default function StudentLessonDetail() {
                       onChange={(e) => setSubmitText(e.target.value.slice(0, 1000))}
                       InputProps={{ disableUnderline: true }}
                       sx={{
-                        pr: 8,
                         '& .MuiInput-root:before, & .MuiInput-root:after': {
                           display: 'none',
                         },
                         '& .MuiInput-root:hover:not(.Mui-disabled):before': {
                           borderBottom: '0',
                         },
+                        '& .MuiInputBase-root': {
+                          alignItems: 'flex-start',
+                        },
                         '& .MuiInputBase-input': {
-                          fontSize: { xs: '1rem', sm: '1.15rem' },
+                          fontSize: { xs: '0.95rem', sm: '1rem' },
                           color: '#333',
                           fontWeight: 500,
+                          py: 0.5,
+                          lineHeight: 1.4,
                         },
                         '& .MuiInputBase-input::placeholder': {
                           color: '#8b8b8b',
@@ -517,43 +519,51 @@ export default function StudentLessonDetail() {
                       }}
                     />
                     {selectedFiles.length > 0 && (
-                      <Typography sx={{ fontSize: '0.9rem', color: '#6b7280', fontWeight: 600 }}>
+                      <Typography sx={{ fontSize: '0.8rem', color: '#6b7280', fontWeight: 600 }}>
                         Tanlangan fayllar: {selectedFiles.length}
                       </Typography>
                     )}
                     <Box sx={{
                       display: 'flex',
                       alignItems: 'center',
-                      justifyContent: 'flex-end',
-                      gap: 2,
+                      justifyContent: 'space-between',
+                      gap: 1,
                     }}>
-                      <Tooltip title="Fayl yuklash">
-                        <IconButton component="label" sx={{ color: '#70757a', '&:hover': { color: '#333' } }}>
-                          <AttachFileIcon sx={{ fontSize: 30 }} />
-                          <input
-                            hidden
-                            multiple
-                            type="file"
-                            onChange={(e) => setSelectedFiles(Array.from(e.target.files || []))}
-                          />
-                        </IconButton>
-                      </Tooltip>
-                      <IconButton 
-                        onClick={handleSendHomework}
-                        disabled={(!submitText.trim() && selectedFiles.length === 0) || submitting}
-                        sx={{
-                          color: '#70757a',
-                          '&:hover': { color: '#333', backgroundColor: 'transparent' },
-                          '&.Mui-disabled': { color: '#b4b4b4' },
-                        }}
-                      >
-                        {submitting ? <CircularProgress size={24} sx={{ color: '#70757a' }} /> : <SendIcon sx={{ fontSize: 34 }} />}
-                      </IconButton>
-                    </Box>
-                    <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
-                      <Typography sx={{ fontSize: { xs: '1rem', sm: '1.1rem' }, color: '#333', fontWeight: 500 }}>
+                      <Typography sx={{ fontSize: '0.8rem', color: '#9ca3af', fontWeight: 500 }}>
                         {submitText.length} / 1000
                       </Typography>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.25 }}>
+                        <Tooltip title="Fayl yuklash">
+                          <IconButton
+                            component="label"
+                            sx={{
+                              p: 0.5,
+                              color: '#70757a',
+                              '&:hover': { color: '#333' },
+                            }}
+                          >
+                            <AttachFileIcon sx={{ fontSize: 16 }} />
+                            <input
+                              hidden
+                              multiple
+                              type="file"
+                              onChange={(e) => setSelectedFiles(Array.from(e.target.files || []))}
+                            />
+                          </IconButton>
+                        </Tooltip>
+                        <IconButton
+                          onClick={handleSendHomework}
+                          disabled={(!submitText.trim() && selectedFiles.length === 0) || submitting}
+                          sx={{
+                            p: 0.5,
+                            color: '#70757a',
+                            '&:hover': { color: '#333', backgroundColor: 'transparent' },
+                            '&.Mui-disabled': { color: '#b4b4b4' },
+                          }}
+                        >
+                          {submitting ? <CircularProgress size={14} sx={{ color: '#70757a' }} /> : <SendIcon sx={{ fontSize: 16 }} />}
+                        </IconButton>
+                      </Box>
                     </Box>
                   </Box>
                 </Paper>

@@ -623,44 +623,36 @@ export default function StudentLessonDetail() {
                   sx={{
                     px: { xs: 2.5, sm: 4 },
                     py: { xs: 3, sm: 4 },
-                    minHeight: 230,
-                    borderRadius: 0,
+                    borderRadius: '2px',
                     border: 'none',
                     backgroundColor: '#f8f3ef',
                     display: 'flex',
                     flexDirection: 'column',
-                    justifyContent: 'space-between',
-                    gap: 3
+                    gap: { xs: 2, sm: 2.5 }
                   }}
                 >
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <Box sx={{ display: 'flex', gap: 1.5, alignItems: 'center', flexWrap: 'wrap' }}>
-                      <Typography sx={{ fontSize: { xs: '1.25rem', sm: '1.45rem' }, fontWeight: 500, color: '#333', fontFamily: "'Inter', 'Outfit', sans-serif" }}>
-                        Mening jo'natmalarim
-                      </Typography>
-                    </Box>
-                    <Typography sx={{ fontSize: { xs: '1rem', sm: '1.1rem' }, color: '#333', fontWeight: 500, whiteSpace: 'nowrap', fontFamily: "'Inter', 'Outfit', sans-serif" }}>
-                      Fayllar soni: {answer.file ? JSON.parse(answer.file || '[]').length : 0}
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 1.5 }}>
+                    <Typography sx={{ fontSize: { xs: '0.95rem', sm: '1rem' }, fontWeight: 500, color: '#333', whiteSpace: 'nowrap', fontFamily: "'Inter', 'Outfit', sans-serif" }}>
+                      Mening jo'natmalarim
                     </Typography>
-                    {statusKey === 'PENDING' && (
-                      <IconButton size="small" onClick={handleStartEdit} sx={{ border: '1px solid #e2e8f0', borderRadius: '8px' }}>
-                        <EditIcon sx={{ fontSize: 16, color: '#6b7280' }} />
-                      </IconButton>
-                    )}
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexShrink: 0 }}>
+                      <Typography sx={{ fontSize: { xs: '0.9rem', sm: '0.95rem' }, color: '#333', fontWeight: 500, whiteSpace: 'nowrap', fontFamily: "'Inter', 'Outfit', sans-serif" }}>
+                        Fayllar soni: {answer.file ? JSON.parse(answer.file || '[]').length : 0}
+                      </Typography>
+                      {statusKey === 'PENDING' && (
+                        <IconButton size="small" onClick={handleStartEdit} sx={{ border: '1px solid #e2e8f0', borderRadius: '8px' }}>
+                          <EditIcon sx={{ fontSize: 16, color: '#6b7280' }} />
+                        </IconButton>
+                      )}
+                    </Box>
                   </Box>
 
-                  {/* Submitted response text */}
-                  <Box sx={{
-                    p: 0,
-                    backgroundColor: 'transparent',
-                  }}>
-                    <Typography sx={{ fontSize: { xs: '1rem', sm: '1.05rem' }, color: '#333', fontWeight: 500, wordBreak: 'break-word', fontFamily: "'Inter', 'Outfit', sans-serif" }}>
-                      {answer.title}
-                    </Typography>
-                  </Box>
+                  <Typography sx={{ fontSize: { xs: '0.9rem', sm: '0.95rem' }, color: '#333', fontWeight: 500, lineHeight: 1.5, wordBreak: 'break-word', fontFamily: "'Inter', 'Outfit', sans-serif" }}>
+                    {answer.title}
+                  </Typography>
 
                   <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
-                    <Typography sx={{ fontSize: { xs: '0.95rem', sm: '1.1rem' }, color: '#333', fontWeight: 500, fontFamily: "'Inter', 'Outfit', sans-serif" }}>
+                    <Typography sx={{ fontSize: { xs: '0.85rem', sm: '0.9rem' }, color: '#333', fontWeight: 500, fontFamily: "'Inter', 'Outfit', sans-serif" }}>
                       {formatDateTime(answer.updated_at || answer.created_at)}
                     </Typography>
                   </Box>
@@ -674,54 +666,48 @@ export default function StudentLessonDetail() {
                   sx={{
                     px: { xs: 2.5, sm: 4 },
                     py: { xs: 3, sm: 4 },
-                    minHeight: 360,
-                    borderRadius: '10px',
+                    borderRadius: '2px',
                     border: 'none',
                     backgroundColor: '#f8f3ef',
                     display: 'flex',
                     flexDirection: 'column',
-                    gap: 4
+                    gap: { xs: 2, sm: 2.5 }
                   }}
                 >
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <Typography sx={{ fontSize: { xs: '1.1rem', sm: '1.25rem' }, fontWeight: 500, color: '#333', fontFamily: "'Inter', 'Outfit', sans-serif" }}>
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 1.5 }}>
+                    <Typography sx={{ fontSize: { xs: '0.95rem', sm: '1rem' }, fontWeight: 500, color: '#333', whiteSpace: 'nowrap', fontFamily: "'Inter', 'Outfit', sans-serif" }}>
                       O'qituvchi izohi
                     </Typography>
-                    <Typography sx={{ fontSize: { xs: '1rem', sm: '1.1rem' }, color: statusKey === 'ACCEPTED' ? '#078600' : '#ef4444', fontWeight: 500, fontFamily: "'Inter', 'Outfit', sans-serif" }}>
+                    <Typography sx={{ fontSize: { xs: '0.9rem', sm: '0.95rem' }, color: statusKey === 'ACCEPTED' ? '#078600' : '#ef4444', fontWeight: 500, whiteSpace: 'nowrap', fontFamily: "'Inter', 'Outfit', sans-serif" }}>
                       {statusKey === 'ACCEPTED' ? 'Vazifa qabul qilindi' : 'Vazifa qaytarildi'}
                     </Typography>
                   </Box>
 
-                  {/* Grading deduction delay warning banner */}
                   {teacherComment.title && (
                     <Box sx={{
-                      display: 'flex',
+                      display: 'inline-flex',
                       alignItems: 'center',
-                      gap: 1.5,
+                      gap: 0.65,
                       backgroundColor: '#fff9e6',
-                      border: 'none',
                       color: '#b25e00',
-                      px: 2,
-                      py: 1.5,
-                      borderRadius: 0,
-                      alignSelf: 'flex-start'
+                      px: { xs: 1, sm: 1.25 },
+                      py: { xs: 0.65, sm: 0.75 },
+                      borderRadius: '6px',
+                      alignSelf: 'flex-start',
                     }}>
-                      <WarningIcon sx={{ fontSize: 20, color: '#ff9800' }} />
-                      <Typography sx={{ fontSize: '1rem', fontWeight: 500, fontFamily: "'Inter', 'Outfit', sans-serif" }}>
+                      <WarningIcon sx={{ fontSize: 16, color: '#ff9800', flexShrink: 0 }} />
+                      <Typography sx={{ fontSize: { xs: '0.68rem', sm: '0.74rem' }, fontWeight: 600, whiteSpace: 'nowrap', fontFamily: "'Inter', 'Outfit', sans-serif" }}>
                         {teacherComment.title}
                       </Typography>
                     </Box>
                   )}
 
-                  {/* Checker teacher details */}
-                  <Box sx={{ mt: 0.5, display: 'flex', flexDirection: 'column', gap: 0.8 }}>
-                    <Typography sx={{ fontSize: { xs: '1rem', sm: '1.08rem' }, color: '#333', fontWeight: 500, fontFamily: "'Inter', 'Outfit', sans-serif" }}>
-                      Tekshiruvchi: {teacherComment.teachers?.full_name || teacherComment.users?.full_name || 'O\'qituvchi'}
-                    </Typography>
-                  </Box>
+                  <Typography sx={{ fontSize: { xs: '0.9rem', sm: '0.95rem' }, color: '#333', fontWeight: 500, fontFamily: "'Inter', 'Outfit', sans-serif" }}>
+                    Tekshiruvchi: {teacherComment.teachers?.full_name || teacherComment.users?.full_name || 'O\'qituvchi'}
+                  </Typography>
 
                   <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
-                    <Typography sx={{ fontSize: { xs: '0.95rem', sm: '1.1rem' }, color: '#333', fontWeight: 500, fontFamily: "'Inter', 'Outfit', sans-serif" }}>
+                    <Typography sx={{ fontSize: { xs: '0.85rem', sm: '0.9rem' }, color: '#333', fontWeight: 500, fontFamily: "'Inter', 'Outfit', sans-serif" }}>
                       {teacherComment.created_at ? formatDateTime(teacherComment.created_at) : ''}
                     </Typography>
                   </Box>

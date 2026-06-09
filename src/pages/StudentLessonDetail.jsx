@@ -456,7 +456,11 @@ export default function StudentLessonDetail() {
 
   // Extract homework details
   const homework = activeLesson.homeWorks?.[0];
-  const homeworkFiles = parseHomeworkFiles(homework);
+  const VIDEO_EXTS = ['mp4', 'webm', 'avi', 'mov', 'mkv', 'flv', 'wmv', 'm4v'];
+  const homeworkFiles = parseHomeworkFiles(homework).filter((file) => {
+    const ext = (file.split('.').pop() || '').toLowerCase().split('?')[0];
+    return !VIDEO_EXTS.includes(ext);
+  });
   const answer = homework?.homeWorkAnswers?.[0];
   const statusKey = homework ? (answer ? answer.homeworkStatus : 'NOT_DONE') : 'NONE';
   const hasSubmittedHomework = Boolean(answer);

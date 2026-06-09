@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
   Box, Typography, Paper, IconButton, Button,
-  TextField, Tooltip, CircularProgress,
+  TextField, Tooltip, CircularProgress, Dialog, DialogTitle, DialogContent,
 } from '@mui/material';
 import SendIcon from '@mui/icons-material/Send';
 import AttachFileIcon from '@mui/icons-material/AttachFile';
@@ -12,6 +12,12 @@ import ErrorOutlineIcon from '@mui/icons-material/ErrorOutlineOutlined';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import PlayCircleFilledWhiteOutlinedIcon from '@mui/icons-material/PlayCircleFilledWhiteOutlined';
 import PanoramaFishEyeIcon from '@mui/icons-material/PanoramaFishEye';
+import InsertDriveFileIcon from '@mui/icons-material/InsertDriveFile';
+import DownloadIcon from '@mui/icons-material/Download';
+import CloseIcon from '@mui/icons-material/Close';
+import FolderZipIcon from '@mui/icons-material/FolderZip';
+import VolumeUpIcon from '@mui/icons-material/VolumeUp';
+import ArticleIcon from '@mui/icons-material/Article';
 import api from '../api/axios';
 import { supabaseUrl } from '../api/supabase';
 
@@ -68,6 +74,172 @@ function getHomeworkFileName(path) {
   if (!path) return 'Biriktirilgan fayl';
   const clean = path.split('?')[0];
   return decodeURIComponent(clean.split('/').pop() || 'Biriktirilgan fayl');
+}
+
+function TextPreview({ url }) {
+  const [content, setContent] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
+
+  useEffect(() => {
+    fetch(url)
+      .then((res) => {
+        if (!res.ok) throw new Error();
+        return res.text();
+      })
+      .then((text) => {
+        setContent(text);
+        setLoading(false);
+      })
+      .catch(() => {
+        setError(true);
+        setLoading(false);
+      });
+  }, [url]);
+
+  if (loading) {
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', py: 15 }}>
+        <CircularProgress size={40} sx={{ color: '#c5a059' }} />
+      </Box>
+    );
+  }
+
+  if (error) {
+    return (
+      <Box sx={{ py: 10, px: 2, textAlign: 'center' }}>
+        <Typography color="error" sx={{ fontWeight: 600 }}>
+          Fayl tarkibini yuklab bo'lmadi.
+        </Typography>
+      </Box>
+    );
+  }
+
+  return (
+    <Box sx={{ p: 3, background: '#f8fafc', minHeight: 400 }}>
+      <Box sx={{ border: '1px solid #e2e8f0', borderRadius: '12px', overflow: 'hidden', background: '#fff' }}>
+        <Box sx={{ background: '#f1f5f9', py: 1, px: 2, borderBottom: '1px solid #e2e8f0', display: 'flex', alignItems: 'center', gap: 1 }}>
+          <ArticleIcon sx={{ fontSize: 16, color: '#64748b' }} />
+          <Typography sx={{ fontSize: '0.78rem', color: '#64748b', fontWeight: 600 }}>
+            Matn ko'rinishi
+          </Typography>
+        </Box>
+        <Box sx={{ p: 2, maxHeight: '480px', overflow: 'auto' }}>
+          <pre style={{ margin: 0, fontFamily: 'Consolas, Monaco, monospace', fontSize: '0.85rem', whiteSpace: 'pre-wrap', color: '#334155', lineHeight: 1.5 }}>
+            {content}
+          </pre>
+        </Box>
+      </Box>
+    </Box>
+  );
+}
+
+function renderHomeworkFilePreview(previewFile) {
+  const url = getHomeworkFileUrl(previewFile);
+  const ext = (previewFile.split('.').pop() || '').toLowerCase();
+  const isImg = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'].includes(ext);
+  const isPdf = ext === 'pdf';
+  const isOffice = ['doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'odt', 'ods', 'odp'].includes(ext);
+  const isText = ['txt', 'json', 'js', 'ts', 'jsx', 'tsx', 'html', 'css', 'md', 'csv', 'xml', 'yaml'].includes(ext);
+  const isAudio = ['mp3', 'wav', 'ogg', 'm4a', 'flac'].includes(ext);
+  const isVideo = ['mp4', 'webm', 'avi', 'mov'].includes(ext);
+  const isArchive = ['zip', 'rar', '7z', 'tar', 'gz'].includes(ext);
+
+  if (isImg) {
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', p: 2 }}>
+        <img src={url} alt="homework file" style={{ maxWidth: '100%', maxHeight: 600, borderRadius: 8 }} />
+      </Box>
+    );
+  }
+  if (isPdf) {
+    return (
+      <iframe
+        src={url}
+        title="homework-file"
+        width="100%"
+        height="560px"
+        style={{ border: 'none' }}
+      />
+    );
+  }
+  if (isOffice) {
+    return (
+      <iframe
+        src={`https://docs.google.com/viewer?url=${encodeURIComponent(url)}&embedded=true`}
+        title="homework-office-file"
+        width="100%"
+        height="560px"
+        style={{ border: 'none' }}
+      />
+    );
+  }
+  if (isText) return <TextPreview url={url} />;
+  if (isAudio) {
+    return (
+      <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', py: 8, gap: 3, px: 4 }}>
+        <VolumeUpIcon sx={{ fontSize: 72, color: '#c5a059' }} />
+        <Typography sx={{ fontWeight: 700, color: '#374151', fontSize: '1.1rem' }}>
+          Audio faylni tinglash
+        </Typography>
+        <audio controls src={url} style={{ width: '100%', maxWidth: 500 }} />
+      </Box>
+    );
+  }
+  if (isVideo) {
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', p: 2, background: '#000' }}>
+        <video
+          src={url}
+          controls
+          style={{ maxWidth: '100%', maxHeight: '500px', borderRadius: 8 }}
+        />
+      </Box>
+    );
+  }
+  if (isArchive) {
+    return (
+      <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', py: 8, gap: 2.5, px: 3, textAlign: 'center' }}>
+        <FolderZipIcon sx={{ fontSize: 80, color: '#c5a059' }} />
+        <Typography sx={{ color: '#111827', fontWeight: 800, fontSize: '1.2rem' }}>
+          Siqilgan arxiv fayli
+        </Typography>
+        <Button
+          component="a"
+          href={url}
+          download
+          target="_blank"
+          rel="noopener noreferrer"
+          variant="contained"
+          startIcon={<DownloadIcon />}
+          sx={{ textTransform: 'none', borderRadius: '10px', backgroundColor: '#c5a059', '&:hover': { backgroundColor: '#b89350' }, boxShadow: 'none', px: 4, py: 1, mt: 1 }}
+        >
+          Arxivni yuklab olish
+        </Button>
+      </Box>
+    );
+  }
+
+  return (
+    <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', py: 8, gap: 2 }}>
+      <InsertDriveFileIcon sx={{ fontSize: 64, color: '#d1d5db' }} />
+      <Typography sx={{ color: '#6b7280', fontWeight: 500 }}>
+        Bu fayl tur brauzerda ko'rsatilmaydi
+      </Typography>
+      <Button
+        component="a"
+        href={url}
+        download
+        target="_blank"
+        rel="noopener noreferrer"
+        variant="contained"
+        startIcon={<DownloadIcon />}
+        sx={{ textTransform: 'none', borderRadius: '8px', backgroundColor: '#c5a059', '&:hover': { backgroundColor: '#b89350' }, boxShadow: 'none' }}
+      >
+        Yuklab olish
+      </Button>
+    </Box>
+  );
 }
 
 function VideoPlayerFrame({ video }) {
@@ -179,6 +351,8 @@ export default function StudentLessonDetail() {
   const [submitText, setSubmitText] = useState('');
   const [selectedFiles, setSelectedFiles] = useState([]);
   const [isEditing, setIsEditing] = useState(false);
+  const [filePreviewOpen, setFilePreviewOpen] = useState(false);
+  const [previewFile, setPreviewFile] = useState('');
   // Fetch all lessons of group
   const fetchGroupLessons = () => {
     return api.get(`/api/v1/students/my/groups/${groupId}/lessons`)
@@ -486,11 +660,20 @@ export default function StudentLessonDetail() {
                 </Box>
 
                 {/* HW details description */}
-                <Box>
-                  <Typography sx={{ fontSize: { xs: '1rem', sm: '1.12rem' }, color: '#333', lineHeight: 1.6, fontWeight: 500, fontFamily: "'Inter', 'Outfit', sans-serif" }}>
-                    {homework.description || homework.title}
-                  </Typography>
-                </Box>
+                {(homework.description || homework.title) && (
+                  <Box
+                    sx={{
+                      fontSize: { xs: '1rem', sm: '1.12rem' },
+                      color: '#333',
+                      lineHeight: 1.6,
+                      fontWeight: 500,
+                      fontFamily: "'Inter', 'Outfit', sans-serif",
+                      '& p': { m: 0 },
+                      '& p + p': { mt: 1 },
+                    }}
+                    dangerouslySetInnerHTML={{ __html: homework.description || homework.title }}
+                  />
+                )}
 
                 {homeworkFiles.length > 0 && (
                   <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
@@ -500,7 +683,10 @@ export default function StudentLessonDetail() {
                         variant="outlined"
                         size="small"
                         startIcon={<AttachFileIcon sx={{ fontSize: 16 }} />}
-                        onClick={() => window.open(getHomeworkFileUrl(file), '_blank', 'noopener,noreferrer')}
+                        onClick={() => {
+                          setPreviewFile(file);
+                          setFilePreviewOpen(true);
+                        }}
                         sx={{
                           alignSelf: 'flex-start',
                           textTransform: 'none',
@@ -942,6 +1128,44 @@ export default function StudentLessonDetail() {
         </Box>
 
       </Box>
+
+      <Dialog
+        open={filePreviewOpen}
+        onClose={() => setFilePreviewOpen(false)}
+        maxWidth="md"
+        fullWidth
+        PaperProps={{ sx: { borderRadius: '16px', overflow: 'hidden' } }}
+      >
+        <DialogTitle sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', py: 1.5, px: 2.5, borderBottom: '1px solid #f3f4f6' }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, minWidth: 0 }}>
+            <InsertDriveFileIcon sx={{ color: '#c5a059', flexShrink: 0 }} />
+            <Typography sx={{ fontWeight: 700, fontSize: '1rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+              {getHomeworkFileName(previewFile)}
+            </Typography>
+          </Box>
+          <Box sx={{ display: 'flex', gap: 1, flexShrink: 0 }}>
+            <Button
+              component="a"
+              href={getHomeworkFileUrl(previewFile)}
+              download
+              target="_blank"
+              rel="noopener noreferrer"
+              variant="contained"
+              size="small"
+              startIcon={<DownloadIcon />}
+              sx={{ textTransform: 'none', borderRadius: '8px', backgroundColor: '#c5a059', '&:hover': { backgroundColor: '#b89350' }, boxShadow: 'none', fontSize: '0.82rem' }}
+            >
+              Saqlash
+            </Button>
+            <IconButton size="small" onClick={() => setFilePreviewOpen(false)} sx={{ color: '#9ca3af' }}>
+              <CloseIcon fontSize="small" />
+            </IconButton>
+          </Box>
+        </DialogTitle>
+        <DialogContent sx={{ p: 0, minHeight: 500 }}>
+          {previewFile && renderHomeworkFilePreview(previewFile)}
+        </DialogContent>
+      </Dialog>
     </Box>
   );
 }

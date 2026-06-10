@@ -483,8 +483,16 @@ export default function StudentLessonDetail() {
   const hasSubmittedHomework = Boolean(answer);
   const score = answer?.homeWorkResults?.[0]?.grade || 0;
   const teacherComment = answer?.homeWorkResults?.[0];
-  const isLate = homework?.deadline && answer?.created_at
-    ? new Date(answer.created_at) > new Date(homework.deadline)
+  const getDeadlineDate = (dateStr) => {
+    if (!dateStr) return null;
+    const d = new Date(dateStr);
+    if (isNaN(d.getTime())) return null;
+    d.setHours(d.getHours() + 20);
+    return d;
+  };
+  const deadlineDate = homework?.deadline ? new Date(homework.deadline) : getDeadlineDate(homework?.created_at);
+  const isLate = deadlineDate && answer?.created_at
+    ? new Date(answer.created_at) > deadlineDate
     : false;
 
   return (
@@ -653,8 +661,8 @@ export default function StudentLessonDetail() {
                       <Box component="span" sx={{ fontWeight: 700 }}>Uyga vazifa muddati:</Box>
                       {' '}
                       {hasSubmittedHomework
-                        ? (homework.deadline ? formatDeadlineShort(homework.deadline) : formatDeadlineShort(homework.created_at))
-                        : (homework.deadline ? formatDateTime(homework.deadline) : formatDateTime(homework.created_at))}
+                        ? formatDeadlineShort(deadlineDate)
+                        : formatDateTime(deadlineDate)}
                     </Typography>
                   </Box>
 

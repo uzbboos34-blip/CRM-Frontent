@@ -377,25 +377,27 @@ export default function Groups() {
       </Box>
 
       {/* Tabs */}
-      <Box sx={{ display: 'flex', gap: 1, mb: 3, overflowX: 'auto', pb: 0.5 }}>
-        {[
-          { key: 'groups', label: "Guruhlar" },
-          { key: 'archive', label: "Arxiv", icon: <CalendarMonthIcon sx={{ fontSize: 16 }} /> }
-        ].map(tab => (
-          <Button key={tab.key} startIcon={tab.icon}
-            onClick={() => setActiveTab(tab.key)}
-            sx={{
-              textTransform: 'none', borderRadius: '8px', fontWeight: 600, px: 2,
-              color: activeTab === tab.key ? '#7b61ff' : '#6b7280',
-              borderBottom: activeTab === tab.key ? '2px solid #7b61ff' : '2px solid transparent',
-              '&:hover': { backgroundColor: 'transparent', color: '#7b61ff' },
-              whiteSpace: 'nowrap'
-            }}
-          >
-            {tab.label}
-          </Button>
-        ))}
-      </Box>
+      {userRole !== 'TEACHER' && (
+        <Box sx={{ display: 'flex', gap: 1, mb: 3, overflowX: 'auto', pb: 0.5 }}>
+          {[
+            { key: 'groups', label: "Guruhlar" },
+            { key: 'archive', label: "Arxiv", icon: <CalendarMonthIcon sx={{ fontSize: 16 }} /> }
+          ].map(tab => (
+            <Button key={tab.key} startIcon={tab.icon}
+              onClick={() => setActiveTab(tab.key)}
+              sx={{
+                textTransform: 'none', borderRadius: '8px', fontWeight: 600, px: 2,
+                color: activeTab === tab.key ? '#7b61ff' : '#6b7280',
+                borderBottom: activeTab === tab.key ? '2px solid #7b61ff' : '2px solid transparent',
+                '&:hover': { backgroundColor: 'transparent', color: '#7b61ff' },
+                whiteSpace: 'nowrap'
+              }}
+            >
+              {tab.label}
+            </Button>
+          ))}
+        </Box>
+      )}
 
       {/* Stat cards */}
       <Box sx={{
@@ -430,7 +432,10 @@ export default function Groups() {
           <Table>
             <TableHead sx={{ backgroundColor: '#f9fafb' }}>
               <TableRow>
-                {['Status', 'Guruh', 'Kurs', 'Davomiyligi', 'Dars vaqti', 'Xona', "O'qituvchi", 'Talabalar', ...(userRole !== 'TEACHER' ? ['Amallar'] : [])].map(col => (
+                {(userRole === 'TEACHER'
+                  ? ['Guruh', 'Kurs', 'Davomiyligi', 'Dars vaqti', 'Xona', 'Talabalar']
+                  : ['Status', 'Guruh', 'Kurs', 'Davomiyligi', 'Dars vaqti', 'Xona', "O'qituvchi", 'Talabalar', 'Amallar']
+                ).map(col => (
                   <TableCell key={col} sx={{ fontWeight: 600, color: '#6b7280', fontSize: '0.75rem', textTransform: 'uppercase', whiteSpace: 'nowrap' }}>
                     {col}
                   </TableCell>
@@ -440,7 +445,7 @@ export default function Groups() {
             <TableBody>
               {displayedGroups.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={userRole === 'TEACHER' ? 8 : 9} align="center" sx={{ py: 6, color: '#9ca3af' }}>Ma'lumot topilmadi</TableCell>
+                  <TableCell colSpan={userRole === 'TEACHER' ? 6 : 9} align="center" sx={{ py: 6, color: '#9ca3af' }}>Ma'lumot topilmadi</TableCell>
                 </TableRow>
               ) : displayedGroups.map((group) => {
                 const teachers = group.teachers || [];
@@ -450,16 +455,18 @@ export default function Groups() {
                 return (
                   <TableRow key={group.id} hover sx={{ '&:last-child td': { border: 0 } }}>
                     {/* Status */}
-                    <TableCell>
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                        <Switch
-                          size="small"
-                          checked={group.status === 'active'}
-                          sx={{ '& .MuiSwitch-switchBase.Mui-checked': { color: '#3b82f6' }, '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': { backgroundColor: '#93c5fd' } }}
-                        />
-                        <Typography sx={{ fontSize: '0.68rem', fontWeight: 700, color: '#3b82f6' }}>ACTIVE</Typography>
-                      </Box>
-                    </TableCell>
+                    {userRole !== 'TEACHER' && (
+                      <TableCell>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                          <Switch
+                            size="small"
+                            checked={group.status === 'active'}
+                            sx={{ '& .MuiSwitch-switchBase.Mui-checked': { color: '#3b82f6' }, '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': { backgroundColor: '#93c5fd' } }}
+                          />
+                          <Typography sx={{ fontSize: '0.68rem', fontWeight: 700, color: '#3b82f6' }}>ACTIVE</Typography>
+                        </Box>
+                      </TableCell>
+                    )}
 
                     {/* Guruh nomi */}
                     <TableCell>
@@ -507,28 +514,30 @@ export default function Groups() {
                     </TableCell>
 
                     {/* O'qituvchi */}
-                    <TableCell>
-                      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-                        {teachers.length === 0
-                          ? <Typography sx={{ fontSize: '0.78rem', color: '#9ca3af' }}>—</Typography>
-                          : teachers.map((t) => (
-                            <Typography key={t.id} sx={{
-                              fontSize: '0.72rem',
-                              fontWeight: 600,
-                              px: 1,
-                              py: 0.3,
-                              border: '1px solid #e5e7eb',
-                              borderRadius: '6px',
-                              color: '#4b5563',
-                              backgroundColor: '#f9fafb',
-                              whiteSpace: 'nowrap'
-                            }}>
-                              {t.full_name}
-                            </Typography>
-                          ))
-                        }
-                      </Box>
-                    </TableCell>
+                    {userRole !== 'TEACHER' && (
+                      <TableCell>
+                        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                          {teachers.length === 0
+                            ? <Typography sx={{ fontSize: '0.78rem', color: '#9ca3af' }}>—</Typography>
+                            : teachers.map((t) => (
+                              <Typography key={t.id} sx={{
+                                fontSize: '0.72rem',
+                                fontWeight: 600,
+                                px: 1,
+                                py: 0.3,
+                                border: '1px solid #e5e7eb',
+                                borderRadius: '6px',
+                                color: '#4b5563',
+                                backgroundColor: '#f9fafb',
+                                whiteSpace: 'nowrap'
+                              }}>
+                                {t.full_name}
+                              </Typography>
+                            ))
+                          }
+                        </Box>
+                      </TableCell>
+                    )}
 
                     {/* Talabalar */}
                     <TableCell>

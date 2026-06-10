@@ -894,45 +894,92 @@ export default function StudentLessonDetail() {
                   </Box>
                 </Paper>
               ) : (
-                <Paper
-                  elevation={0}
-                  sx={{
-                    px: { xs: 2.5, sm: 4 },
-                    py: { xs: 3, sm: 4 },
-                    borderRadius: '2px',
-                    border: 'none',
-                    backgroundColor: '#f8f3ef',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: { xs: 2, sm: 2.5 }
-                  }}
-                >
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 1.5 }}>
-                    <Typography sx={{ fontSize: { xs: '0.95rem', sm: '1rem' }, fontWeight: 500, color: '#333', whiteSpace: 'nowrap', fontFamily: "'Inter', 'Outfit', sans-serif" }}>
-                      Mening jo'natmalarim
-                    </Typography>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexShrink: 0 }}>
-                      <Typography sx={{ fontSize: { xs: '0.9rem', sm: '0.95rem' }, color: '#333', fontWeight: 500, whiteSpace: 'nowrap', fontFamily: "'Inter', 'Outfit', sans-serif" }}>
-                        Fayllar soni: {answer.file ? JSON.parse(answer.file || '[]').length : 0}
-                      </Typography>
-                      {statusKey === 'PENDING' && (
-                        <IconButton size="small" onClick={handleStartEdit} sx={{ border: '1px solid #e2e8f0', borderRadius: '8px' }}>
-                          <EditIcon sx={{ fontSize: 16, color: '#6b7280' }} />
-                        </IconButton>
+                (() => {
+                  const parseAnswerFiles = (fileJson) => {
+                    if (!fileJson) return [];
+                    try {
+                      if (fileJson.trim().startsWith('[')) {
+                        const parsed = JSON.parse(fileJson);
+                        if (Array.isArray(parsed)) return parsed.filter(Boolean);
+                      }
+                      return [fileJson.trim()].filter(Boolean);
+                    } catch {
+                      return [fileJson.trim()].filter(Boolean);
+                    }
+                  };
+                  const answerFiles = parseAnswerFiles(answer.file);
+                  return (
+                    <Paper
+                      elevation={0}
+                      sx={{
+                        px: { xs: 2.5, sm: 4 },
+                        py: { xs: 3, sm: 4 },
+                        borderRadius: '2px',
+                        border: 'none',
+                        backgroundColor: '#f8f3ef',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: { xs: 2, sm: 2.5 }
+                      }}
+                    >
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 1.5 }}>
+                        <Typography sx={{ fontSize: { xs: '0.95rem', sm: '1rem' }, fontWeight: 500, color: '#333', whiteSpace: 'nowrap', fontFamily: "'Inter', 'Outfit', sans-serif" }}>
+                          Mening jo'natmalarim
+                        </Typography>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexShrink: 0 }}>
+                          <Typography sx={{ fontSize: { xs: '0.9rem', sm: '0.95rem' }, color: '#333', fontWeight: 500, whiteSpace: 'nowrap', fontFamily: "'Inter', 'Outfit', sans-serif" }}>
+                            Fayllar soni: {answerFiles.length}
+                          </Typography>
+                          {statusKey === 'PENDING' && (
+                            <IconButton size="small" onClick={handleStartEdit} sx={{ border: '1px solid #e2e8f0', borderRadius: '8px' }}>
+                              <EditIcon sx={{ fontSize: 16, color: '#6b7280' }} />
+                            </IconButton>
+                          )}
+                        </Box>
+                      </Box>
+
+                      {answer.title && (
+                        <Typography sx={{ fontSize: { xs: '0.9rem', sm: '0.95rem' }, color: '#333', fontWeight: 500, lineHeight: 1.5, wordBreak: 'break-word', fontFamily: "'Inter', 'Outfit', sans-serif" }}>
+                          {answer.title}
+                        </Typography>
                       )}
-                    </Box>
-                  </Box>
 
-                  <Typography sx={{ fontSize: { xs: '0.9rem', sm: '0.95rem' }, color: '#333', fontWeight: 500, lineHeight: 1.5, wordBreak: 'break-word', fontFamily: "'Inter', 'Outfit', sans-serif" }}>
-                    {answer.title}
-                  </Typography>
+                      {answerFiles.length > 0 && (
+                        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, mt: 1 }}>
+                          {answerFiles.map((file, index) => (
+                            <Button
+                              key={`${file}-${index}`}
+                              variant="outlined"
+                              size="small"
+                              startIcon={<AttachFileIcon sx={{ fontSize: 16 }} />}
+                              onClick={() => {
+                                setPreviewFile(file);
+                                setFilePreviewOpen(true);
+                              }}
+                              sx={{
+                                alignSelf: 'flex-start',
+                                textTransform: 'none',
+                                color: '#c5a059',
+                                borderColor: '#c5a059',
+                                fontWeight: 600,
+                                maxWidth: '100%',
+                                '&:hover': { borderColor: '#e68a00', color: '#e68a00', backgroundColor: '#fffaf5' },
+                              }}
+                            >
+                              {getHomeworkFileName(file)}
+                            </Button>
+                          ))}
+                        </Box>
+                      )}
 
-                  <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
-                    <Typography sx={{ fontSize: { xs: '0.85rem', sm: '0.9rem' }, color: '#333', fontWeight: 500, fontFamily: "'Inter', 'Outfit', sans-serif" }}>
-                      {formatDateTime(answer.updated_at || answer.created_at)}
-                    </Typography>
-                  </Box>
-                </Paper>
+                      <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
+                        <Typography sx={{ fontSize: { xs: '0.85rem', sm: '0.9rem' }, color: '#333', fontWeight: 500, fontFamily: "'Inter', 'Outfit', sans-serif" }}>
+                          {formatDateTime(answer.updated_at || answer.created_at)}
+                        </Typography>
+                      </Box>
+                    </Paper>
+                  );
+                })()
               )}
 
               {/* Card 3: O'qituvchi izohi response */}

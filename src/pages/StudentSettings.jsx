@@ -209,7 +209,7 @@ export default function StudentSettings() {
   }
 
   return (
-    <Box sx={{ maxWidth: 1100, mx: 'auto', p: { xs: 2, md: 4 }, animation: 'fadeIn 0.5s ease-out' }}>
+    <Box sx={{ maxWidth: 1100, mx: 'auto', p: 0, animation: 'fadeIn 0.5s ease-out' }}>
       
       {/* Toast Alert */}
       <Snackbar
@@ -232,7 +232,7 @@ export default function StudentSettings() {
       <Paper
         elevation={0}
         sx={{
-          p: { xs: 3, md: 4 },
+          p: { xs: 2.5, md: 3 },
           borderRadius: '24px',
           border: '1px solid #e5e7eb',
           backgroundColor: '#fff',
@@ -266,9 +266,9 @@ export default function StudentSettings() {
                   }}
                 >
                   <Avatar
-                    src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=150"
+                    src="/namuna.jpg"
                     variant="square"
-                    sx={{ width: '100%', height: 135 }}
+                    sx={{ width: '100%', height: 135, objectFit: 'cover' }}
                   />
                   <Box sx={{ py: 0.5, width: '100%', backgroundColor: '#fff', borderTop: '1px solid #e5e7eb' }}>
                     <Typography variant="caption" sx={{ color: '#374151', fontWeight: 600, fontSize: '0.75rem' }}>
@@ -593,7 +593,7 @@ export default function StudentSettings() {
       <Paper
         elevation={0}
         sx={{
-          p: 4,
+          p: 3,
           borderRadius: '24px',
           border: '1px solid #e5e7eb',
           backgroundColor: '#fff',

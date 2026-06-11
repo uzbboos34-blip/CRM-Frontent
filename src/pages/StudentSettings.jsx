@@ -329,113 +329,115 @@ export default function StudentSettings() {
       </Paper>
 
       {/* Security Cards Section */}
-      <Grid container spacing={3} sx={{ mb: 3 }}>
+      <Box
+        sx={{
+          display: 'grid',
+          gridTemplateColumns: { xs: '1fr', md: '1fr 1fr 1fr' },
+          gap: 3,
+          mb: 3,
+          width: '100%'
+        }}
+      >
         {/* Kirish card */}
-        <Grid item xs={12} md={4}>
-          <Card
-            elevation={0}
-            sx={{
-              borderRadius: '16px',
-              border: '1px solid #e5e7eb',
-              height: 140,
-              background: '#fff',
-              display: 'flex',
-              flexDirection: 'column',
-              justifyContent: 'space-between',
-              boxShadow: '0 4px 20px rgba(0,0,0,0.01)'
-            }}
-          >
-            <CardContent sx={{ p: 3, '&:last-child': { pb: 3 } }}>
-              <Typography sx={{ fontWeight: 700, color: '#374151', fontSize: '1.05rem', mb: 2 }}>
-                Kirish
-              </Typography>
-              <Typography sx={{ fontWeight: 600, color: '#9ca3af', fontSize: '1.1rem' }}>
-                {profile.id}
-              </Typography>
-            </CardContent>
-          </Card>
-        </Grid>
+        <Card
+          elevation={0}
+          sx={{
+            borderRadius: '16px',
+            border: '1px solid #e5e7eb',
+            height: 150,
+            background: '#fff',
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'center',
+            boxShadow: '0 4px 20px rgba(0,0,0,0.01)'
+          }}
+        >
+          <CardContent sx={{ p: 4, '&:last-child': { pb: 4 } }}>
+            <Typography sx={{ fontWeight: 700, color: '#374151', fontSize: '1.15rem', mb: 2 }}>
+              Kirishcha
+            </Typography>
+            <Typography sx={{ fontWeight: 600, color: '#9ca3af', fontSize: '1.2rem' }}>
+              {profile.id}
+            </Typography>
+          </CardContent>
+        </Card>
 
         {/* Parol card */}
-        <Grid item xs={12} md={4}>
-          <Card
-            elevation={0}
+        <Card
+          elevation={0}
+          sx={{
+            borderRadius: '16px',
+            border: '1px solid #e5e7eb',
+            height: 150,
+            background: '#fff',
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'center',
+            boxShadow: '0 4px 20px rgba(0,0,0,0.01)',
+            position: 'relative'
+          }}
+        >
+          <IconButton
+            onClick={() => setPassDialogOpen(true)}
             sx={{
-              borderRadius: '16px',
+              position: 'absolute',
+              top: 20,
+              right: 20,
               border: '1px solid #e5e7eb',
-              height: 140,
-              background: '#fff',
-              display: 'flex',
-              flexDirection: 'column',
-              justifyContent: 'space-between',
-              boxShadow: '0 4px 20px rgba(0,0,0,0.01)',
-              position: 'relative'
+              borderRadius: '8px',
+              p: 0.8,
+              bgcolor: '#fff',
+              '&:hover': { bgcolor: '#f9fafb' }
             }}
           >
-            <IconButton
-              onClick={() => setPassDialogOpen(true)}
-              sx={{
-                position: 'absolute',
-                top: 16,
-                right: 16,
-                border: '1px solid #e5e7eb',
-                borderRadius: '8px',
-                p: 0.8,
-                bgcolor: '#fff',
-                '&:hover': { bgcolor: '#f9fafb' }
-              }}
-            >
-              <EditIcon sx={{ fontSize: 16, color: '#6b7280' }} />
-            </IconButton>
-            <CardContent sx={{ p: 3, '&:last-child': { pb: 3 } }}>
-              <Typography sx={{ fontWeight: 700, color: '#374151', fontSize: '1.05rem', mb: 2 }}>
-                Parol
-              </Typography>
-              <Typography sx={{ fontWeight: 800, color: '#111827', fontSize: '1.2rem', letterSpacing: '4px' }}>
-                ••••••••
-              </Typography>
-            </CardContent>
-          </Card>
-        </Grid>
+            <EditIcon sx={{ fontSize: 18, color: '#6b7280' }} />
+          </IconButton>
+          <CardContent sx={{ p: 4, '&:last-child': { pb: 4 } }}>
+            <Typography sx={{ fontWeight: 700, color: '#374151', fontSize: '1.15rem', mb: 2 }}>
+              Parol
+            </Typography>
+            <Typography sx={{ fontWeight: 800, color: '#111827', fontSize: '1.3rem', letterSpacing: '4px' }}>
+              ••••••••
+            </Typography>
+          </CardContent>
+        </Card>
 
         {/* Bildirishnoma card */}
-        <Grid item xs={12} md={4}>
-          <Card
-            elevation={0}
+        <Card
+          elevation={0}
+          sx={{
+            borderRadius: '16px',
+            border: '1px solid #e5e7eb',
+            height: 150,
+            background: '#fff',
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'center',
+            boxShadow: '0 4px 20px rgba(0,0,0,0.01)',
+            position: 'relative'
+          }}
+        >
+          <IconButton
             sx={{
-              borderRadius: '16px',
+              position: 'absolute',
+              top: 20,
+              right: 20,
               border: '1px solid #e5e7eb',
-              height: 140,
-              background: '#fff',
-              display: 'flex',
-              flexDirection: 'column',
-              justifyContent: 'space-between',
-              boxShadow: '0 4px 20px rgba(0,0,0,0.01)',
-              position: 'relative'
+              borderRadius: '8px',
+              p: 0.8,
+              bgcolor: '#fff',
+              '&:hover': { bgcolor: '#f9fafb' }
             }}
           >
-            <IconButton
-              sx={{
-                position: 'absolute',
-                top: 16,
-                right: 16,
-                border: '1px solid #e5e7eb',
-                borderRadius: '8px',
-                p: 0.8,
-                bgcolor: '#fff',
-                '&:hover': { bgcolor: '#f9fafb' }
-              }}
-            >
-              <EditIcon sx={{ fontSize: 16, color: '#6b7280' }} />
-            </IconButton>
-            <CardContent sx={{ p: 3, '&:last-child': { pb: 3 } }}>
-              <Typography sx={{ fontWeight: 700, color: '#374151', fontSize: '1.05rem', mb: 2 }}>
-                Bildirishnoma sozlamalari
-              </Typography>
-            </CardContent>
-          </Card>
-        </Grid>
-      </Grid>
+            <EditIcon sx={{ fontSize: 18, color: '#6b7280' }} />
+          </IconButton>
+          <CardContent sx={{ p: 4, '&:last-child': { pb: 4 } }}>
+            <Typography sx={{ fontWeight: 700, color: '#374151', fontSize: '1.15rem', mb: 2 }}>
+              Bilishnoma so'zlamalari
+            </Typography>
+          </CardContent>
+        </Card>
+      </Box>
 
       {/* Shartnomalarim Card */}
       <Paper

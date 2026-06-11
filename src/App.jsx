@@ -19,6 +19,7 @@ import StudentGroups from './pages/StudentGroups';
 import StudentPlaceholder from './pages/StudentPlaceholder';
 import StudentGroupLessons from './pages/StudentGroupLessons';
 import StudentLessonDetail from './pages/StudentLessonDetail';
+import StudentSettings from './pages/StudentSettings';
 
 import { UploadProvider } from './context/UploadContext';
 
@@ -77,7 +78,7 @@ function App() {
             <Route path="student/rating" element={<StudentPlaceholder />} />
             <Route path="student/shop" element={<StudentPlaceholder />} />
             <Route path="student/extra-lessons" element={<StudentPlaceholder />} />
-            <Route path="student/settings" element={<StudentPlaceholder />} />
+            <Route path="student/settings" element={<StudentSettings />} />
           </Route>
 
           {/* Catch all */}

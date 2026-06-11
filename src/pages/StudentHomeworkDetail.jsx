@@ -454,53 +454,54 @@ export default function StudentHomeworkDetail() {
                 </Typography>
               </Box>
             )}
+
+            {/* Teacher comment and Graded by name */}
+            {data.result?.title && (
+              <Box sx={{
+                borderLeft: '3px solid #10b981', pl: 2, py: 1,
+                background: '#fafafa', borderRadius: '0 10px 10px 0',
+                mt: 1.5
+              }}>
+                <Typography sx={{ fontSize: '0.88rem', color: '#374151', fontWeight: 500 }}>
+                  O'qituvchi izohi: <strong style={{ color: '#111827' }}>{data.result.title}</strong>
+                </Typography>
+                {(data.result.teachers?.full_name || data.result.users?.full_name) && (
+                  <Typography sx={{ fontSize: '0.78rem', color: '#6b7280', mt: 0.5 }}>
+                    Tekshiruvchi: <strong>{data.result.teachers?.full_name || data.result.users?.full_name}</strong>
+                  </Typography>
+                )}
+              </Box>
+            )}
+
+            {/* Late penalty banner */}
+            {isLate && (
+              <Alert
+                severity="warning"
+                icon={<WarningIcon sx={{ color: '#ea580c' }} />}
+                sx={{
+                  mt: 2,
+                  borderRadius: '12px',
+                  backgroundColor: '#fff7ed',
+                  border: '1px solid #ffedd5',
+                  color: '#9a3412',
+                  fontWeight: 600,
+                  '& .MuiAlert-icon': { color: '#ea580c' }
+                }}
+              >
+                {data.result?.grade !== undefined ? (
+                  `${hoursLate} soatdan kechikib topshirilgani uchun qo'yilgan ${originalGrade} ball 10 % ga kamaytirildi.`
+                ) : (
+                  `Vazifa ${hoursLate} soat kechikib topshirilgan. Qo'yilgan balldan 10 % kamaytiriladi.`
+                )}
+              </Alert>
+            )}
           </>
         )}
       </Paper>
 
-      {/* ── Grading section (3rd screenshot) — only if student submitted ── */}
-      {data.status !== 'not_done' && (
+      {/* ── Grading section (3rd screenshot) — only if student submitted and not locked ── */}
+      {data.status !== 'not_done' && !isLocked && (
         <Paper elevation={0} sx={{ border: '1px solid #e5e7eb', borderRadius: '16px', p: 3 }}>
-
-          {/* Locked banner if accepted */}
-          {isLocked && (
-            <Alert
-              severity="info"
-              sx={{
-                mb: 3,
-                borderRadius: '12px',
-                backgroundColor: '#eff6ff',
-                border: '1px solid #dbeafe',
-                color: '#1e40af',
-                fontWeight: 600,
-              }}
-            >
-              Bu vazifa qabul qilingan. Uni qaytadan baholay olmaysiz.
-            </Alert>
-          )}
-
-          {/* Late penalty banner */}
-          {isLate && (
-            <Alert
-              severity="warning"
-              icon={<WarningIcon sx={{ color: '#ea580c' }} />}
-              sx={{
-                mb: 3,
-                borderRadius: '12px',
-                backgroundColor: '#fff7ed',
-                border: '1px solid #ffedd5',
-                color: '#9a3412',
-                fontWeight: 600,
-                '& .MuiAlert-icon': { color: '#ea580c' }
-              }}
-            >
-              {data.result?.grade !== undefined ? (
-                `${hoursLate} soatdan kechikib topshirilgani uchun qo'yilgan ${originalGrade} ball 10 % ga kamaytirildi.`
-              ) : (
-                `Vazifa ${hoursLate} soat kechikib topshirilgan. Qo'yilgan balldan 10 % kamaytiriladi (masalan, ${grade} ball qo'yilsa, o'quvchi ${Math.round(grade * 0.9)} ball oladi).`
-              )}
-            </Alert>
-          )}
 
           {/* Info banner */}
           <Box sx={{

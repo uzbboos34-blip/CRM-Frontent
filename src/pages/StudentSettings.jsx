@@ -262,64 +262,65 @@ export default function StudentSettings() {
           </Grid>
 
           {/* Static Info Columns */}
-          <Grid item xs={12} md={8} sx={{ pl: { md: 7 } }}>
+          <Grid item xs={12} md={8} sx={{ pl: { md: 9 } }}>
             <Box
               sx={{
                 display: 'grid',
                 gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' },
-                gap: 3.5
+                columnGap: 8,
+                rowGap: 4
               }}
             >
               <Box>
-                <Typography variant="caption" sx={{ color: '#9ca3af', display: 'block', mb: 0.5, fontWeight: 500, fontSize: '0.85rem' }}>
+                <Typography variant="caption" sx={{ color: '#4b5563', display: 'block', mb: 0.5, fontWeight: 500, fontSize: '0.95rem' }}>
                   Ism
                 </Typography>
-                <Typography sx={{ fontWeight: 700, color: '#111827', fontSize: '1.05rem' }}>
+                <Typography sx={{ fontWeight: 600, color: '#111827', fontSize: '1.25rem' }}>
                   {displayFirstName}
                 </Typography>
               </Box>
 
               <Box>
-                <Typography variant="caption" sx={{ color: '#9ca3af', display: 'block', mb: 0.5, fontWeight: 500, fontSize: '0.85rem' }}>
+                <Typography variant="caption" sx={{ color: '#4b5563', display: 'block', mb: 0.5, fontWeight: 500, fontSize: '0.95rem' }}>
                   Familiya
                 </Typography>
-                <Typography sx={{ fontWeight: 700, color: '#111827', fontSize: '1.05rem' }}>
+                <Typography sx={{ fontWeight: 600, color: '#111827', fontSize: '1.25rem' }}>
                   {displayLastName}
                 </Typography>
               </Box>
 
               <Box>
-                <Typography variant="caption" sx={{ color: '#9ca3af', display: 'block', mb: 0.5, fontWeight: 500, fontSize: '0.85rem' }}>
+                <Typography variant="caption" sx={{ color: '#4b5563', display: 'block', mb: 0.5, fontWeight: 500, fontSize: '0.95rem' }}>
                   Telefon raqam
                 </Typography>
-                <Typography sx={{ fontWeight: 700, color: '#111827', fontSize: '1.05rem' }}>
+                <Typography sx={{ fontWeight: 600, color: '#111827', fontSize: '1.25rem' }}>
                   {formatPhone(profile.phone)}
                 </Typography>
               </Box>
 
               <Box>
-                <Typography variant="caption" sx={{ color: '#9ca3af', display: 'block', mb: 0.5, fontWeight: 500, fontSize: '0.85rem' }}>
+                <Typography variant="caption" sx={{ color: '#4b5563', display: 'block', mb: 0.5, fontWeight: 500, fontSize: '0.95rem' }}>
                   Tug'ilgan sana
                 </Typography>
-                <Typography sx={{ fontWeight: 700, color: '#111827', fontSize: '1.05rem' }}>
+                <Typography sx={{ fontWeight: 600, color: '#111827', fontSize: '1.25rem' }}>
                   {formatBirthDate(profile.birth_date)}
                 </Typography>
               </Box>
 
               <Box>
-                <Typography variant="caption" sx={{ color: '#9ca3af', display: 'block', mb: 0.5, fontWeight: 500, fontSize: '0.85rem' }}>
+                <Typography variant="caption" sx={{ color: '#4b5563', display: 'block', mb: 0.5, fontWeight: 500, fontSize: '0.95rem' }}>
                   Jinsi
                 </Typography>
-                <Typography sx={{ fontWeight: 700, color: '#111827', fontSize: '1.05rem' }}>
-                  Male
+                <Typography sx={{ fontWeight: 600, color: '#111827', fontSize: '1.25rem' }}>
+                  Erkak
                 </Typography>
               </Box>
 
               <Box>
-                <Typography variant="caption" sx={{ color: '#9ca3af', display: 'block', mb: 0.5, fontWeight: 500, fontSize: '0.85rem' }}>
-                  HH ID
+                <Typography variant="caption" sx={{ color: '#4b5563', display: 'block', mb: 0.5, fontWeight: 500, fontSize: '0.95rem' }}>
+                  Uy xo'jaligi identifikatori
                 </Typography>
-                <Typography sx={{ fontWeight: 700, color: '#111827', fontSize: '1.05rem' }}>
+                <Typography sx={{ fontWeight: 600, color: '#111827', fontSize: '1.25rem' }}>
                   {profile.id}
                 </Typography>
               </Box>

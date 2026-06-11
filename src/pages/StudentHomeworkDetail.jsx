@@ -4,7 +4,8 @@ import api from '../api/axios';
 import {
   Box, Typography, Paper, Button, CircularProgress,
   Chip, Slider, TextField, Snackbar, Alert, Avatar,
-  Divider, Dialog, DialogTitle, DialogContent, IconButton
+  Divider, Dialog, DialogTitle, DialogContent, IconButton,
+  Checkbox, FormControlLabel
 } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
@@ -128,6 +129,7 @@ export default function StudentHomeworkDetail() {
   // Grading state
   const [grade,      setGrade]      = useState(60);
   const [comment,    setComment]    = useState('');
+  const [allowResubmit, setAllowResubmit] = useState(false);
   const [grading,    setGrading]    = useState(false);
   const [snackbar,   setSnackbar]   = useState({ open: false, msg: '', sev: 'success' });
   const [filePreviewOpen, setFilePreviewOpen] = useState(false);
@@ -158,6 +160,9 @@ export default function StudentHomeworkDetail() {
         setGrade(d.result.grade);
         setComment(d.result.title || '');
       }
+      if (d?.answer?.allow_resubmit !== undefined) {
+        setAllowResubmit(d.answer.allow_resubmit);
+      }
     } catch (e) {
       console.error('StudentHomeworkDetail fetch error:', e);
     } finally {
@@ -179,6 +184,7 @@ export default function StudentHomeworkDetail() {
       await api.post(`/api/v1/home-works/${hwId}/grade/${data.answer.id}`, {
         grade,
         comment,
+        allow_resubmit: allowResubmit,
       });
       const statusMsg = grade >= 60
         ? `Vazifa qabul qilindi (${grade} ball)`
@@ -606,6 +612,31 @@ export default function StudentHomeworkDetail() {
                 : `✗ Bu ball bilan vazifa "Qaytarilgan" statusiga o'tadi`}
             </Typography>
           </Box>
+
+          {/* Allow resubmission check */}
+          {grade < 60 && (
+            <Box sx={{ mb: 3 }}>
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    checked={allowResubmit}
+                    onChange={(e) => setAllowResubmit(e.target.checked)}
+                    sx={{
+                      color: '#ef4444',
+                      '&.Mui-checked': {
+                        color: '#ef4444',
+                      },
+                    }}
+                  />
+                }
+                label={
+                  <Typography sx={{ fontSize: '0.9rem', fontWeight: 600, color: '#374151' }}>
+                    Qayta topshirishga ruxsat berish
+                  </Typography>
+                }
+              />
+            </Box>
+          )}
 
           {/* Action buttons */}
           <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2 }}>

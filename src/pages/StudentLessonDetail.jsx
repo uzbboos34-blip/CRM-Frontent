@@ -9,6 +9,7 @@ import AttachFileIcon from '@mui/icons-material/AttachFile';
 import EditIcon from '@mui/icons-material/Edit';
 import WarningIcon from '@mui/icons-material/Warning';
 import ErrorOutlineIcon from '@mui/icons-material/ErrorOutlineOutlined';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import PlayCircleFilledWhiteOutlinedIcon from '@mui/icons-material/PlayCircleFilledWhiteOutlined';
 import PanoramaFishEyeIcon from '@mui/icons-material/PanoramaFishEye';
@@ -874,26 +875,53 @@ export default function StudentLessonDetail() {
                       InputProps={{ disableUnderline: true }}
                       sx={{ '& .MuiInputBase-input': { fontSize: '0.9rem', color: '#2d3748' } }}
                     />
-                    <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1.5, mt: 1 }}>
-                      <Button size="small" variant="text" disabled={submitting} onClick={() => setIsEditing(false)} sx={{ color: '#6b7280', textTransform: 'none', fontWeight: 600 }}>
-                        Bekor qilish
-                      </Button>
-                      <Button 
-                        size="small" 
-                        variant="contained" 
-                        onClick={handleSaveEdit}
-                        disabled={!submitText.trim() || submitting}
-                        sx={{
-                          backgroundColor: '#ff9800',
-                          color: '#fff',
-                          textTransform: 'none',
-                          fontWeight: 700,
-                          boxShadow: 'none',
-                          '&:hover': { backgroundColor: '#e68a00', boxShadow: 'none' }
-                        }}
-                      >
-                        {submitting ? <CircularProgress size={16} sx={{ color: '#fff' }} /> : 'Saqlash'}
-                      </Button>
+                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <Tooltip title="Fayl yuklash">
+                          <IconButton
+                            component="label"
+                            sx={{
+                              p: 0.5,
+                              color: '#70757a',
+                              '&:hover': { color: '#333' },
+                            }}
+                          >
+                            <AttachFileIcon sx={{ fontSize: 16 }} />
+                            <input
+                              hidden
+                              multiple
+                              type="file"
+                              onChange={(e) => setSelectedFiles(Array.from(e.target.files || []))}
+                            />
+                          </IconButton>
+                        </Tooltip>
+                        {selectedFiles.length > 0 && (
+                          <Typography sx={{ fontSize: '0.8rem', color: '#6b7280', fontWeight: 600 }}>
+                            Tanlangan fayllar: {selectedFiles.length}
+                          </Typography>
+                        )}
+                      </Box>
+                      <Box sx={{ display: 'flex', gap: 1.5 }}>
+                        <Button size="small" variant="text" disabled={submitting} onClick={() => { setIsEditing(false); setSelectedFiles([]); }} sx={{ color: '#6b7280', textTransform: 'none', fontWeight: 600 }}>
+                          Bekor qilish
+                        </Button>
+                        <Button 
+                          size="small" 
+                          variant="contained" 
+                          onClick={handleSaveEdit}
+                          disabled={(!submitText.trim() && selectedFiles.length === 0) || submitting}
+                          sx={{
+                            backgroundColor: '#ff9800',
+                            color: '#fff',
+                            textTransform: 'none',
+                            fontWeight: 700,
+                            boxShadow: 'none',
+                            '&:hover': { backgroundColor: '#e68a00', boxShadow: 'none' }
+                          }}
+                        >
+                          {submitting ? <CircularProgress size={16} sx={{ color: '#fff' }} /> : 'Saqlash'}
+                        </Button>
+                      </Box>
                     </Box>
                   </Box>
                 </Paper>
@@ -934,7 +962,7 @@ export default function StudentLessonDetail() {
                           <Typography sx={{ fontSize: { xs: '0.9rem', sm: '0.95rem' }, color: '#333', fontWeight: 500, whiteSpace: 'nowrap', fontFamily: "'Inter', 'Outfit', sans-serif" }}>
                             Fayllar soni: {answerFiles.length}
                           </Typography>
-                          {statusKey === 'PENDING' && (
+                          {(statusKey === 'PENDING' || (statusKey === 'RETURNED' && answer?.allow_resubmit)) && (
                             <IconButton size="small" onClick={handleStartEdit} sx={{ border: '1px solid #e2e8f0', borderRadius: '8px' }}>
                               <EditIcon sx={{ fontSize: 16, color: '#6b7280' }} />
                             </IconButton>
@@ -1028,6 +1056,48 @@ export default function StudentLessonDetail() {
                         {score > 0 
                           ? `${hoursLate} soatdan kechikib topshirilgani uchun qo'yilgan ${originalGrade} ball 10 % ga kamaytirildi.`
                           : `Vazifa ${hoursLate} soat kechikib topshirilgan. Belgilangan balldan 10 % chegirib tashlanadi.`}
+                      </Typography>
+                    </Box>
+                  )}
+
+                  {statusKey === 'RETURNED' && !answer?.allow_resubmit && (
+                    <Box sx={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: 0.65,
+                      backgroundColor: '#fee2e2',
+                      border: '1px solid #fecaca',
+                      color: '#dc2626',
+                      px: { xs: 1.5, sm: 2 },
+                      py: { xs: 0.8, sm: 1 },
+                      borderRadius: '8px',
+                      alignSelf: 'flex-start',
+                      mt: 1,
+                    }}>
+                      <WarningIcon sx={{ fontSize: 16, color: '#ef4444', flexShrink: 0 }} />
+                      <Typography sx={{ fontSize: { xs: '0.72rem', sm: '0.78rem' }, fontWeight: 600, fontFamily: "'Inter', 'Outfit', sans-serif" }}>
+                        Qayta topshirish uchun o'qituvchi tomonidan ruxsat berilmagan.
+                      </Typography>
+                    </Box>
+                  )}
+
+                  {statusKey === 'RETURNED' && answer?.allow_resubmit && (
+                    <Box sx={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: 0.65,
+                      backgroundColor: '#d1fae5',
+                      border: '1px solid #a7f3d0',
+                      color: '#059669',
+                      px: { xs: 1.5, sm: 2 },
+                      py: { xs: 0.8, sm: 1 },
+                      borderRadius: '8px',
+                      alignSelf: 'flex-start',
+                      mt: 1,
+                    }}>
+                      <CheckCircleIcon sx={{ fontSize: 16, color: '#10b981', flexShrink: 0 }} />
+                      <Typography sx={{ fontSize: { xs: '0.72rem', sm: '0.78rem' }, fontWeight: 600, fontFamily: "'Inter', 'Outfit', sans-serif" }}>
+                        Qayta topshirish uchun ruxsat berildi. Tahrirlash tugmasi orqali qayta yuklashingiz mumkin.
                       </Typography>
                     </Box>
                   )}

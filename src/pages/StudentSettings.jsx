@@ -321,7 +321,7 @@ export default function StudentSettings() {
                   Uy xo'jaligi identifikatori
                 </Typography>
                 <Typography sx={{ fontWeight: 600, color: '#111827', fontSize: '1.25rem' }}>
-                  {profile.id}
+                  {formatPhone(profile.phone)}
                 </Typography>
               </Box>
             </Box>
@@ -358,7 +358,7 @@ export default function StudentSettings() {
               Kirishcha
             </Typography>
             <Typography sx={{ fontWeight: 600, color: '#9ca3af', fontSize: '1.2rem' }}>
-              {profile.id}
+              {formatPhone(profile.phone)}
             </Typography>
           </CardContent>
         </Card>

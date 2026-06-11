@@ -191,8 +191,8 @@ export default function StudentSettings() {
 
         <Grid container spacing={4} alignItems="center">
           {/* Photos side */}
-          <Grid item xs={12} md={4}>
-            <Stack direction="row" spacing={3} justifyContent="flex-start" alignItems="center">
+          <Grid item xs={12} md={4} sx={{ pl: { md: 6 } }}>
+            <Stack direction="row" spacing={5} justifyContent="flex-start" alignItems="center">
               {/* Sample frame */}
               <Box sx={{ textAlign: 'center' }}>
                 <Box
@@ -262,7 +262,7 @@ export default function StudentSettings() {
           </Grid>
 
           {/* Static Info Columns */}
-          <Grid item xs={12} md={8} sx={{ pl: { md: 9 } }}>
+          <Grid item xs={12} md={8} sx={{ pl: { md: 10 } }}>
             <Box
               sx={{
                 display: 'grid',

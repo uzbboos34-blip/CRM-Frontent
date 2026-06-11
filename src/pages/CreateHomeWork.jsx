@@ -82,6 +82,8 @@ export default function CreateHomeWork() {
 
   const [lessons, setLessons]       = useState([]);
   const [lessonsLoaded, setLessonsLoaded] = useState(false);
+  const [existingHwLessonIds, setExistingHwLessonIds] = useState(new Set());
+  const [initialLessonId, setInitialLessonId] = useState(null);
   const [lessonId, setLessonId]     = useState('');
   const [description, setDescription] = useState('');
   const [file, setFile]             = useState(null);
@@ -94,14 +96,25 @@ export default function CreateHomeWork() {
 
   const fetchLessons = () => {
     if (!groupId || lessonsLoaded) return;
-    api.get(`/api/v1/lessson?group_id=${groupId}`)
-      .then(res => {
-        const fetchedLessons = res.data?.data || res.data || [];
+    Promise.all([
+      api.get(`/api/v1/lessson?group_id=${groupId}`),
+      api.get(`/api/v1/home-works/group/${groupId}`)
+    ])
+      .then(([lessonsRes, homeworksRes]) => {
+        const fetchedLessons = lessonsRes.data?.data || lessonsRes.data || [];
         fetchedLessons.sort((a, b) => b.id - a.id);
         setLessons(fetchedLessons);
+
+        const hws = homeworksRes.data?.data || homeworksRes.data || [];
+        const lessonIds = new Set(hws.map(h => h.lesson_id));
+        setExistingHwLessonIds(lessonIds);
+
         setLessonsLoaded(true);
       })
-      .catch(() => setLessons([]));
+      .catch(() => {
+        setLessons([]);
+        setExistingHwLessonIds(new Set());
+      });
   };
 
   useEffect(() => {
@@ -112,6 +125,7 @@ export default function CreateHomeWork() {
           const d = res.data?.data || res.data;
           if (d) {
             setLessonId(d.lesson_id || '');
+            setInitialLessonId(d.lesson_id || null);
             setDescription(d.description || '');
           }
         });
@@ -120,7 +134,11 @@ export default function CreateHomeWork() {
 
   function validate() {
     const e = {};
-    if (!lessonId) e.lessonId = "Darsni tanlang";
+    if (!lessonId) {
+      e.lessonId = "Darsni tanlang";
+    } else if (existingHwLessonIds.has(Number(lessonId)) && Number(lessonId) !== initialLessonId) {
+      e.lessonId = "Ushbu dars uchun allaqachon uyga vazifa berilgan";
+    }
     setErrors(e);
     return Object.keys(e).length === 0;
   }
@@ -178,7 +196,14 @@ export default function CreateHomeWork() {
               sx={{ borderRadius: '10px' }}
             >
               <MenuItem value="" disabled>Mavzuni tanlang</MenuItem>
-              {lessons.map(l => <MenuItem key={l.id} value={l.id}>{l.topic || `Dars #${l.id}`}</MenuItem>)}
+              {lessons.map(l => {
+                const hasHw = existingHwLessonIds.has(l.id) && l.id !== initialLessonId;
+                return (
+                  <MenuItem key={l.id} value={l.id} disabled={hasHw}>
+                    {l.topic || `Dars #${l.id}`}{hasHw ? ' (vazifa berilgan)' : ''}
+                  </MenuItem>
+                );
+              })}
             </Select>
             {errors.lessonId && <FormHelperText>{errors.lessonId}</FormHelperText>}
           </FormControl>

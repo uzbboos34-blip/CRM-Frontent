@@ -154,7 +154,7 @@ export default function StudentSettings() {
   const displayLastName = nameParts.slice(1).join(' ') || '-';
 
   return (
-    <Box sx={{ maxWidth: 1100, mx: 'auto', p: 0, animation: 'fadeIn 0.5s ease-out' }}>
+    <Box sx={{ width: '100%', p: 0, animation: 'fadeIn 0.5s ease-out' }}>
       
       {/* Toast Alert */}
       <Snackbar
@@ -263,58 +263,67 @@ export default function StudentSettings() {
 
           {/* Static Info Columns */}
           <Grid item xs={12} md={8}>
-            <Grid container spacing={3.5}>
-              <Grid item xs={6}>
+            <Box
+              sx={{
+                display: 'grid',
+                gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' },
+                gap: 3.5
+              }}
+            >
+              <Box>
                 <Typography variant="caption" sx={{ color: '#9ca3af', display: 'block', mb: 0.5, fontWeight: 500, fontSize: '0.85rem' }}>
                   Ism
                 </Typography>
                 <Typography sx={{ fontWeight: 700, color: '#111827', fontSize: '1.05rem' }}>
                   {displayFirstName}
                 </Typography>
-              </Grid>
-              <Grid item xs={6}>
+              </Box>
+
+              <Box>
                 <Typography variant="caption" sx={{ color: '#9ca3af', display: 'block', mb: 0.5, fontWeight: 500, fontSize: '0.85rem' }}>
                   Familiya
                 </Typography>
                 <Typography sx={{ fontWeight: 700, color: '#111827', fontSize: '1.05rem' }}>
                   {displayLastName}
                 </Typography>
-              </Grid>
+              </Box>
 
-              <Grid item xs={6}>
+              <Box>
                 <Typography variant="caption" sx={{ color: '#9ca3af', display: 'block', mb: 0.5, fontWeight: 500, fontSize: '0.85rem' }}>
                   Telefon raqam
                 </Typography>
                 <Typography sx={{ fontWeight: 700, color: '#111827', fontSize: '1.05rem' }}>
                   {formatPhone(profile.phone)}
                 </Typography>
-              </Grid>
-              <Grid item xs={6}>
+              </Box>
+
+              <Box>
                 <Typography variant="caption" sx={{ color: '#9ca3af', display: 'block', mb: 0.5, fontWeight: 500, fontSize: '0.85rem' }}>
                   Tug'ilgan sana
                 </Typography>
                 <Typography sx={{ fontWeight: 700, color: '#111827', fontSize: '1.05rem' }}>
                   {formatBirthDate(profile.birth_date)}
                 </Typography>
-              </Grid>
+              </Box>
 
-              <Grid item xs={6}>
+              <Box>
                 <Typography variant="caption" sx={{ color: '#9ca3af', display: 'block', mb: 0.5, fontWeight: 500, fontSize: '0.85rem' }}>
                   Jinsi
                 </Typography>
                 <Typography sx={{ fontWeight: 700, color: '#111827', fontSize: '1.05rem' }}>
                   Male
                 </Typography>
-              </Grid>
-              <Grid item xs={6}>
+              </Box>
+
+              <Box>
                 <Typography variant="caption" sx={{ color: '#9ca3af', display: 'block', mb: 0.5, fontWeight: 500, fontSize: '0.85rem' }}>
                   HH ID
                 </Typography>
                 <Typography sx={{ fontWeight: 700, color: '#111827', fontSize: '1.05rem' }}>
                   {profile.id}
                 </Typography>
-              </Grid>
-            </Grid>
+              </Box>
+            </Box>
           </Grid>
         </Grid>
       </Paper>

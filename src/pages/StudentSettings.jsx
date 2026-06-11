@@ -191,36 +191,36 @@ export default function StudentSettings() {
 
         <Grid container spacing={4} alignItems="center">
           {/* Photos side */}
-          <Grid item xs={12} md={4.5}>
+          <Grid item xs={12} md={4}>
             <Stack direction="row" spacing={3} justifyContent="center" alignItems="center">
               {/* Sample frame */}
               <Box sx={{ textAlign: 'center' }}>
                 <Box
                   sx={{
-                    width: 130,
-                    height: 160,
-                    borderRadius: '8px',
-                    border: '1px solid #d1d5db',
+                    width: 120,
+                    height: 150,
+                    borderRadius: '4px',
+                    border: '1px solid #000',
                     overflow: 'hidden',
                     display: 'flex',
                     flexDirection: 'column',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    backgroundColor: '#f9fafb'
+                    backgroundColor: '#fff'
                   }}
                 >
                   <Avatar
                     src="/namuna.jpg"
                     variant="square"
-                    sx={{ width: '100%', height: 135, objectFit: 'cover' }}
+                    sx={{ width: '100%', height: 120, objectFit: 'cover' }}
                   />
-                  <Box sx={{ py: 0.5, width: '100%', backgroundColor: '#fff', borderTop: '1px solid #e5e7eb' }}>
-                    <Typography variant="caption" sx={{ color: '#374151', fontWeight: 600, fontSize: '0.75rem' }}>
+                  <Box sx={{ py: 0.5, width: '100%', backgroundColor: '#fff', borderTop: '1px solid #000' }}>
+                    <Typography variant="caption" sx={{ color: '#000', fontWeight: 600, fontSize: '0.75rem' }}>
                       Namuna
                     </Typography>
                   </Box>
                 </Box>
-                <Typography variant="caption" sx={{ display: 'block', color: '#6b7280', fontSize: '0.68rem', mt: 1, maxWidth: 130 }}>
+                <Typography variant="caption" sx={{ display: 'block', color: '#6b7280', fontSize: '0.68rem', mt: 1, maxWidth: 120 }}>
                   500x500 o`lcham, JPEG, JPG, PNG format, maksimum 2MB
                 </Typography>
               </Box>
@@ -230,10 +230,10 @@ export default function StudentSettings() {
                 <Avatar
                   src={resolvePhoto(profile.photo)}
                   sx={{
-                    width: 125,
-                    height: 125,
-                    border: '4px solid #fff',
-                    boxShadow: '0 8px 20px rgba(0,0,0,0.08)',
+                    width: 120,
+                    height: 120,
+                    border: '1px solid #e5e7eb',
+                    boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
                     fontSize: '2.5rem',
                     fontWeight: 800,
                     bgcolor: '#7b61ff',
@@ -252,8 +252,9 @@ export default function StudentSettings() {
                     fontWeight: 700,
                     fontSize: '0.7rem',
                     height: 22,
-                    mt: 2.5,
-                    px: 0.5
+                    mt: 2,
+                    px: 0.5,
+                    borderRadius: '6px'
                   }}
                 />
               </Box>
@@ -261,7 +262,7 @@ export default function StudentSettings() {
           </Grid>
 
           {/* Static Info Columns */}
-          <Grid item xs={12} md={7.5}>
+          <Grid item xs={12} md={8}>
             <Grid container spacing={3.5}>
               <Grid item xs={6}>
                 <Typography variant="caption" sx={{ color: '#9ca3af', display: 'block', mb: 0.5, fontWeight: 500, fontSize: '0.85rem' }}>
@@ -448,11 +449,11 @@ export default function StudentSettings() {
       <Dialog
         open={passDialogOpen}
         onClose={() => setPassDialogOpen(false)}
+        fullWidth
+        maxWidth="xs"
         PaperProps={{
           sx: {
             borderRadius: '16px',
-            width: '100%',
-            maxWidth: 440,
             p: 3,
             position: 'relative',
             boxShadow: '0 10px 40px rgba(0,0,0,0.1)'

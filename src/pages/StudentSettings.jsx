@@ -192,7 +192,7 @@ export default function StudentSettings() {
         <Grid container spacing={4} alignItems="center">
           {/* Photos side */}
           <Grid item xs={12} md={4}>
-            <Stack direction="row" spacing={3} justifyContent="center" alignItems="center">
+            <Stack direction="row" spacing={3} justifyContent="flex-start" alignItems="center">
               {/* Sample frame */}
               <Box sx={{ textAlign: 'center' }}>
                 <Box
@@ -262,7 +262,7 @@ export default function StudentSettings() {
           </Grid>
 
           {/* Static Info Columns */}
-          <Grid item xs={12} md={8}>
+          <Grid item xs={12} md={8} sx={{ pl: { md: 7 } }}>
             <Box
               sx={{
                 display: 'grid',
@@ -463,27 +463,25 @@ export default function StudentSettings() {
         PaperProps={{
           sx: {
             borderRadius: '16px',
-            p: 3,
-            position: 'relative',
             boxShadow: '0 10px 40px rgba(0,0,0,0.1)'
           }
         }}
       >
-        {/* Close Icon */}
-        <IconButton
-          onClick={() => setPassDialogOpen(false)}
-          sx={{
-            position: 'absolute',
-            top: 20,
-            right: 20,
-            color: '#9ca3af'
-          }}
-        >
-          <CloseIcon sx={{ fontSize: 22 }} />
-        </IconButton>
+        <Box sx={{ p: 4, position: 'relative' }}>
+          {/* Close Icon */}
+          <IconButton
+            onClick={() => setPassDialogOpen(false)}
+            sx={{
+              position: 'absolute',
+              top: 16,
+              right: 16,
+              color: '#9ca3af'
+            }}
+          >
+            <CloseIcon sx={{ fontSize: 22 }} />
+          </IconButton>
 
-        <DialogContent sx={{ p: 0, mt: 1 }}>
-          <Typography variant="h5" sx={{ fontWeight: 800, color: '#111827', mb: 1.5, fontSize: '1.35rem' }}>
+          <Typography variant="h5" sx={{ fontWeight: 800, color: '#111827', mb: 1, fontSize: '1.35rem' }}>
             Parolni o'zgartirish
           </Typography>
           <Typography sx={{ color: '#6b7280', mb: 4, fontWeight: 500, fontSize: '0.92rem' }}>
@@ -589,28 +587,27 @@ export default function StudentSettings() {
                 }}
               />
             </Box>
-          </Stack>
-        </DialogContent>
 
-        <DialogActions sx={{ p: 0, mt: 4, justifyContent: 'center' }}>
-          <Button
-            onClick={handleSavePassword}
-            variant="contained"
-            fullWidth
-            sx={{
-              borderRadius: '8px',
-              bgcolor: '#bc9363',
-              '&:hover': { bgcolor: '#aa8254' },
-              fontWeight: 700,
-              fontSize: '1rem',
-              py: 1.5,
-              textTransform: 'none',
-              boxShadow: 'none'
-            }}
-          >
-            Saqlash
-          </Button>
-        </DialogActions>
+            <Button
+              onClick={handleSavePassword}
+              variant="contained"
+              fullWidth
+              sx={{
+                borderRadius: '8px',
+                bgcolor: '#bc9363',
+                '&:hover': { bgcolor: '#aa8254' },
+                fontWeight: 700,
+                fontSize: '1rem',
+                py: 1.5,
+                textTransform: 'none',
+                boxShadow: 'none',
+                mt: 1
+              }}
+            >
+              Saqlash
+            </Button>
+          </Stack>
+        </Box>
       </Dialog>
 
     </Box>

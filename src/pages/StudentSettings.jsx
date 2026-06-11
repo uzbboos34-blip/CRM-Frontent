@@ -53,6 +53,7 @@ export default function StudentSettings() {
 
   // Modal / Dialog states
   const [passDialogOpen, setPassDialogOpen] = useState(false);
+  const [photoDialogOpen, setPhotoDialogOpen] = useState(false);
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -227,36 +228,58 @@ export default function StudentSettings() {
 
               {/* Student Actual Avatar */}
               <Box sx={{ textAlign: 'center' }}>
-                <Avatar
-                  src={resolvePhoto(profile.photo)}
-                  sx={{
-                    width: 120,
-                    height: 120,
-                    border: '1px solid #e5e7eb',
-                    boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
-                    fontSize: '2.5rem',
-                    fontWeight: 800,
-                    bgcolor: '#7b61ff',
-                    color: '#fff'
-                  }}
-                >
-                  {getInitials(profile.full_name)}
-                </Avatar>
+                <Box sx={{ position: 'relative', display: 'inline-block' }}>
+                  <Avatar
+                    src={resolvePhoto(profile.photo)}
+                    sx={{
+                      width: 120,
+                      height: 120,
+                      border: '1px solid #e5e7eb',
+                      boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
+                      fontSize: '2.5rem',
+                      fontWeight: 800,
+                      bgcolor: '#7b61ff',
+                      color: '#fff'
+                    }}
+                  >
+                    {getInitials(profile.full_name)}
+                  </Avatar>
+                  {profile.photo && (
+                    <IconButton
+                      onClick={() => setPhotoDialogOpen(true)}
+                      sx={{
+                        position: 'absolute',
+                        top: '50%',
+                        left: '50%',
+                        transform: 'translate(-50%, -50%)',
+                        bgcolor: '#fff',
+                        color: '#6b7280',
+                        width: 36,
+                        height: 36,
+                        boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
+                        '&:hover': { bgcolor: '#f9fafb' }
+                      }}
+                    >
+                      <VisibilityIcon sx={{ fontSize: 20 }} />
+                    </IconButton>
+                  )}
+                </Box>
 
-                <Chip
-                  label="Talabga mos"
-                  icon={<CheckCircleIcon sx={{ fontSize: '14px !important', color: '#fff !important' }} />}
-                  sx={{
-                    backgroundColor: '#10b981',
-                    color: '#fff',
-                    fontWeight: 700,
-                    fontSize: '0.7rem',
-                    height: 22,
-                    mt: 2,
-                    px: 0.5,
-                    borderRadius: '6px'
-                  }}
-                />
+                <Box sx={{ display: 'block', mt: 2 }}>
+                  <Chip
+                    label="Talabga mos"
+                    icon={<CheckCircleIcon sx={{ fontSize: '14px !important', color: '#fff !important' }} />}
+                    sx={{
+                      backgroundColor: '#10b981',
+                      color: '#fff',
+                      fontWeight: 700,
+                      fontSize: '0.7rem',
+                      height: 22,
+                      px: 0.5,
+                      borderRadius: '6px'
+                    }}
+                  />
+                </Box>
               </Box>
             </Stack>
           </Grid>
@@ -610,6 +633,64 @@ export default function StudentSettings() {
               Saqlash
             </Button>
           </Stack>
+        </Box>
+      </Dialog>
+
+      {/* Full Photo Dialog */}
+      <Dialog
+        open={photoDialogOpen}
+        onClose={() => setPhotoDialogOpen(false)}
+        maxWidth="sm"
+        fullWidth
+        PaperProps={{
+          sx: {
+            borderRadius: '16px',
+            boxShadow: '0 10px 40px rgba(0,0,0,0.1)',
+            maxWidth: 450
+          }
+        }}
+      >
+        <Box sx={{ p: 3, position: 'relative' }}>
+          {/* Close Icon */}
+          <IconButton
+            onClick={() => setPhotoDialogOpen(false)}
+            sx={{
+              position: 'absolute',
+              top: 16,
+              right: 16,
+              color: '#9ca3af'
+            }}
+          >
+            <CloseIcon sx={{ fontSize: 22 }} />
+          </IconButton>
+
+          <Typography variant="h6" sx={{ fontWeight: 800, color: '#111827', mb: 2.5, fontSize: '1.2rem' }}>
+            Profil rasmi
+          </Typography>
+
+          <Box
+            sx={{
+              width: '100%',
+              borderRadius: '8px',
+              overflow: 'hidden',
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              backgroundColor: '#f9fafb',
+              border: '1px solid #e5e7eb'
+            }}
+          >
+            <Box
+              component="img"
+              src={resolvePhoto(profile.photo)}
+              alt="Profil rasmi"
+              sx={{
+                width: '100%',
+                maxHeight: 400,
+                objectFit: 'contain'
+              }}
+            />
+          </Box>
         </Box>
       </Dialog>
 

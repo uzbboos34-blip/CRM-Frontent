@@ -384,7 +384,6 @@ export default function StudentSettings() {
             background: '#fff',
             display: 'flex',
             flexDirection: 'column',
-            justifyContent: 'center',
             boxShadow: '0 4px 20px rgba(0,0,0,0.01)'
           }}
         >
@@ -408,7 +407,6 @@ export default function StudentSettings() {
             background: '#fff',
             display: 'flex',
             flexDirection: 'column',
-            justifyContent: 'center',
             boxShadow: '0 4px 20px rgba(0,0,0,0.01)',
             position: 'relative'
           }}
@@ -448,7 +446,6 @@ export default function StudentSettings() {
             background: '#fff',
             display: 'flex',
             flexDirection: 'column',
-            justifyContent: 'center',
             boxShadow: '0 4px 20px rgba(0,0,0,0.01)',
             position: 'relative'
           }}

@@ -487,13 +487,17 @@ export default function StudentLessonDetail() {
     if (!dateStr) return null;
     const d = new Date(dateStr);
     if (isNaN(d.getTime())) return null;
-    d.setHours(d.getHours() + 20);
+    d.setHours(d.getHours() + 24);
     return d;
   };
   const deadlineDate = homework?.deadline ? new Date(homework.deadline) : getDeadlineDate(homework?.created_at);
   const isLate = deadlineDate && answer?.created_at
     ? new Date(answer.created_at) > deadlineDate
     : false;
+  const hoursLate = isLate && deadlineDate && answer?.created_at
+    ? Math.ceil((new Date(answer.created_at).getTime() - deadlineDate.getTime()) / (1000 * 60 * 60))
+    : 0;
+  const originalGrade = score ? Math.round(score / 0.9) : 0;
 
   return (
     <Box sx={{
@@ -1011,16 +1015,19 @@ export default function StudentLessonDetail() {
                       display: 'inline-flex',
                       alignItems: 'center',
                       gap: 0.65,
-                      backgroundColor: '#fff9e6',
-                      color: '#b25e00',
-                      px: { xs: 1, sm: 1.25 },
-                      py: { xs: 0.65, sm: 0.75 },
-                      borderRadius: '6px',
+                      backgroundColor: '#fff7ed',
+                      border: '1px solid #ffedd5',
+                      color: '#9a3412',
+                      px: { xs: 1.5, sm: 2 },
+                      py: { xs: 0.8, sm: 1 },
+                      borderRadius: '8px',
                       alignSelf: 'flex-start',
                     }}>
-                      <WarningIcon sx={{ fontSize: 16, color: '#ff9800', flexShrink: 0 }} />
-                      <Typography sx={{ fontSize: { xs: '0.68rem', sm: '0.74rem' }, fontWeight: 600, whiteSpace: 'nowrap', fontFamily: "'Inter', 'Outfit', sans-serif" }}>
-                        Vazifa kechikib topshirilgan
+                      <WarningIcon sx={{ fontSize: 16, color: '#ea580c', flexShrink: 0 }} />
+                      <Typography sx={{ fontSize: { xs: '0.72rem', sm: '0.78rem' }, fontWeight: 600, fontFamily: "'Inter', 'Outfit', sans-serif" }}>
+                        {score > 0 
+                          ? `${hoursLate} soatdan kechikib topshirilgani uchun qo'yilgan ${originalGrade} ball 10 % ga kamaytirildi.`
+                          : `Vazifa ${hoursLate} soat kechikib topshirilgan. Belgilangan balldan 10 % chegirib tashlanadi.`}
                       </Typography>
                     </Box>
                   )}

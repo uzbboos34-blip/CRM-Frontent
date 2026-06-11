@@ -17,6 +17,7 @@ import CloseIcon from '@mui/icons-material/Close';
 import FolderZipIcon from '@mui/icons-material/FolderZip';
 import VolumeUpIcon from '@mui/icons-material/VolumeUp';
 import ArticleIcon from '@mui/icons-material/Article';
+import WarningIcon from '@mui/icons-material/Warning';
 
 /* ─── Helpers ──────────────────────────────────────────────────────────── */
 const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
@@ -131,6 +132,19 @@ export default function StudentHomeworkDetail() {
   const [snackbar,   setSnackbar]   = useState({ open: false, msg: '', sev: 'success' });
   const [filePreviewOpen, setFilePreviewOpen] = useState(false);
   const [previewFile, setPreviewFile] = useState('');
+
+  const user = JSON.parse(localStorage.getItem('user') || '{}');
+  const userRole = user.role;
+  const isLocked = userRole === 'TEACHER' && data?.status === 'accepted';
+
+  // Late check logic
+  const deadlineDate = data?.homework?.created_at 
+    ? new Date(new Date(data.homework.created_at).getTime() + 24 * 60 * 60 * 1000) 
+    : null;
+  const submissionDate = data?.answer?.created_at ? new Date(data.answer.created_at) : null;
+  const isLate = deadlineDate && submissionDate ? submissionDate > deadlineDate : false;
+  const hoursLate = isLate ? Math.ceil((submissionDate.getTime() - deadlineDate.getTime()) / (1000 * 60 * 60)) : 0;
+  const originalGrade = data?.result?.grade ? Math.round(data.result.grade / 0.9) : grade;
 
   /* ── Fetch ── */
   const fetchData = useCallback(async () => {
@@ -448,6 +462,46 @@ export default function StudentHomeworkDetail() {
       {data.status !== 'not_done' && (
         <Paper elevation={0} sx={{ border: '1px solid #e5e7eb', borderRadius: '16px', p: 3 }}>
 
+          {/* Locked banner if accepted */}
+          {isLocked && (
+            <Alert
+              severity="info"
+              sx={{
+                mb: 3,
+                borderRadius: '12px',
+                backgroundColor: '#eff6ff',
+                border: '1px solid #dbeafe',
+                color: '#1e40af',
+                fontWeight: 600,
+              }}
+            >
+              Bu vazifa qabul qilingan. Uni qaytadan baholay olmaysiz.
+            </Alert>
+          )}
+
+          {/* Late penalty banner */}
+          {isLate && (
+            <Alert
+              severity="warning"
+              icon={<WarningIcon sx={{ color: '#ea580c' }} />}
+              sx={{
+                mb: 3,
+                borderRadius: '12px',
+                backgroundColor: '#fff7ed',
+                border: '1px solid #ffedd5',
+                color: '#9a3412',
+                fontWeight: 600,
+                '& .MuiAlert-icon': { color: '#ea580c' }
+              }}
+            >
+              {data.result?.grade !== undefined ? (
+                `${hoursLate} soatdan kechikib topshirilgani uchun qo'yilgan ${originalGrade} ball 10 % ga kamaytirildi.`
+              ) : (
+                `Vazifa ${hoursLate} soat kechikib topshirilgan. Qo'yilgan balldan 10 % kamaytiriladi (masalan, ${grade} ball qo'yilsa, o'quvchi ${Math.round(grade * 0.9)} ball oladi).`
+              )}
+            </Alert>
+          )}
+
           {/* Info banner */}
           <Box sx={{
             background: '#eff6ff', borderRadius: '10px', p: 2, mb: 3,
@@ -480,6 +534,7 @@ export default function StudentHomeworkDetail() {
                 onChange={(_, v) => setGrade(v)}
                 min={0}
                 max={100}
+                disabled={isLocked}
                 sx={{
                   color: grade >= 60 ? '#10b981' : '#ef4444',
                   '& .MuiSlider-thumb': {
@@ -523,6 +578,7 @@ export default function StudentHomeworkDetail() {
             placeholder="Izohingiz..."
             value={comment}
             onChange={(e) => setComment(e.target.value)}
+            disabled={isLocked}
             sx={{
               mb: 3,
               '& .MuiOutlinedInput-root': {
@@ -565,7 +621,7 @@ export default function StudentHomeworkDetail() {
             </Button>
             <Button
               variant="contained"
-              disabled={grading || data.status === 'not_done'}
+              disabled={grading || data.status === 'not_done' || isLocked}
               onClick={handleGrade}
               sx={{
                 textTransform: 'none', fontWeight: 700, borderRadius: '10px', px: 4,
@@ -600,8 +656,6 @@ export default function StudentHomeworkDetail() {
           )}
         </Paper>
       )}
-
-      {/* ── Snackbar ── */}
       <Snackbar
         open={snackbar.open}
         autoHideDuration={4000}

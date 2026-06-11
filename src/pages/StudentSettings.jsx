@@ -228,7 +228,16 @@ export default function StudentSettings() {
 
               {/* Student Actual Avatar */}
               <Box sx={{ textAlign: 'center' }}>
-                <Box sx={{ position: 'relative', display: 'inline-block' }}>
+                <Box
+                  sx={{
+                    position: 'relative',
+                    display: 'inline-block',
+                    cursor: 'pointer',
+                    '&:hover .avatar-preview-btn': {
+                      opacity: 1
+                    }
+                  }}
+                >
                   <Avatar
                     src={resolvePhoto(profile.photo)}
                     sx={{
@@ -246,6 +255,7 @@ export default function StudentSettings() {
                   </Avatar>
                   {profile.photo && (
                     <IconButton
+                      className="avatar-preview-btn"
                       onClick={() => setPhotoDialogOpen(true)}
                       sx={{
                         position: 'absolute',
@@ -254,13 +264,15 @@ export default function StudentSettings() {
                         transform: 'translate(-50%, -50%)',
                         bgcolor: '#fff',
                         color: '#6b7280',
-                        width: 36,
-                        height: 36,
+                        width: 30,
+                        height: 30,
                         boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
+                        opacity: 0,
+                        transition: 'opacity 0.2s ease',
                         '&:hover': { bgcolor: '#f9fafb' }
                       }}
                     >
-                      <VisibilityIcon sx={{ fontSize: 20 }} />
+                      <VisibilityIcon sx={{ fontSize: 16 }} />
                     </IconButton>
                   )}
                 </Box>
@@ -640,31 +652,31 @@ export default function StudentSettings() {
       <Dialog
         open={photoDialogOpen}
         onClose={() => setPhotoDialogOpen(false)}
-        maxWidth="sm"
+        maxWidth="xs"
         fullWidth
         PaperProps={{
           sx: {
             borderRadius: '16px',
             boxShadow: '0 10px 40px rgba(0,0,0,0.1)',
-            maxWidth: 450
+            maxWidth: 360
           }
         }}
       >
-        <Box sx={{ p: 3, position: 'relative' }}>
+        <Box sx={{ p: 2.5, position: 'relative' }}>
           {/* Close Icon */}
           <IconButton
             onClick={() => setPhotoDialogOpen(false)}
             sx={{
               position: 'absolute',
-              top: 16,
-              right: 16,
+              top: 12,
+              right: 12,
               color: '#9ca3af'
             }}
           >
-            <CloseIcon sx={{ fontSize: 22 }} />
+            <CloseIcon sx={{ fontSize: 20 }} />
           </IconButton>
 
-          <Typography variant="h6" sx={{ fontWeight: 800, color: '#111827', mb: 2.5, fontSize: '1.2rem' }}>
+          <Typography variant="h6" sx={{ fontWeight: 800, color: '#111827', mb: 2, fontSize: '1.1rem' }}>
             Profil rasmi
           </Typography>
 
@@ -686,7 +698,7 @@ export default function StudentSettings() {
               alt="Profil rasmi"
               sx={{
                 width: '100%',
-                maxHeight: 400,
+                maxHeight: 320,
                 objectFit: 'contain'
               }}
             />

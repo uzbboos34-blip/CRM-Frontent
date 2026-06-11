@@ -54,7 +54,9 @@ export default function CreateVideo({ groupId: propGroupId, onClose }) {
     if (!groupId || lessonsLoaded) return;
     api.get(`/api/v1/lessson?group_id=${groupId}`)
       .then(res => {
-        setLessons(res.data?.data || res.data || []);
+        const fetchedLessons = res.data?.data || res.data || [];
+        fetchedLessons.sort((a, b) => b.id - a.id);
+        setLessons(fetchedLessons);
         setLessonsLoaded(true);
       })
       .catch(() => setLessons([]));

@@ -9,10 +9,14 @@ import {
   InputAdornment,
   CircularProgress,
   Snackbar,
-  Alert
+  Alert,
+  Dialog,
+  DialogTitle,
+  DialogContent
 } from '@mui/material';
-import { Visibility, VisibilityOff } from '@mui/icons-material';
+import { Visibility, VisibilityOff, Close } from '@mui/icons-material';
 import { keyframes } from '@mui/system';
+import api from '../api/axios';
 
 const fadeIn = keyframes`
   from { opacity: 0; }
@@ -80,6 +84,110 @@ export default function Login() {
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(false);
   const navigate = useNavigate();
+
+  // Forgot Password States
+  const [openResetDialog, setOpenResetDialog] = useState(false);
+  const [resetStep, setResetStep] = useState(1);
+  const [resetPhone, setResetPhone] = useState('');
+  const [resetOtp, setResetOtp] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [resetLoading, setResetLoading] = useState(false);
+  const [resetError, setResetError] = useState(null);
+  const [resetSuccess, setResetSuccess] = useState(null);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
+  const handleCloseDialog = () => {
+    setOpenResetDialog(false);
+    setResetStep(1);
+    setResetPhone('');
+    setResetOtp('');
+    setNewPassword('');
+    setConfirmPassword('');
+    setResetError(null);
+    setResetSuccess(null);
+    setResetLoading(false);
+    setShowNewPassword(false);
+    setShowConfirmPassword(false);
+  };
+
+  const handleSendOtp = async (e) => {
+    e.preventDefault();
+    if (!resetPhone) {
+      setResetError("Telefon raqamingizni kiriting");
+      return;
+    }
+    
+    let cleanedPhone = resetPhone.trim();
+    if (cleanedPhone.length === 9) {
+      cleanedPhone = `+998${cleanedPhone}`;
+    } else if (cleanedPhone.length === 12 && !cleanedPhone.startsWith('+')) {
+      cleanedPhone = `+${cleanedPhone}`;
+    }
+    
+    setResetLoading(true);
+    setResetError(null);
+    try {
+      await api.post('/api/v1/verification/send/phone/verify', { phone: cleanedPhone });
+      setResetPhone(cleanedPhone);
+      setResetStep(2);
+    } catch (err) {
+      setResetError(err.response?.data?.message || err.userMessage || "SMS yuborishda xatolik yuz berdi");
+    } finally {
+      setResetLoading(false);
+    }
+  };
+
+  const handleVerifyOtp = async (e) => {
+    e.preventDefault();
+    if (!resetOtp) {
+      setResetError("Tasdiqlash kodini kiriting");
+      return;
+    }
+    setResetLoading(true);
+    setResetError(null);
+    try {
+      await api.post('/api/v1/verification/verify/otp', { phone: resetPhone, otp: resetOtp.trim() });
+      setResetStep(3);
+    } catch (err) {
+      setResetError(err.response?.data?.message || err.userMessage || "Kodni tasdiqlashda xatolik yuz berdi");
+    } finally {
+      setResetLoading(false);
+    }
+  };
+
+  const handleChangePassword = async (e) => {
+    e.preventDefault();
+    if (!newPassword || !confirmPassword) {
+      setResetError("Parollarni kiriting");
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      setResetError("Parollar bir-biriga mos kelmadi");
+      return;
+    }
+    if (newPassword.length < 6) {
+      setResetError("Parol uzunligi kamida 6 ta belgidan iborat bo'lishi kerak");
+      return;
+    }
+    setResetLoading(true);
+    setResetError(null);
+    try {
+      await api.post('/api/v1/verification/change-password', {
+        phone: resetPhone,
+        new_password: newPassword
+      });
+      setResetSuccess("Parolingiz muvaffaqiyatli o'zgartirildi!");
+      setTimeout(() => {
+        handleCloseDialog();
+      }, 2000);
+    } catch (err) {
+      setResetError(err.response?.data?.message || err.userMessage || "Parolni o'zgartirishda xatolik yuz berdi");
+    } finally {
+      setResetLoading(false);
+    }
+  };
 
   const handleTogglePassword = () => setShowPassword((prev) => !prev);
 
@@ -393,6 +501,28 @@ export default function Login() {
               }}
             />
 
+            {/* Forgot password link */}
+            <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 2 }}>
+              <Button
+                type="button"
+                onClick={() => setOpenResetDialog(true)}
+                sx={{
+                  textTransform: 'none',
+                  fontSize: '0.8rem',
+                  fontWeight: 500,
+                  color: '#3b82f6',
+                  p: 0,
+                  minWidth: 0,
+                  '&:hover': {
+                    background: 'none',
+                    textDecoration: 'underline',
+                  },
+                }}
+              >
+                Parolni unutdingizmi?
+              </Button>
+            </Box>
+
             {/* Submit Button */}
             <Button
               type="submit"
@@ -510,6 +640,299 @@ export default function Login() {
             Muvaffaqiyatli kirdingiz! 🎉
           </Alert>
         </Snackbar>
+
+        {/* ========== Password Reset Dialog ========== */}
+        <Dialog
+          open={openResetDialog}
+          onClose={handleCloseDialog}
+          maxWidth="xs"
+          fullWidth
+          PaperProps={{
+            sx: {
+              borderRadius: '16px',
+              p: 1.5,
+              boxShadow: '0 10px 40px rgba(0,0,0,0.12)',
+            },
+          }}
+        >
+          <DialogTitle sx={{ pb: 1, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <Typography variant="h6" sx={{ fontWeight: 700, color: '#1e3a5f' }}>
+              Parolni tiklash
+            </Typography>
+            <IconButton onClick={handleCloseDialog} size="small" sx={{ color: '#9ca3af' }}>
+              <Close fontSize="small" />
+            </IconButton>
+          </DialogTitle>
+
+          <DialogContent sx={{ pt: 1 }}>
+            {/* Step Indicator */}
+            <Box sx={{ display: 'flex', gap: 1, mb: 3 }}>
+              {[1, 2, 3].map((s) => (
+                <Box
+                  key={s}
+                  sx={{
+                    flex: 1,
+                    height: '4px',
+                    borderRadius: '2px',
+                    backgroundColor: resetStep >= s ? '#1e3a5f' : '#e5e7eb',
+                    transition: 'background-color 0.3s ease',
+                  }}
+                />
+              ))}
+            </Box>
+
+            {resetError && (
+              <Alert severity="error" sx={{ mb: 2, borderRadius: '8px', fontSize: '0.82rem' }}>
+                {resetError}
+              </Alert>
+            )}
+
+            {resetSuccess && (
+              <Alert severity="success" sx={{ mb: 2, borderRadius: '8px', fontSize: '0.82rem' }}>
+                {resetSuccess}
+              </Alert>
+            )}
+
+            {/* STEP 1: Enter Phone Number */}
+            {resetStep === 1 && (
+              <Box component="form" onSubmit={handleSendOtp} sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                <Typography variant="body2" sx={{ color: '#4b5563' }}>
+                  Hisobingizga bog'langan telefon raqamingizni kiriting. Tasdiqlash kodi yuboriladi.
+                </Typography>
+                <Box>
+                  <Typography sx={{ fontSize: '0.8rem', color: '#374151', fontWeight: 500, mb: 0.5 }}>
+                    Telefon raqam
+                  </Typography>
+                  <TextField
+                    fullWidth
+                    size="small"
+                    placeholder="+998901234567"
+                    value={resetPhone}
+                    onChange={(e) => setResetPhone(e.target.value)}
+                    disabled={resetLoading}
+                    autoFocus
+                    sx={{
+                      '& .MuiOutlinedInput-root': {
+                        borderRadius: '8px',
+                        fontSize: '0.85rem',
+                        '& fieldset': { borderColor: '#d1d5db' },
+                        '&:hover fieldset': { borderColor: '#9ca3af' },
+                        '&.Mui-focused fieldset': { borderColor: '#1e3a5f', borderWidth: 1.5 },
+                      },
+                      '& input': { py: '10px', px: '12px', color: '#374151' },
+                    }}
+                  />
+                </Box>
+                <Button
+                  type="submit"
+                  variant="contained"
+                  disableElevation
+                  disabled={resetLoading}
+                  sx={{
+                    mt: 1,
+                    py: 1,
+                    backgroundColor: '#1e3a5f',
+                    borderRadius: '8px',
+                    textTransform: 'none',
+                    fontWeight: 600,
+                    fontSize: '0.88rem',
+                    '&:hover': {
+                      backgroundColor: '#111827',
+                    },
+                  }}
+                >
+                  {resetLoading ? <CircularProgress size={20} color="inherit" /> : "Kodni yuborish"}
+                </Button>
+              </Box>
+            )}
+
+            {/* STEP 2: Enter OTP Code */}
+            {resetStep === 2 && (
+              <Box component="form" onSubmit={handleVerifyOtp} sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                <Typography variant="body2" sx={{ color: '#4b5563' }}>
+                  Kiritilgan <b>{resetPhone}</b> raqamiga yuborilgan tasdiqlash kodini (OTP) kiriting.
+                </Typography>
+                <Box>
+                  <Typography sx={{ fontSize: '0.8rem', color: '#374151', fontWeight: 500, mb: 0.5 }}>
+                    Tasdiqlash kodi (OTP)
+                  </Typography>
+                  <TextField
+                    fullWidth
+                    size="small"
+                    placeholder="Tasdiqlash kodini kiriting"
+                    value={resetOtp}
+                    onChange={(e) => setResetOtp(e.target.value)}
+                    disabled={resetLoading}
+                    autoFocus
+                    sx={{
+                      '& .MuiOutlinedInput-root': {
+                        borderRadius: '8px',
+                        fontSize: '0.85rem',
+                        '& fieldset': { borderColor: '#d1d5db' },
+                        '&:hover fieldset': { borderColor: '#9ca3af' },
+                        '&.Mui-focused fieldset': { borderColor: '#1e3a5f', borderWidth: 1.5 },
+                      },
+                      '& input': { py: '10px', px: '12px', color: '#374151' },
+                    }}
+                  />
+                </Box>
+                <Box sx={{ display: 'flex', gap: 1.5 }}>
+                  <Button
+                    type="button"
+                    variant="outlined"
+                    onClick={() => setResetStep(1)}
+                    disabled={resetLoading}
+                    sx={{
+                      flex: 1,
+                      py: 1,
+                      borderRadius: '8px',
+                      borderColor: '#d1d5db',
+                      color: '#4b5563',
+                      textTransform: 'none',
+                      fontWeight: 600,
+                      fontSize: '0.88rem',
+                      '&:hover': {
+                        backgroundColor: '#f3f4f6',
+                        borderColor: '#9ca3af',
+                      },
+                    }}
+                  >
+                    Orqaga
+                  </Button>
+                  <Button
+                    type="submit"
+                    variant="contained"
+                    disableElevation
+                    disabled={resetLoading}
+                    sx={{
+                      flex: 1.5,
+                      py: 1,
+                      backgroundColor: '#1e3a5f',
+                      borderRadius: '8px',
+                      textTransform: 'none',
+                      fontWeight: 600,
+                      fontSize: '0.88rem',
+                      '&:hover': {
+                        backgroundColor: '#111827',
+                      },
+                    }}
+                  >
+                    {resetLoading ? <CircularProgress size={20} color="inherit" /> : "Tasdiqlash"}
+                  </Button>
+                </Box>
+              </Box>
+            )}
+
+            {/* STEP 3: Change Password */}
+            {resetStep === 3 && (
+              <Box component="form" onSubmit={handleChangePassword} sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                <Typography variant="body2" sx={{ color: '#4b5563' }}>
+                  Yangi parolingizni kiriting va uni tasdiqlang.
+                </Typography>
+                <Box>
+                  <Typography sx={{ fontSize: '0.8rem', color: '#374151', fontWeight: 500, mb: 0.5 }}>
+                    Yangi parol
+                  </Typography>
+                  <TextField
+                    fullWidth
+                    size="small"
+                    type={showNewPassword ? 'text' : 'password'}
+                    placeholder="Yangi parolni kiriting"
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    disabled={resetLoading}
+                    slotProps={{
+                      input: {
+                        endAdornment: (
+                          <InputAdornment position="end">
+                            <IconButton
+                              onClick={() => setShowNewPassword(!showNewPassword)}
+                              edge="end"
+                              size="small"
+                              tabIndex={-1}
+                            >
+                              {showNewPassword ? <VisibilityOff sx={{ fontSize: 18 }} /> : <Visibility sx={{ fontSize: 18 }} />}
+                            </IconButton>
+                          </InputAdornment>
+                        ),
+                      },
+                    }}
+                    sx={{
+                      mb: 1.5,
+                      '& .MuiOutlinedInput-root': {
+                        borderRadius: '8px',
+                        fontSize: '0.85rem',
+                        '& fieldset': { borderColor: '#d1d5db' },
+                        '&:hover fieldset': { borderColor: '#9ca3af' },
+                        '&.Mui-focused fieldset': { borderColor: '#1e3a5f', borderWidth: 1.5 },
+                      },
+                      '& input': { py: '10px', px: '12px', color: '#374151' },
+                    }}
+                  />
+
+                  <Typography sx={{ fontSize: '0.8rem', color: '#374151', fontWeight: 500, mb: 0.5 }}>
+                    Parolni tasdiqlang
+                  </Typography>
+                  <TextField
+                    fullWidth
+                    size="small"
+                    type={showConfirmPassword ? 'text' : 'password'}
+                    placeholder="Parolni tasdiqlang"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    disabled={resetLoading}
+                    slotProps={{
+                      input: {
+                        endAdornment: (
+                          <InputAdornment position="end">
+                            <IconButton
+                              onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                              edge="end"
+                              size="small"
+                              tabIndex={-1}
+                            >
+                              {showConfirmPassword ? <VisibilityOff sx={{ fontSize: 18 }} /> : <Visibility sx={{ fontSize: 18 }} />}
+                            </IconButton>
+                          </InputAdornment>
+                        ),
+                      },
+                    }}
+                    sx={{
+                      '& .MuiOutlinedInput-root': {
+                        borderRadius: '8px',
+                        fontSize: '0.85rem',
+                        '& fieldset': { borderColor: '#d1d5db' },
+                        '&:hover fieldset': { borderColor: '#9ca3af' },
+                        '&.Mui-focused fieldset': { borderColor: '#1e3a5f', borderWidth: 1.5 },
+                      },
+                      '& input': { py: '10px', px: '12px', color: '#374151' },
+                    }}
+                  />
+                </Box>
+                <Button
+                  type="submit"
+                  variant="contained"
+                  disableElevation
+                  disabled={resetLoading || resetSuccess}
+                  sx={{
+                    mt: 1,
+                    py: 1,
+                    backgroundColor: '#1e3a5f',
+                    borderRadius: '8px',
+                    textTransform: 'none',
+                    fontWeight: 600,
+                    fontSize: '0.88rem',
+                    '&:hover': {
+                      backgroundColor: '#111827',
+                    },
+                  }}
+                >
+                  {resetLoading ? <CircularProgress size={20} color="inherit" /> : "Parolni o'zgartirish"}
+                </Button>
+              </Box>
+            )}
+          </DialogContent>
+        </Dialog>
 
         {/* Footer */}
         <Typography

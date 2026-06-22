@@ -49,7 +49,7 @@ export default function Students() {
   const [isGroupModalOpen, setIsGroupModalOpen] = useState(false);
   const [selectedGroups, setSelectedGroups] = useState([]);
   const [groupSearch, setGroupSearch] = useState('');
-  
+
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [studentToDelete, setStudentToDelete] = useState(null);
 

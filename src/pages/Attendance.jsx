@@ -200,7 +200,7 @@ export default function Attendance() {
   const resolvePhoto = (photo) => {
     if (!photo) return undefined;
     if (photo.startsWith('http') || photo.startsWith('/')) return photo;
-    const base = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+    const base = import.meta.env.VITE_API_URL || 'https://crm-backend-l7jq.onrender.com';
     return `${base}/file/${photo}`;
   };
 

@@ -83,7 +83,7 @@ export default function Profile() {
 
   return (
     <Box sx={{ maxWidth: 960, mx: 'auto', p: { xs: 2, sm: 4 }, animation: 'fadeIn 0.5s ease-out' }}>
-      
+
       {/* Page Title */}
       <Typography variant="h5" sx={{ fontWeight: 800, color: '#111827', mb: 4 }}>
         Shaxsiy Profil
@@ -91,7 +91,7 @@ export default function Profile() {
 
       {/* Main Grid */}
       <Grid container spacing={4}>
-        
+
         {/* Left Side: Avatar and Card Info */}
         <Grid item xs={12} md={5}>
           <Paper
@@ -215,10 +215,10 @@ export default function Profile() {
         {/* Right Side: Stats & Assigned Groups */}
         <Grid item xs={12} md={7}>
           <Stack spacing={3}>
-            
+
             {/* Quick Stats Grid */}
             <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 3 }}>
-              
+
               {/* Groups Count Card */}
               <Paper
                 elevation={0}

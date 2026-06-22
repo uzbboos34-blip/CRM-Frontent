@@ -118,14 +118,14 @@ export default function Login() {
       setResetError("Telefon raqamingizni kiriting");
       return;
     }
-    
+
     let cleanedPhone = resetPhone.trim();
     if (cleanedPhone.length === 9) {
       cleanedPhone = `+998${cleanedPhone}`;
     } else if (cleanedPhone.length === 12 && !cleanedPhone.startsWith('+')) {
       cleanedPhone = `+${cleanedPhone}`;
     }
-    
+
     setResetLoading(true);
     setResetError(null);
     try {
@@ -249,7 +249,7 @@ export default function Login() {
           if (!studentResponse.ok) {
             // Try alternate phone format (+ prefix) for teacher and student
             const alternatePhone = login.startsWith('+') ? login.substring(1) : `+${login}`;
-            
+
             // Try student with alternate phone
             let altStudentResponse = await fetch("https://crm-backend-l7jq.onrender.com/api/v1/auth/student/login", {
               method: 'POST',
@@ -300,7 +300,7 @@ export default function Login() {
       }
 
       setSuccess(true);
-      
+
       // Save token and redirect
       localStorage.setItem('token', data.token);
 
@@ -587,18 +587,18 @@ export default function Login() {
           </Box>
         </Box>
 
-        <Snackbar 
-          open={!!error} 
-          autoHideDuration={4000} 
+        <Snackbar
+          open={!!error}
+          autoHideDuration={4000}
           onClose={() => setError(null)}
           anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
           sx={{ animation: `${shake} 0.5s ease-in-out` }}
         >
-          <Alert 
-            onClose={() => setError(null)} 
-            severity="error" 
+          <Alert
+            onClose={() => setError(null)}
+            severity="error"
             variant="filled"
-            sx={{ 
+            sx={{
               width: '100%',
               backgroundColor: '#ef4444',
               borderRadius: '12px',
@@ -614,17 +614,17 @@ export default function Login() {
           </Alert>
         </Snackbar>
 
-        <Snackbar 
-          open={success} 
-          autoHideDuration={6000} 
+        <Snackbar
+          open={success}
+          autoHideDuration={6000}
           onClose={() => setSuccess(false)}
           anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
         >
-          <Alert 
-            onClose={() => setSuccess(false)} 
-            severity="success" 
+          <Alert
+            onClose={() => setSuccess(false)}
+            severity="success"
             variant="filled"
-            sx={{ 
+            sx={{
               width: '100%',
               backgroundColor: '#10b981',
               borderRadius: '12px',
